@@ -201,10 +201,12 @@ When merging duplicates, keep the **most specific/updated version** — manual i
 After deduplication and daily scoping, list items in this order:
 - Weekly Todo `[ ]` items — standing weekly commitments (no prefix, always shown until done). Deadline items use today's scoped version.
 - "carried:" items — Yesterday's [>] items whose delay date is today or had no delay date (only if not already covered by a Weekly Todo item above)
-- "deferred:" items — Yesterday's [>] items with a future delay date. Written as `- [>] deferred: <task> → YYYY-MM-DD`. These stay `[>]` (not `[ ]`) so they pass through without cluttering the actionable list. They will be carried forward again tomorrow until the date arrives.
 - "planned:" items — From this week's ### This week and ### Tomorrow
 - "manual:" items — From command arguments
 - New tasks extracted from email, calendar, and vault (checklist format)
+
+#### Deferred
+Yesterday's `[>]` items with a future delay date. Listed as sub-items under this heading: `- [>] <task> → YYYY-MM-DD`. These stay `[>]` (not `[ ]`) so they pass through without cluttering the actionable list. They will be carried forward again tomorrow until the date arrives. If there are no deferred items, omit this heading entirely.
 
 ### Email Highlights
 - **Gmail** — today's emails (N unread / M total) + key actionable items
