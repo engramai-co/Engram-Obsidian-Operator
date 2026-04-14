@@ -169,7 +169,7 @@ Glob for all `02_Projects/**/Deadline Plan.md` files (recursive — catches nest
 
 **Action Items:** Show: `[Project/Subject] <next queue task> — Xh left this week`. In `## Schedule`, allocate a single time block for deadline work based on the daily share. No partial-task fractions — just schedule the task with a reasonable block. The user adjusts the schedule to their preference.
 
-4. **Gmail** — Use the claude.ai Gmail MCP (`mcp__claude_ai_Gmail__gmail_search_messages`) to search for **all emails received today** (query: `newer_than:1d`, NOT `is:unread`). Reading an email ≠ task done. Summarize actionable items and note total count (N unread / M total).
+4. **Gmail** — Use the claude.ai Gmail MCP (`mcp__claude_ai_Gmail__gmail_search_messages`) to search for **all emails received today** (query: `newer_than:1d`, NOT `is:unread`). Always fetch all emails regardless of read status — reading an email ≠ task done. Summarize actionable items and note total count (N emails today).
 
 **Note:** Do NOT query Outlook MCP for calendar or email. Outlook calendar is handled via ICS plugin in Day Planner.
 
@@ -209,7 +209,7 @@ After deduplication and daily scoping, list items in this order:
 Yesterday's `[>]` items with a future delay date. Listed as sub-items under this heading: `- [>] <task> → YYYY-MM-DD`. These stay `[>]` (not `[ ]`) so they pass through without cluttering the actionable list. They will be carried forward again tomorrow until the date arrives. If there are no deferred items, omit this heading entirely.
 
 ### Email Highlights
-- **Gmail** — today's emails (N unread / M total) + key actionable items
+- **Gmail** — today's emails (N total) + key actionable items
 
 ### Calendar
 - See Day Planner sidebar for today's schedule
