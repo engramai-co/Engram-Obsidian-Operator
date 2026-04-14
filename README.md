@@ -2,7 +2,7 @@
 
 An AI-native personal operating system built on Obsidian + Claude Code.
 
-Operator is an opinionated system of 20 Claude Code skills that turn an Obsidian vault into a structured execution engine — daily briefings, arXiv paper scanning, weekly reviews, strategic planning, meeting processing, deadline tracking, knowledge synthesis, and a content engine for publishing, all orchestrated by AI agents.
+Operator is an opinionated system of 18 Claude Code skills that turn an Obsidian vault into a structured execution engine — daily briefings, arXiv paper scanning, weekly reviews, strategic planning, meeting processing, deadline tracking, deep research, and a content engine for publishing, all orchestrated by AI agents.
 
 ## Quick Start
 
@@ -37,11 +37,11 @@ npx skills add yuhanwang14/obsidian-operator@meeting
 npx skills add yuhanwang14/obsidian-operator@project-init
 # ... etc
 
-# Or install all 20
+# Or install all 18
 for skill in daily-init weekly-init weekly-review daily-github daily-academic \
   ai-weekly-digest meeting meeting-prep project-init project-sync \
-  quarterly-plan annual-vision deadline-plan decision synthesize organize \
-  add-events link-enrich content-extract content-draft; do
+  quarterly-plan annual-vision deadline-plan add-events link-enrich \
+  content-extract content-draft deep-research; do
   npx skills add yuhanwang14/obsidian-operator@$skill
 done
 ```
@@ -111,7 +111,7 @@ If not configured, `/daily-init` skips the email section silently.
 01_Execution/           — daily notes, weekly todos, blockers, reviews
 02_Projects/            — per-project folders with meeting plans, transcripts, deadlines
 03_Thinking/            — reflections, ideas, mental models
-04_Knowledge/           — research, meeting knowledge, decision analyses, digests
+04_Knowledge/           — research, meeting knowledge, deep research, digests
 05_Archive/             — inactive or completed material
 06_Content/             — content backlog, drafts, voice guide, published archive
 ```
@@ -153,8 +153,7 @@ See [CLAUDE.md](CLAUDE.md) for full conventions, frontmatter spec, checkbox stat
 | `project-sync` | Aggregate knowledge notes + weekly reviews into the project note — Knowledge Base, Weekly Progress, Strategic Signals |
 | `deadline-plan` | Backward-schedule deadlines with ramp algorithm — task queues, automatic progress tracking, weekly allocation |
 | `add-events` | Batch-add events to Apple Calendar + Reminders — stores in `Upcoming Events.md` for pipeline integration, routes current-week events to Blockers |
-| `decision` | Stress-test a decision — assumptions, risks, alternatives, recommendation |
-| `synthesize` | Distill notes into structured knowledge (concept / course / brainstorm templates) |
+| `deep-research` | Multi-agent deep research — decomposes a question into parallel threads, researches each with Opus agents, synthesizes into a detailed knowledge note |
 
 ### Content Engine
 
@@ -167,7 +166,6 @@ See [CLAUDE.md](CLAUDE.md) for full conventions, frontmatter spec, checkbox stat
 
 | Skill | Description |
 |-------|-------------|
-| `organize` | Scan vault for misplaced files, missing frontmatter, notes to split/merge (read-only recommendations) |
 | `link-enrich` | Three modes: `scan` (audit unlinked mentions, orphans, graph density), `apply` (preview + insert wiki-links), `moc` (generate Map of Content index notes) |
 
 ## System Architecture
@@ -263,8 +261,7 @@ Cycle repeats
               → 04_Knowledge/[P]/Meeting Knowledge/       (synthesis)
               → Weekly Todo + Blockers.md                 (action routing)
 
-/synthesize   → 04_Knowledge/[subfolder]/                 (concept | course | brainstorm)
-/decision     → 04_Knowledge/[P]/Decision Challenges/     (stress-test)
+/deep-research→ 04_Knowledge/[P or topic]/Research/         (deep research report)
 /deadline-plan→ 02_Projects/[path]/Deadline Plan.md       (ramp schedule + task queue)
 /add-events  → Apple Calendar "Operator"                    (timed + all-day events)
              → Apple Reminders "Operator"                    (associated deadlines)

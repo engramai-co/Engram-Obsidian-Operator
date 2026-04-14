@@ -35,13 +35,13 @@ It is not a software development project; there are no build systems, test runne
 04_Knowledge/           — research, references, synthesized knowledge
   [Project]/            — project-specific knowledge
     Meeting Knowledge/  — meeting synthesis notes (created by /meeting)
-    Decision Challenges/— decision stress-tests (created by /decision)
+    Research/           — deep research reports (created by /deep-research)
   GitHub/               — daily trending repo reports (created by /daily-github)
   Academic/             — daily arXiv paper reports (created by /daily-academic)
   AI-Weekly/            — weekly AI landscape digests (created by /ai-weekly-digest)
 05_Archive/             — inactive or completed material
 06_Content/             — content backlog, drafts, and published archive
-  Backlog.md            — master content idea queue with pillar tags, priority-sorted by origin (P1 thinking/daily/decision > P2 synthesize/meeting > P3 newsletter/github/ai-weekly)
+  Backlog.md            — master content idea queue with pillar tags, priority-sorted by origin (P1 thinking/daily > P2 meeting > P3 newsletter/github/ai-weekly)
   Voice Guide.md        — per-format voice profiles for /content-draft
   Drafts/               — platform-specific draft folders (created by /content-draft)
   Published/            — archived published items
@@ -96,6 +96,8 @@ When working in this vault, operate at a **strategic and synthesis level**:
 - Propose next actions aligned with long-term strategy
 
 Do not micromanage trivial tasks unless explicitly requested. Prefer high-leverage observations and recommendations over exhaustive lists.
+
+When a topic warrants systematic, multi-angle research (not a quick lookup), suggest that the user run `/deep-research` explicitly. Do not attempt deep research inline — the skill uses parallel agents for thorough coverage.
 
 ## Enabled Core Plugins
 

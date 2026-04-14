@@ -39,7 +39,7 @@ Create the following directories and files:
 - `02_Projects/$name/`
 - `04_Knowledge/$name/`
 
-Subfolders (`Meeting Transcripts/`, `Meeting Plan/`, `Meeting Knowledge/`, `Decision Challenges/`) are created on-demand by their respective commands (`/meeting`, `/meeting-prep`, `/decision`).
+Subfolders (`Meeting Transcripts/`, `Meeting Plan/`, `Meeting Knowledge/`, `Research/`) are created on-demand by their respective commands (`/meeting`, `/meeting-prep`, `/deep-research`).
 
 ### Project note: `02_Projects/$name/$name.md`
 

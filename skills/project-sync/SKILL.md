@@ -19,17 +19,17 @@ If no argument is provided, ask the user which project to sync.
 
 ## Step 1 — Validate
 
-1. Check that `04_Knowledge/$project/` exists (glob for it). If not, **create it** along with standard subfolders (`Meeting Knowledge/`, `Decision Challenges/`), and inform the user: "Created knowledge folder at `04_Knowledge/$project/`."
+1. Check that `04_Knowledge/$project/` exists (glob for it). If not, **create it** along with a standard subfolder (`Meeting Knowledge/`), and inform the user: "Created knowledge folder at `04_Knowledge/$project/`."
 2. Find the main project note at `02_Projects/$project/$project.md`. If it doesn't exist, stop and tell the user: "No project note found at `02_Projects/$project/$project.md`. Run `/project-init $project` first."
 
 ## Step 2 — Gather knowledge notes
 
-Read **all** `.md` files recursively under `04_Knowledge/$project/` (including subfolders like `Meeting Knowledge/`, `Decision Challenges/`, etc.).
+Read **all** `.md` files recursively under `04_Knowledge/$project/` (including subfolders like `Meeting Knowledge/`, `Research/`, etc.).
 
 For each note, extract:
 - **Title** — from the first `# heading`, or the filename (without `.md`) if no heading
 - **Wiki-link name** — the filename without `.md` (this is what goes inside `[[...]]`)
-- **`kind:`** from frontmatter (e.g. `meeting`, `brainstorm`, `concept`, `decision`, `course`)
+- **`kind:`** from frontmatter (e.g. `meeting`, `brainstorm`, `concept`, `course`, `deep-research`)
 - **`date:`** from frontmatter
 - **Summary** — a 1–2 sentence summary derived from the first meaningful paragraph, or content under `## What it is`, `## Question being explored`, `## Context`, `## Decision`, or similar top-level section. Keep it tight — one line max.
 
@@ -58,7 +58,7 @@ Group notes by `kind:` field, mapped to readable headings:
 - `meeting` → `### Meetings`
 - `brainstorm` → `### Strategy`
 - `concept` → `### Research`
-- `decision` → `### Decisions`
+- `deep-research` → `### Research`
 - `course` → `### Coursework`
 - `github-trending` → skip entirely
 - Any other or missing kind → `### Other`
@@ -69,7 +69,7 @@ Within each group, sort by `date:` descending (newest first). Each entry is a si
 - [[Note Filename Without Extension]] — One-sentence summary
 ```
 
-Only include group headings that have at least one entry. Order the groups: Meetings, Strategy, Research, Decisions, Coursework, Other.
+Only include group headings that have at least one entry. Order the groups: Meetings, Strategy, Research, Coursework, Other.
 
 ### `## Weekly Progress`
 

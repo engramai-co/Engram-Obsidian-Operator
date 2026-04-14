@@ -1,6 +1,6 @@
 ---
 name: content-extract
-description: "Scan yesterday's vault notes and newsletter emails for publishable content ideas and append them to the content backlog. TRIGGER when the user wants to find content ideas, mine notes for posts, scan for publishable insights, extract content from their vault, or asks 'what should I write about'. Also triggers for /content-extract. Runs automatically as part of /daily-init post-briefing. Evaluates daily notes, knowledge notes, meeting syntheses, decisions, AI digests, thinking notes, and Substack newsletter emails against four content pillars (founder narrative, AI observer, builder workflow, personal reflection). NOT for drafting content (use /content-draft), not for organizing the vault (use /organize), not for synthesizing notes into knowledge (use /synthesize)."
+description: "Scan yesterday's vault notes and newsletter emails for publishable content ideas and append them to the content backlog. TRIGGER when the user wants to find content ideas, mine notes for posts, scan for publishable insights, extract content from their vault, or asks 'what should I write about'. Also triggers for /content-extract. Runs automatically as part of /daily-init post-briefing. Evaluates daily notes, knowledge notes, meeting syntheses, AI digests, thinking notes, and Substack newsletter emails against four content pillars (founder narrative, AI observer, builder workflow, personal reflection). NOT for drafting content (use /content-draft)."
 version: 1.0.0
 author: Yuhan Wang
 license: MIT
@@ -40,9 +40,7 @@ Read notes from these sources (skip any that don't exist):
 
 2. **Knowledge notes** — Glob `04_Knowledge/**/*.md` for files modified on the scan date. This catches:
    - Meeting knowledge (`04_Knowledge/*/Meeting Knowledge/`)
-   - Decision challenges (`04_Knowledge/*/Decision Challenges/`)
-   - Synthesized concepts (`04_Knowledge/`)
-   - Any other knowledge notes created that day
+   - Research notes, concepts, and other knowledge notes created that day
 
 3. **Thinking notes** — Glob `03_Thinking/**/*.md` for files modified on the scan date.
 
@@ -91,7 +89,7 @@ Where:
 - `<pillar>` is one of: Founder narrative, AI observer, Builder workflow, Personal reflection
 - `<one-line hook>` is a punchy, specific description of the content angle (not a generic topic)
 - `[[source note filename]]` is an Obsidian wiki-link to the source
-- `<origin>` is the skill/source that created the note: `daily`, `meeting`, `synthesize`, `decision`, `ai-weekly-digest`, `daily-github`, `thinking`
+- `<origin>` is the skill/source that created the note: `daily`, `meeting`, `ai-weekly-digest`, `daily-github`, `thinking`, `newsletter`
 
 **Hook writing guidance:** The hook should make someone want to read more. It's the content angle, not the topic.
 

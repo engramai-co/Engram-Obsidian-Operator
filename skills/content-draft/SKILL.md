@@ -1,6 +1,6 @@
 ---
 name: content-draft
-description: "Generate platform-specific content drafts from vault notes, backlog items, or free topics. TRIGGER when the user wants to draft a LinkedIn post, write a tweet thread, create a blog article, write a newsletter, or turn a note into publishable content. Signal phrases: 'draft a post about', 'turn this into a LinkedIn post', 'write a thread about', 'create content from', 'draft from this note', 'write up this idea'. Also triggers for /content-draft. Supports multiple output formats: LinkedIn (delegates to linkedin-content skill), Twitter/X threads, non-technical articles, technical blogs (delegates to technical-blog-writing skill), and newsletters. NOT for extracting content ideas (use /content-extract), not for synthesizing notes (use /synthesize), not for meeting processing (use /meeting)."
+description: "Generate platform-specific content drafts from vault notes, backlog items, or free topics. TRIGGER when the user wants to draft a LinkedIn post, write a tweet thread, create a blog article, write a newsletter, or turn a note into publishable content. Signal phrases: 'draft a post about', 'turn this into a LinkedIn post', 'write a thread about', 'create content from', 'draft from this note', 'write up this idea'. Also triggers for /content-draft. Supports multiple output formats: LinkedIn (delegates to linkedin-content skill), Twitter/X threads, non-technical articles, technical blogs (delegates to technical-blog-writing skill), and newsletters. NOT for extracting content ideas (use /content-extract), not for meeting processing (use /meeting)."
 version: 1.0.0
 author: Yuhan Wang
 license: MIT
@@ -24,8 +24,8 @@ Read `06_Content/Backlog.md`. Collect all `[ ]` items from `## Queue` and sort t
 
 | Priority | Label | Origin tags |
 |----------|-------|-------------|
-| P1 | Your thinking & reflections | `from:thinking`, `from:daily`, `from:decision` |
-| P2 | Your summaries | `from:synthesize`, `from:meeting` |
+| P1 | Your thinking & reflections | `from:thinking`, `from:daily` |
+| P2 | Your summaries | `from:meeting` |
 | P3 | External content | `from:newsletter`, `from:daily-github`, `from:ai-weekly-digest` |
 
 Present items grouped by tier with continuous numbering:

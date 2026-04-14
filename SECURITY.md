@@ -36,7 +36,6 @@ Operator skills run inside Claude Code and interact with your local filesystem. 
 
 - Skills execute as Claude Code prompts with full filesystem access within the vault
 - Review any third-party or modified skills before installing them
-- The `organize` skill is read-only by design (recommendations only, no modifications)
 
 ## Supported Versions
 
