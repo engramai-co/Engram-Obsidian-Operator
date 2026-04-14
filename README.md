@@ -2,7 +2,7 @@
 
 An AI-native personal operating system built on Obsidian + Claude Code.
 
-Operator is an opinionated system of 19 Claude Code skills that turn an Obsidian vault into a structured execution engine — daily briefings, weekly reviews, strategic planning, meeting processing, deadline tracking, knowledge synthesis, and a content engine for publishing, all orchestrated by AI agents.
+Operator is an opinionated system of 20 Claude Code skills that turn an Obsidian vault into a structured execution engine — daily briefings, arXiv paper scanning, weekly reviews, strategic planning, meeting processing, deadline tracking, knowledge synthesis, and a content engine for publishing, all orchestrated by AI agents.
 
 ## Quick Start
 
@@ -37,11 +37,11 @@ npx skills add yuhanwang14/obsidian-operator@meeting
 npx skills add yuhanwang14/obsidian-operator@project-init
 # ... etc
 
-# Or install all 19
-for skill in daily-init weekly-init weekly-review daily-github ai-weekly-digest \
-  meeting meeting-prep project-init project-sync quarterly-plan annual-vision \
-  deadline-plan decision synthesize organize add-events link-enrich \
-  content-extract content-draft; do
+# Or install all 20
+for skill in daily-init weekly-init weekly-review daily-github daily-academic \
+  ai-weekly-digest meeting meeting-prep project-init project-sync \
+  quarterly-plan annual-vision deadline-plan decision synthesize organize \
+  add-events link-enrich content-extract content-draft; do
   npx skills add yuhanwang14/obsidian-operator@$skill
 done
 ```
@@ -126,6 +126,7 @@ See [CLAUDE.md](CLAUDE.md) for full conventions, frontmatter spec, checkbox stat
 |-------|-------------|
 | `daily-init` | Generate today's briefing — syncs completions, gathers email/calendar/vault data, produces action items + time-blocked schedule |
 | `daily-github` | Fetch trending GitHub repos, write full report to knowledge folder, append summary to daily note |
+| `daily-academic` | Scan today's arXiv papers across AI/robotics categories, write report to knowledge folder, append summary to daily note — project-adaptive filtering |
 
 ### Weekly Operations
 
@@ -133,7 +134,7 @@ See [CLAUDE.md](CLAUDE.md) for full conventions, frontmatter spec, checkbox stat
 |-------|-------------|
 | `weekly-init` | Create or update week folder + Weekly Todo — carries items from last week, injects deadline tasks, populates Blockers from calendar. Merges into existing files without overwriting. |
 | `weekly-review` | AI synthesis of the week — progress, stalled items, patterns, intention tracking, horizon items, next-week focus |
-| `ai-weekly-digest` | Curated AI landscape digest from RSS feeds + web search — papers, big tech, startups, open-source, policy. Merges new findings into existing digests. |
+| `ai-weekly-digest` | Curated AI landscape digest — research trends (aggregated from `/daily-academic` reports), big tech, startups, open-source, landscape. Merges new findings into existing digests. |
 
 ### Strategic Planning
 
@@ -186,6 +187,7 @@ See [CLAUDE.md](CLAUDE.md) for full conventions, frontmatter spec, checkbox stat
                         │  2.  /weekly-init    (open new week)        │
                         │  3.  briefing        (today's data)         │
                         │  4.  /daily-github   (trending repos)       │
+                        │  4b. /daily-academic (arXiv papers)         │
                         │  5.  /content-extract (content ideas)       │
                         └─────────────────────────────────────────────┘
 
@@ -201,6 +203,7 @@ See [CLAUDE.md](CLAUDE.md) for full conventions, frontmatter spec, checkbox stat
                         │  2.  /weekly-init (update mode)             │
                         │  3.  briefing        (today's data)         │
                         │  4.  /daily-github   (trending repos)       │
+                        │  4b. /daily-academic (arXiv papers)         │
                         │  5.  /content-extract (content ideas)       │
                         └─────────────────────────────────────────────┘
 ```
@@ -228,8 +231,8 @@ Daily notes accumulate in 01_Execution/YYYY-WXX/
     → writes Weekly Review.md (AI synthesis + suggested next-week todos)
     → detects horizon items (monthly/quarterly deferrals & deadlines)
     ↓
-/ai-weekly-digest reads GitHub trending files + RSS + web search
-    → writes AI Weekly Digest, appends summary to Weekly Review
+/ai-weekly-digest reads arXiv daily files + GitHub trending files + RSS + web search
+    → writes AI Weekly Digest (research trends + industry), appends summary to Weekly Review
     ↓
 /weekly-init reads Weekly Review "Todos next week" + uncompleted Weekly Todo
     → carries them into new week's Weekly Todo
@@ -267,7 +270,8 @@ Cycle repeats
              → Apple Reminders "Operator"                    (associated deadlines)
              → 02_Projects/[P]/Upcoming Events.md           (staging for /weekly-init)
              → 01_Execution/YYYY-WXX/Blockers.md            (current-week only)
-/daily-github → 04_Knowledge/GitHub/                      (daily trending)
+/daily-github    → 04_Knowledge/GitHub/                    (daily trending)
+/daily-academic  → 04_Knowledge/Academic/                  (daily arXiv)
 /ai-weekly-digest → 04_Knowledge/AI-Weekly/               (weekly AI landscape)
 /quarterly-plan   → 00_Strategy/YYYY-QX/                  (plan | review | pulse)
 /annual-vision    → 00_Strategy/                          (vision | annual review)
@@ -289,7 +293,8 @@ Cycle repeats
             ──► /quarterly-plan init (new-quarter boundary)
             ──► /weekly-init (always — update mode if exists)
             ──► /daily-github (post-briefing)
-            ──► /content-extract (post-briefing, after daily-github)
+            ──► /daily-academic (post-briefing, after daily-github)
+            ──► /content-extract (post-briefing, after daily-academic)
             ──► /meeting-prep (tomorrow's meetings)
 
 /meeting ───► (self-contained: transcript + knowledge + action routing)

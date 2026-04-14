@@ -250,6 +250,10 @@ After the briefing is written, open the daily note in Obsidian: `obsidian open p
 
 Then automatically run `/daily-github` to fetch today's trending repos and append the summary to the daily note. Pass no arguments (defaults: all languages, daily, 10 repos).
 
+## Post-Briefing: Academic Scan
+
+After `/daily-github` has run, automatically run `/daily-academic` to fetch today's notable arXiv papers and append the summary to the daily note. Pass no arguments (defaults: multi-category scan, 8 papers).
+
 ## Post-Briefing: Content Extract
 
-After `/daily-github` has run, invoke `/content-extract` (the full skill) to scan yesterday's vault notes and Substack newsletter emails for publishable content ideas. Do not reimplement the logic here — the skill handles Gmail queries, vault scanning, evaluation, deduplication, and backlog appending.
+After `/daily-academic` has run, invoke `/content-extract` (the full skill) to scan yesterday's vault notes and Substack newsletter emails for publishable content ideas. Do not reimplement the logic here — the skill handles Gmail queries, vault scanning, evaluation, deduplication, and backlog appending.

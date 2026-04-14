@@ -42,34 +42,55 @@ Read all `04_Knowledge/GitHub/YYYY-MM-DD - GitHub Trending*.md` files whose date
 
 If no GitHub trending files exist for the target week, note this and proceed — the Open-Source section will rely on WebSearch.
 
+## Step 2b — Gather academic data from vault
+
+Read all `04_Knowledge/Academic/YYYY-MM-DD - arXiv*.md` files whose dates fall within the target week (Monday–Sunday).
+
+- Extract all papers across those files: title, authors, arXiv ID, category, TL;DR, why it matters, relevance notes.
+- Deduplicate by arXiv ID or title across days.
+- Collect all `## Research Themes & Connections` sections for synthesis in Step 6.
+- Rank papers by: (1) explicit relevance to vault projects, (2) community buzz mentions from the daily reports, (3) category diversity.
+
+If no arXiv daily files exist for the target week, note this and proceed — the Academic section will fall back to RSS+WebSearch in Step 3.
+
 ## Step 3 — Fetch RSS feeds
 
 Fetch all of the following feeds **in parallel** using WebFetch:
 
 | # | Feed URL | Section |
 |---|----------|---------|
-| 1 | `https://arxiv.org/rss/cs.AI` | Academic |
-| 2 | `https://arxiv.org/rss/cs.CL` | Academic (NLP/LLM) |
-| 3 | `https://arxiv.org/rss/cs.LG` | Academic (ML) |
-| 4 | `https://blog.openai.com/rss/` | Big Tech |
-| 5 | `https://blog.google/technology/ai/rss/` | Big Tech |
-| 6 | `https://ai.meta.com/blog/rss/` | Big Tech |
-| 7 | `https://www.anthropic.com/rss.xml` | Big Tech |
-| 8 | `https://blogs.microsoft.com/ai/feed/` | Big Tech |
-| 9 | `https://machinelearning.apple.com/rss.xml` | Big Tech |
-| 10 | `https://techcrunch.com/category/artificial-intelligence/feed/` | Startups |
-| 11 | `https://the-decoder.com/feed/` | Cross-cutting |
-| 12 | `https://www.technologyreview.com/feed/` | Policy |
+| 1 | `https://blog.openai.com/rss/` | Big Tech |
+| 2 | `https://blog.google/technology/ai/rss/` | Big Tech |
+| 3 | `https://ai.meta.com/blog/rss/` | Big Tech |
+| 4 | `https://www.anthropic.com/rss.xml` | Big Tech |
+| 5 | `https://blogs.microsoft.com/ai/feed/` | Big Tech |
+| 6 | `https://machinelearning.apple.com/rss.xml` | Big Tech |
+| 7 | `https://techcrunch.com/category/artificial-intelligence/feed/` | Startups |
+| 8 | `https://the-decoder.com/feed/` | Cross-cutting |
+| 9 | `https://www.technologyreview.com/feed/` | Policy |
+
+**arXiv RSS fallback:** If Step 2b found no `04_Knowledge/Academic/` files for the target week, also fetch these arXiv feeds to populate the Academic section directly:
+- `https://arxiv.org/rss/cs.AI`
+- `https://arxiv.org/rss/cs.CL`
+- `https://arxiv.org/rss/cs.LG`
+- `https://arxiv.org/rss/cs.RO`
+- `https://arxiv.org/rss/cs.CV`
 
 - Filter entries to the target week's date range (Monday–Sunday).
 - If a feed fails, log a warning and continue with the rest.
 
 ## Step 4 — Filter, rank, and fill gaps with WebSearch
 
-### Academic (3–5 papers)
-- Cross-reference arXiv entries with WebSearch for community buzz (e.g. `"best AI papers this week"` on Reddit, X, Hacker News).
-- For each selected paper, run one WebSearch for context on its significance.
-- Select 3–5 papers that are most impactful or widely discussed.
+### Academic Trends (synthesized from daily reports)
+- **If Step 2b found arXiv daily files for the target week:**
+  - Identify 3–5 **research trends/themes** that appeared across multiple daily reports (e.g. "Efficiency breakthroughs in LLM inference", "New paradigms in robot manipulation").
+  - For each trend, note which papers contributed to it and what the collective movement suggests.
+  - Select the **top 3–5 papers of the week** — the most impactful or discussed individual papers across all daily reports.
+- **If no daily files exist (fallback mode):**
+  - Use the arXiv RSS feeds fetched in Step 3's fallback.
+  - Cross-reference with WebSearch for community buzz (e.g. `"best AI papers this week"` on Reddit, X, Hacker News).
+  - For each selected paper, run one WebSearch for context on its significance.
+  - Select 3–5 papers that are most impactful or widely discussed (legacy behavior).
 
 ### Big Tech (5–8 items)
 - Supplement blog feed entries with WebSearch for major announcements not covered by blogs (e.g. `"OpenAI announcement this week"`, `"Google AI launch this week"`).
@@ -117,15 +138,31 @@ Use the actual date (today) and week identifier.
 ```markdown
 # AI Weekly Digest · YYYY-WXX
 
-## Academic Papers & Breakthroughs
+## Academic Research Trends
 
-### [Paper Title](link)
+### Weekly Research Landscape
+Brief paragraph (3–4 sentences) summarizing the week's academic pulse: how many papers were scanned across the daily reports, which categories saw the most activity, what the overall research direction looks like.
+
+### Key Trends This Week
+
+#### [Trend Name] (e.g. "Efficient Inference at Scale")
+**Papers contributing** — [[Paper1]], [[Paper2]], [[Paper3]]
+**What's happening** — 2–3 sentences on the research movement.
+**Why it matters** — Significance for the field and vault projects.
+
+(Repeat for 3–5 trends)
+
+### Top Papers of the Week
+
+#### [Paper Title](link)
 **Authors** — Author list
-**TL;DR** — One-sentence summary of the paper.
-**Why it matters** — Significance in the broader AI landscape.
-**Relevance** — Connection to vault projects, if any.
+**TL;DR** — One-sentence summary.
+**Why it stood out** — What made this the week's standout (breakthrough result, community buzz, vault relevance).
 
-(Repeat for 3–5 papers)
+(3–5 papers, selected from all daily reports)
+
+### Research Radar
+- 2–3 bullets on emerging themes that appeared late in the week or in only one daily report but seem significant — "things to watch."
 
 ## Big Tech Updates
 
@@ -183,7 +220,7 @@ If it exists, insert a `### AI Weekly Digest` block **before** the `## Reflectio
 
 ```markdown
 ### AI Weekly Digest
-- **Papers:** [top paper title] — one-liner
+- **Research trends:** [top trend] — one-liner
 - **Big Tech:** [top signal] — one-liner
 - **Startups:** [top signal] — one-liner
 - **Open-Source:** [top repo] — one-liner
@@ -198,5 +235,5 @@ If Weekly Review doesn't exist yet, skip this step silently (the digest may be r
 Print:
 - The save path of the digest
 - The target week (YYYY-WXX)
-- One-sentence highlight per section (Academic, Big Tech, Startups, Open-Source, Policy)
+- One-sentence highlight per section (Research Trends, Big Tech, Startups, Open-Source, Landscape)
 - Whether the Weekly Review was updated

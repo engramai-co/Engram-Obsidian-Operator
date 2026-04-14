@@ -37,6 +37,7 @@ It is not a software development project; there are no build systems, test runne
     Meeting Knowledge/  — meeting synthesis notes (created by /meeting)
     Decision Challenges/— decision stress-tests (created by /decision)
   GitHub/               — daily trending repo reports (created by /daily-github)
+  Academic/             — daily arXiv paper reports (created by /daily-academic)
   AI-Weekly/            — weekly AI landscape digests (created by /ai-weekly-digest)
 05_Archive/             — inactive or completed material
 06_Content/             — content backlog, drafts, and published archive
