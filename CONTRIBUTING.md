@@ -99,7 +99,7 @@ The markdown body is the prompt Claude Code receives when the skill is invoked.
 ### Skill Guidelines
 
 - **Follow existing conventions** — read 2-3 existing skills before writing a new one
-- **Use the vault structure** defined in CLAUDE.md (00_Strategy through 05_Archive)
+- **Use the vault structure** defined in CLAUDE.md (00_Strategy through 05_Content)
 - **Use Obsidian wiki-links** (`[[Note Title]]`) for cross-references
 - **Follow the checkbox states** convention: `[ ]` todo, `[x]` done, `[>]` carry forward, `[-]` cancelled
 - **Reference CLAUDE.md settings** for paths and preferences rather than hardcoding values

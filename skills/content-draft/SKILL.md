@@ -20,7 +20,7 @@ Three input modes:
 ## Step 1 — Resolve source material
 
 ### Mode 1: From backlog (no args)
-Read `06_Content/Backlog.md`. Collect all `[ ]` items from `## Queue` and sort them by priority tier based on their `from:` origin tag:
+Read `05_Content/Backlog.md`. Collect all `[ ]` items from `## Queue` and sort them by priority tier based on their `from:` origin tag:
 
 | Priority | Label | Origin tags |
 |----------|-------|-------------|
@@ -117,7 +117,7 @@ Rules:
 - Concrete > abstract. "We lost 40% of signups" > "we had retention issues"
 
 ### Non-Technical Article Format
-Read `06_Content/Voice Guide.md` and load the `## Non-Technical Article` profile.
+Read `05_Content/Voice Guide.md` and load the `## Non-Technical Article` profile.
 
 If the profile exists, follow its patterns. If empty/TBD, use this default structure:
 
@@ -143,7 +143,7 @@ If the profile exists, follow its patterns. If empty/TBD, use this default struc
 
 Target: 1000-2500 words. Use bold for key distinctions, blockquotes for pivotal questions.
 
-After generating, suggest the user add the final published version to `06_Content/Voice Guide.md` to calibrate future drafts.
+After generating, suggest the user add the final published version to `05_Content/Voice Guide.md` to calibrate future drafts.
 
 ### Technical Blog
 Invoke the `technical-blog-writing` skill. Pass it:
@@ -180,7 +180,7 @@ Target: 800-1500 words total. Designed for email readability — short paragraph
 Create the draft folder and write files:
 
 ```
-06_Content/Drafts/YYYY-MM-DD - <slug>/
+05_Content/Drafts/YYYY-MM-DD - <slug>/
   linkedin.md      (if LinkedIn was selected)
   twitter.md       (if Twitter was selected)
   article.md       (if article or technical blog was selected)
@@ -202,7 +202,7 @@ date: YYYY-MM-DD
 
 ## Step 6 — Update backlog
 
-If the source was a backlog item, update it in `06_Content/Backlog.md`:
+If the source was a backlog item, update it in `05_Content/Backlog.md`:
 - Append ` · → [[YYYY-MM-DD - <slug>/]]` to the item line
 
 Do not mark it `[x]` — that happens when the user actually publishes.

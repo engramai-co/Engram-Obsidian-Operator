@@ -112,8 +112,7 @@ If not configured, `/daily-init` skips the email section silently.
 02_Projects/            — per-project folders with meeting plans, transcripts, deadlines
 03_Thinking/            — reflections, ideas, mental models
 04_Knowledge/           — research, meeting knowledge, deep research, digests
-05_Archive/             — inactive or completed material
-06_Content/             — content backlog, drafts, voice guide, published archive
+05_Content/             — content backlog, drafts, voice guide, published archive
 ```
 
 See [CLAUDE.md](CLAUDE.md) for full conventions, frontmatter spec, checkbox states, and AI agent instructions.
@@ -159,7 +158,7 @@ See [CLAUDE.md](CLAUDE.md) for full conventions, frontmatter spec, checkbox stat
 
 | Skill | Description |
 |-------|-------------|
-| `content-extract` | Scan yesterday's notes and Substack newsletter emails for publishable insights — appends 0-3 ideas to `06_Content/Backlog.md` with pillar tags. Integrated into `/daily-init` post-briefing. Also includes catch-up pass for unscanned this-week notes. |
+| `content-extract` | Scan yesterday's notes and Substack newsletter emails for publishable insights — appends 0-3 ideas to `05_Content/Backlog.md` with pillar tags. Integrated into `/daily-init` post-briefing. Also includes catch-up pass for unscanned this-week notes. |
 | `content-draft` | Generate platform-specific drafts from backlog items or notes — presents backlog sorted by priority (P1 own thinking > P2 summaries > P3 external). Formats: LinkedIn (delegates to `linkedin-content`), Twitter/X threads, non-technical articles (uses Voice Guide), technical blogs (delegates to `technical-blog-writing`), newsletters |
 
 ### Vault Maintenance
@@ -276,8 +275,8 @@ Cycle repeats
 /project-init → 02_Projects/[P]/ + 04_Knowledge/[P]/     (scaffolding)
 /project-sync → 02_Projects/[P]/[P].md                   (Knowledge Base + Strategic Signals)
 
-/content-extract → 06_Content/Backlog.md                  (content ideas from vault notes + newsletters)
-/content-draft   → 06_Content/Drafts/YYYY-MM-DD-slug/    (LinkedIn, Twitter, article, newsletter)
+/content-extract → 05_Content/Backlog.md                  (content ideas from vault notes + newsletters)
+/content-draft   → 05_Content/Drafts/YYYY-MM-DD-slug/    (LinkedIn, Twitter, article, newsletter)
 ```
 
 ### Dependency graph
@@ -311,7 +310,7 @@ This is an opinionated system — the vault structure, note conventions, and ski
 
 1. **CLAUDE.md** is the configuration layer. Edit folder paths, frontmatter fields, checkbox states, or agent behavior there.
 2. **Individual skills** can be modified after installation (they live in `~/.claude/skills/` or `~/.agents/skills/`).
-3. **Vault structure** can be extended — add new folders as needed. Avoid renaming the core 7 folders without updating CLAUDE.md and skill references.
+3. **Vault structure** can be extended — add new folders as needed. Avoid renaming the core 6 folders without updating CLAUDE.md and skill references.
 
 ## Contributing
 

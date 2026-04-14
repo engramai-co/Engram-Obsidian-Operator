@@ -31,7 +31,7 @@ Glob all `.md` files in the vault. For each file, extract the **filename without
 
 **Exclude** from the catalog:
 - Daily notes (`01_Execution/*/YYYY-MM-DD.md` pattern)
-- Archive (`05_Archive/**`)
+- Content (`05_Content/**`)
 - Meta files (anything in `.obsidian/`, `CLAUDE.md`, `README.md`, `CONTRIBUTING.md`, `LICENSE`, `CODE_OF_CONDUCT.md`, `SECURITY.md`)
 - The `skills/` directory
 
