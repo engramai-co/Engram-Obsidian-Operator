@@ -27,28 +27,7 @@ claude
 /vault-init
 ```
 
-`/vault-init` creates the folder structure, copies `CLAUDE.md`, walks you through the Customization table (vault owner, calendar names, meeting paths), and optionally sets up `~/.secrets` + the transcription script for `/meeting`. It's idempotent — safe to rerun.
-
-If you'd rather set things up by hand:
-
-```bash
-git clone https://github.com/yuhanwang14/obsidian-operator.git
-cp -r obsidian-operator/skills/vault-init/assets/vault-template/* /path/to/your/vault/
-cp obsidian-operator/skills/vault-init/assets/CLAUDE.md /path/to/your/vault/
-# then edit the Customization table in CLAUDE.md
-```
-
-Or install individual skills manually:
-
-```bash
-# Install all 19
-for skill in vault-init daily-init weekly-init weekly-review daily-github daily-academic \
-  ai-weekly-digest meeting meeting-prep project-init project-sync \
-  quarterly-plan annual-vision deadline-plan add-events link-enrich \
-  content-extract content-draft deep-research; do
-  npx skills add yuhanwang14/obsidian-operator@$skill
-done
-```
+`/vault-init` creates the six core folders, installs `CLAUDE.md`, walks you through the Customization table (vault owner, calendar names, meeting paths), and optionally sets up `~/.secrets` + the transcription script for `/meeting`. It's idempotent — safe to rerun.
 
 ### 3. Start using
 
@@ -57,6 +36,18 @@ done
 /project-init MyProject
 /daily-init 6
 ```
+
+<details>
+<summary>Manual setup (without the plugin)</summary>
+
+```bash
+git clone https://github.com/yuhanwang14/obsidian-operator.git
+cp -r obsidian-operator/skills/vault-init/assets/vault-template/* /path/to/your/vault/
+cp    obsidian-operator/skills/vault-init/assets/CLAUDE.md         /path/to/your/vault/
+# then edit the Customization table in CLAUDE.md by hand
+```
+
+</details>
 
 ## Prerequisites
 
@@ -72,38 +63,17 @@ done
 
 ## Configuration
 
-After installing, edit the **Customization** table in [CLAUDE.md](skills/vault-init/assets/CLAUDE.md) to match your setup (vault owner name, calendar names, file paths).
+`/vault-init` handles the common settings interactively: the **Customization** table in [CLAUDE.md](skills/vault-init/assets/CLAUDE.md) (vault owner, calendar names, meeting paths) and, optionally, `~/.secrets` + the `/meeting` transcription script. Rerun it any time to update values.
 
-### Secrets (`~/.secrets`)
+Two integrations live outside Claude Code and need a one-time setup of their own:
 
-Some skills need API keys. Create a `~/.secrets` file:
+### Gmail MCP (optional — for `/daily-init`)
 
-```bash
-# Required for /meeting auto-transcription (Mode 1)
-export GEMINI_API_KEY="your-key-here"    # https://aistudio.google.com/apikey
-```
+Connect your Google account under **Claude Code settings → MCP integrations** and grant Gmail read access. If not configured, `/daily-init` silently skips the email section.
 
-Then copy the transcription script:
+### Apple Calendar & Reminders (macOS only — for `/deadline-plan`, `/quarterly-plan`, `/add-events`)
 
-```bash
-cp skills/meeting/scripts/gemini-transcribe.sh ~/bin/
-chmod +x ~/bin/gemini-transcribe.sh
-```
-
-If you skip this, `/meeting` still works — just pass it a transcript file or paste text directly (Modes 2 & 3).
-
-### Gmail MCP (optional)
-
-`/daily-init` can pull today's emails into your briefing via Claude Code's built-in Gmail MCP. To enable:
-
-1. Open Claude Code settings and connect your Google account under MCP integrations
-2. Grant Gmail read access when prompted
-
-If not configured, `/daily-init` skips the email section silently.
-
-### Apple Calendar & Reminders (macOS only)
-
-`/deadline-plan` and `/quarterly-plan` can create calendar events and reminders via AppleScript. No setup needed beyond macOS — configure the calendar and reminders list names in [CLAUDE.md](skills/vault-init/assets/CLAUDE.md).
+No OS setup needed beyond macOS. Configure the calendar and list names via `/vault-init`, or edit them directly in the Customization table of [CLAUDE.md](skills/vault-init/assets/CLAUDE.md).
 
 ## Vault Structure
 
@@ -315,8 +285,8 @@ Cycle repeats
 
 This is an opinionated system — the vault structure, note conventions, and skill behaviors are designed to work together. To customize:
 
-1. **CLAUDE.md** is the configuration layer. Edit folder paths, frontmatter fields, checkbox states, or agent behavior there.
-2. **Individual skills** can be modified after installation (they live in `~/.claude/skills/` or `~/.agents/skills/`).
+1. **CLAUDE.md** is the configuration layer. Edit folder paths, frontmatter fields, checkbox states, or agent behavior in your vault's `CLAUDE.md`.
+2. **Individual skills** — for durable changes, fork this repo and install from your fork. Editing files in `~/.claude/plugins/cache/obsidian-operator/…` works for quick experiments but gets overwritten on plugin update.
 3. **Vault structure** can be extended — add new folders as needed. Avoid renaming the core 6 folders without updating CLAUDE.md and skill references.
 
 ## Contributing
