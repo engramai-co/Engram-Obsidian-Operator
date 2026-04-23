@@ -19,13 +19,24 @@ The Quick Start + Configuration sections of the README (`cp -r vault-template/*`
 
 1. **Vault directory.** The vault is the current working directory by default. Confirm with the user in one line: "I'll set up the vault at `<cwd>`. Is that right? (yes / path)". Accept any sane path — absolute, `~/...`, or relative.
 
-2. **Plugin directory.** The `vault-template/` folder and the canonical `CLAUDE.md` ship with the plugin. Resolve the plugin root in this order:
-   - `$CLAUDE_PLUGIN_ROOT` if the env var is set.
-   - `~/.claude/plugins/cache/obsidian-operator/*/` — if there's a single match, use it; if multiple, pick the highest semver.
-   - `~/.claude/plugins/marketplaces/obsidian-operator/` — fallback for manual installs.
-   - As a last resort, ask the user: "Where did you clone or install obsidian-operator?"
+2. **Plugin directory.** The `vault-template/` folder and the canonical `CLAUDE.md` ship with the plugin. Resolve the plugin root in this order (the real install layout has a double `obsidian-operator/obsidian-operator/` nesting plus a version dir — this is intentional, not a typo):
 
-   Verify the resolved path contains both `vault-template/` and `CLAUDE.md`. If not, stop and ask the user to check their install.
+   ```bash
+   # 1. env var set by Claude Code when a plugin skill runs
+   [ -n "$CLAUDE_PLUGIN_ROOT" ] && echo "$CLAUDE_PLUGIN_ROOT"
+
+   # 2. plugin cache — versioned, pick the highest semver
+   ls -d ~/.claude/plugins/cache/obsidian-operator/obsidian-operator/*/ 2>/dev/null \
+     | sort -V | tail -1
+
+   # 3. marketplace checkout — flat, no version dir
+   [ -d ~/.claude/plugins/marketplaces/obsidian-operator ] \
+     && echo ~/.claude/plugins/marketplaces/obsidian-operator
+   ```
+
+   Use the first path that exists **and** contains both `vault-template/` and `CLAUDE.md`. If none do, ask the user: "I can't find the obsidian-operator plugin files. Did you install via `/plugin install obsidian-operator`, or do you have a local clone of the repo? (paste path)"
+
+   If the user gives a local repo path, verify it has `vault-template/` and `CLAUDE.md` at its root before proceeding.
 
 ## Step 2 — Sanity-check the vault
 
@@ -39,7 +50,7 @@ Before touching anything, check what's already in the vault:
 
 ## Step 3 — Copy the vault template
 
-Copy the plugin's `vault-template/*` into the vault. Use `cp -rn` (no-clobber) so any pre-existing files in the vault survive:
+Copy the plugin's `vault-template/` contents into the vault. Use `cp -rn` (no-clobber) so any pre-existing files in the vault survive. The trailing `/.` on the source and `/` on the destination are important — they copy the *contents* of `vault-template/`, not the directory itself:
 
 ```bash
 cp -rn "<plugin_root>/vault-template/." "<vault_path>/"
@@ -61,10 +72,14 @@ Skipped:  05_Content/ (already existed)
 
 ## Step 4 — Install CLAUDE.md
 
-Copy the plugin's `CLAUDE.md` into the vault root.
+Copy the plugin's `CLAUDE.md` into the vault root using no-clobber:
 
-- If `<vault>/CLAUDE.md` does **not** exist → copy it as-is.
-- If it **does** exist → do **not** overwrite. Instead, show the user a one-line diff summary (e.g. "Your CLAUDE.md differs from the bundled one — likely because you've already customized it. Keeping yours.") and move on.
+```bash
+cp -n "<plugin_root>/CLAUDE.md" "<vault_path>/CLAUDE.md"
+```
+
+- If the vault didn't have `CLAUDE.md`, it gets installed.
+- If the vault already has one (likely customized by the user earlier), `cp -n` leaves it alone. Mention this briefly to the user: "Existing CLAUDE.md preserved — I'll still update the Customization table in Step 5."
 
 The installed `CLAUDE.md` is the configuration layer for every other skill — it's where folder paths, vault owner name, and calendar names live.
 
