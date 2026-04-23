@@ -33,8 +33,8 @@ If you'd rather set things up by hand:
 
 ```bash
 git clone https://github.com/yuhanwang14/obsidian-operator.git
-cp -r obsidian-operator/vault-template/* /path/to/your/vault/
-cp obsidian-operator/CLAUDE.md /path/to/your/vault/
+cp -r obsidian-operator/skills/vault-init/assets/vault-template/* /path/to/your/vault/
+cp obsidian-operator/skills/vault-init/assets/CLAUDE.md /path/to/your/vault/
 # then edit the Customization table in CLAUDE.md
 ```
 
@@ -72,7 +72,7 @@ done
 
 ## Configuration
 
-After installing, edit the **Customization** table in [CLAUDE.md](CLAUDE.md) to match your setup (vault owner name, calendar names, file paths).
+After installing, edit the **Customization** table in [CLAUDE.md](skills/vault-init/assets/CLAUDE.md) to match your setup (vault owner name, calendar names, file paths).
 
 ### Secrets (`~/.secrets`)
 
@@ -103,7 +103,7 @@ If not configured, `/daily-init` skips the email section silently.
 
 ### Apple Calendar & Reminders (macOS only)
 
-`/deadline-plan` and `/quarterly-plan` can create calendar events and reminders via AppleScript. No setup needed beyond macOS — configure the calendar and reminders list names in [CLAUDE.md](CLAUDE.md).
+`/deadline-plan` and `/quarterly-plan` can create calendar events and reminders via AppleScript. No setup needed beyond macOS — configure the calendar and reminders list names in [CLAUDE.md](skills/vault-init/assets/CLAUDE.md).
 
 ## Vault Structure
 
@@ -116,7 +116,7 @@ If not configured, `/daily-init` skips the email section silently.
 05_Content/             — content backlog, drafts, voice guide, published archive
 ```
 
-See [CLAUDE.md](CLAUDE.md) for full conventions, frontmatter spec, checkbox states, and AI agent instructions.
+See [CLAUDE.md](skills/vault-init/assets/CLAUDE.md) for full conventions, frontmatter spec, checkbox states, and AI agent instructions.
 
 ## Skills Reference
 

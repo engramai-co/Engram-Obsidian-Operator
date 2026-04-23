@@ -15,28 +15,30 @@ Walk the user from "just installed the plugin" to "vault is ready for /daily-ini
 
 The Quick Start + Configuration sections of the README (`cp -r vault-template/*`, `cp CLAUDE.md`, editing the Customization table, writing `~/.secrets`, installing the transcription script). Everything a first-time user has to do before `/daily-init` works.
 
-## Step 1 — Locate the vault and the plugin
+## Step 1 — Locate the vault and the skill's assets
 
 1. **Vault directory.** The vault is the current working directory by default. Confirm with the user in one line: "I'll set up the vault at `<cwd>`. Is that right? (yes / path)". Accept any sane path — absolute, `~/...`, or relative.
 
-2. **Plugin directory.** The `vault-template/` folder and the canonical `CLAUDE.md` ship with the plugin. Resolve the plugin root in this order (the real install layout has a double `obsidian-operator/obsidian-operator/` nesting plus a version dir — this is intentional, not a typo):
+2. **Skill assets directory.** Everything this skill copies — `vault-template/` and `CLAUDE.md` — is bundled inside the skill itself at `assets/`. Resolve the assets path in this order:
 
    ```bash
    # 1. env var set by Claude Code when a plugin skill runs
-   [ -n "$CLAUDE_PLUGIN_ROOT" ] && echo "$CLAUDE_PLUGIN_ROOT"
+   [ -n "$CLAUDE_PLUGIN_ROOT" ] && echo "$CLAUDE_PLUGIN_ROOT/skills/vault-init/assets"
 
-   # 2. plugin cache — versioned, pick the highest semver
+   # 2. plugin cache — the real install layout has a double
+   # obsidian-operator/obsidian-operator/ nesting plus a version dir
    ls -d ~/.claude/plugins/cache/obsidian-operator/obsidian-operator/*/ 2>/dev/null \
-     | sort -V | tail -1
+     | sort -V | tail -1 \
+     | sed 's:$:skills/vault-init/assets:'
 
    # 3. marketplace checkout — flat, no version dir
    [ -d ~/.claude/plugins/marketplaces/obsidian-operator ] \
-     && echo ~/.claude/plugins/marketplaces/obsidian-operator
+     && echo ~/.claude/plugins/marketplaces/obsidian-operator/skills/vault-init/assets
    ```
 
-   Use the first path that exists **and** contains both `vault-template/` and `CLAUDE.md`. If none do, ask the user: "I can't find the obsidian-operator plugin files. Did you install via `/plugin install obsidian-operator`, or do you have a local clone of the repo? (paste path)"
+   Use the first path that exists **and** contains both `vault-template/` and `CLAUDE.md`. If none do, ask the user: "I can't find the vault-init assets. Did you install via `/plugin install obsidian-operator`, or do you have a local clone of the repo? (paste path to the repo root, and I'll look inside `skills/vault-init/assets/`)"
 
-   If the user gives a local repo path, verify it has `vault-template/` and `CLAUDE.md` at its root before proceeding.
+   If the user gives a local repo path, append `skills/vault-init/assets` and verify the two files are there before proceeding.
 
 ## Step 2 — Sanity-check the vault
 
@@ -53,7 +55,7 @@ Before touching anything, check what's already in the vault:
 Copy the plugin's `vault-template/` contents into the vault. Use `cp -rn` (no-clobber) so any pre-existing files in the vault survive. The trailing `/.` on the source and `/` on the destination are important — they copy the *contents* of `vault-template/`, not the directory itself:
 
 ```bash
-cp -rn "<plugin_root>/vault-template/." "<vault_path>/"
+cp -rn "<assets>/vault-template/." "<vault_path>/"
 ```
 
 The template provides:
@@ -75,7 +77,7 @@ Skipped:  05_Content/ (already existed)
 Copy the plugin's `CLAUDE.md` into the vault root using no-clobber:
 
 ```bash
-cp -n "<plugin_root>/CLAUDE.md" "<vault_path>/CLAUDE.md"
+cp -n "<assets>/CLAUDE.md" "<vault_path>/CLAUDE.md"
 ```
 
 - If the vault didn't have `CLAUDE.md`, it gets installed.
@@ -120,13 +122,14 @@ If **yes**:
    export GEMINI_API_KEY="<key>"
    ```
    Use append mode — never overwrite an existing `~/.secrets`.
-3. Copy the transcription script:
+3. Copy the transcription script. It's in the sibling `meeting` skill, so compute its path by stripping `/vault-init/assets` off `<assets>` and replacing with `/meeting/scripts/`:
    ```bash
+   SCRIPT_SRC="${ASSETS%/vault-init/assets}/meeting/scripts/gemini-transcribe.sh"
    mkdir -p ~/bin
-   cp "<plugin_root>/skills/meeting/scripts/gemini-transcribe.sh" ~/bin/
+   cp "$SCRIPT_SRC" ~/bin/
    chmod +x ~/bin/gemini-transcribe.sh
    ```
-   If the script isn't in the plugin (older versions), skip silently and tell the user where to find it in the repo.
+   If the script isn't present (older plugin versions), skip silently and tell the user where to find it in the repo.
 4. Remind the user: "Make sure `~/bin` is on your PATH."
 
 If **skip** or **later**: note in the final summary that `/meeting` still works with Modes 2 & 3 (transcript file or pasted text), and move on.
