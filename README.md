@@ -102,7 +102,7 @@ See [CLAUDE.md](skills/vault-init/assets/CLAUDE.md) for full conventions, frontm
 |-------|-------------|
 | `daily-init` | Generate today's briefing — syncs completions, gathers email/calendar/vault data, produces action items + time-blocked schedule |
 | `daily-github` | Fetch trending GitHub repos, write full report to knowledge folder, append summary to daily note |
-| `daily-academic` | Scan today's arXiv papers across AI/robotics categories, write report to knowledge folder, append summary to daily note — project-adaptive filtering |
+| `daily-academic` | Scan today's arXiv papers across AI/robotics categories — quality-gated to 3–5 papers/day from established labs/universities or top-venue acceptances, with a PDF deep-read per paper before writing the report |
 
 ### Weekly Operations
 
