@@ -1,7 +1,7 @@
 ---
 name: daily-academic
 description: "Invoke IMMEDIATELY for /daily-academic, or whenever the user mentions arXiv, new papers, preprints, research papers today, academic scanning, paper roundup, or asks what's new in AI/robotics/ML/NLP/CV research. This is the ONLY skill that fetches and ranks today's arXiv papers — do not attempt to manually search arXiv or summarize papers without it. Triggers on: 'check arxiv', 'new papers today', 'daily arxiv check', 'morning research scan', 'paper roundup', 'what dropped on arxiv', 'academic paper thing', 'scan papers', any mention of cs.AI/cs.RO/cs.CL/cs.LG/cs.CV categories, or any request to pull/fetch/scan today's research. Produces a knowledge note in 04_Knowledge/Academic/ with project-relevant annotations and appends summary to the daily note. Quality is gated hard: only papers from established labs/universities OR already accepted at top venues are included. NOT for: summarizing a specific paper the user already has, literature reviews, writing papers, or the weekly AI digest."
-version: 1.2.0
+version: 1.3.0
 author: Yuhan Wang
 license: MIT
 tags: [obsidian, arxiv, academic, research, knowledge, ai]
@@ -148,6 +148,14 @@ Set `categories` to the actual categories scanned (single-item list if filtered,
 # arXiv Daily — YYYY-MM-DD
 ```
 
+**TL;DR (write this FIRST, place it directly under the title):**
+
+```markdown
+**TL;DR** — One or two sentences synthesizing the day's signal: dominant theme + the strongest headline result with a number + the gate verdict (e.g. "3 of 8 candidates passed, including 1 ACL acceptance"). Reads at-a-glance without needing to recognize paper titles. The same string is copied verbatim into the daily-note section in Step 6.
+```
+
+If zero papers cleared the gate, the TL;DR is just: `**TL;DR** — No papers cleared the quality gate today (X of Y candidates considered; primary cuts: [reason]).`
+
 **Body — per paper entry. Content must be derived from the actual paper body (Step 4), not paraphrased from the abstract. `Affiliation` and `Venue` are required — they are the visible quality signal.**
 
 ```markdown
@@ -193,11 +201,12 @@ If using the Edit fallback, append under `## Notes` (find the heading and append
 
 ```markdown
 ### arXiv Daily
+**TL;DR** — [same TL;DR copied verbatim from the full report's top]
 Top papers today: **Paper1 Title** (one-liner), **Paper2 Title** (one-liner), **Paper3 Title** (one-liner).
 → Full report: [[YYYY-MM-DD - arXiv Daily]]
 ```
 
-List exactly the papers selected in Step 3 (1 to 5 — whatever cleared the gate). If zero papers passed, write `No papers cleared the quality gate today.` instead. Use the actual note title in the wiki-link (including category suffix if filtered).
+The TL;DR line is identical to the one at the top of the full report — copy it verbatim, do not rephrase. List exactly the papers selected in Step 3 (1 to 5 — whatever cleared the gate). If zero papers passed, omit the `Top papers today:` line and the TL;DR alone is the section. Use the actual note title in the wiki-link (including category suffix if filtered).
 
 ## Step 7 — Confirm
 

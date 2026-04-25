@@ -1,7 +1,7 @@
 ---
 name: daily-github
 description: "Use when the user asks for GitHub trending repositories, top open source projects, or invokes /daily-github. Covers requests to fetch, browse, or summarize what's popular or trending on GitHub — optionally filtered by programming language (python, rust, typescript, etc.) and time window (daily, weekly, monthly). Produces a detailed knowledge note with contextual introductions for each repo and appends a short summary to the Obsidian daily note. Also triggers for requests mentioning the GitHub trending page, writing up trending repo reports, or asking about top/hot/popular repos this week or month."
-version: 1.0.0
+version: 1.1.0
 author: Yuhan Wang
 license: MIT
 tags: [obsidian, github, trending, knowledge, open-source]
@@ -68,6 +68,14 @@ tags:
 ```
 Set `since` and `language` to actual values used.
 
+**Title + TL;DR (write these FIRST, before the per-repo entries):**
+
+```markdown
+# GitHub Trending · YYYY-MM-DD
+
+**TL;DR** — One or two sentences synthesizing today's signal: dominant category (AI agents / dev-tools / infra / etc.) + the headline launch or release with the star delta + any cross-trend connection (e.g. "third major-lab coding-agent entry this month"). Reads at-a-glance without needing to recognize repo names. The same string is copied verbatim into the daily-note section in Step 4.
+```
+
 **Body — per repo entry (4–6 lines each):**
 
 ```markdown
@@ -93,11 +101,12 @@ If using the Edit fallback, append under `## Notes` (find the heading and append
 
 ```markdown
 ### GitHub Trending
+**TL;DR** — [same TL;DR copied verbatim from the full report's top]
 Top repos today: **repo1** (one-liner), **repo2** (one-liner), **repo3** (one-liner).
 → Full report: [[YYYY-MM-DD - GitHub Trending]]
 ```
 
-Pick the 3 most notable repos for the summary. Use the actual note title in the wiki-link (including language suffix if filtered).
+The TL;DR line is identical to the one at the top of the full report — copy it verbatim, do not rephrase. Pick the 3 most notable repos for the `Top repos today:` line. Use the actual note title in the wiki-link (including language suffix if filtered).
 
 ## Step 5 — Confirm
 
