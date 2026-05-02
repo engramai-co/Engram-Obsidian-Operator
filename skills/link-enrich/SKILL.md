@@ -59,7 +59,9 @@ An orphan note is a file that:
 - Has **zero incoming links** (no other file contains `[[This Note]]`)
 - Has **zero outgoing links** (contains no `[[...]]` references)
 
-Exclude daily notes, templates, and archive from orphan detection.
+Exclude from orphan detection:
+- Templates and archive
+- Thinking notes (`03_Thinking/**`) — these are intentionally orphan by design (raw idea capture, scratch, journaling); flagging them adds noise.
 
 ### Step 4: Compute graph metrics
 
