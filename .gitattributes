@@ -1,0 +1,4 @@
+# Force GitHub Linguist to count Markdown in the Languages bar.
+# This repo is ~98% Markdown (skills, docs, vault templates) — letting it
+# show up reflects the actual content of the project.
+*.md linguist-detectable=true

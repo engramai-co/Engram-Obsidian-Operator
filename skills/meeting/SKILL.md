@@ -1,10 +1,6 @@
 ---
 name: meeting
-description: "Invoke IMMEDIATELY when user shares meeting output: pasted transcripts, dialogue text, .m4a recordings, transcript files, or says a call/sync just ended and wants processing. Responds to /meeting. Produces Obsidian knowledge notes with decisions, actions, and open questions; routes items to weekly todo and blockers. Supports three modes: auto-transcribe (.m4a), chunked transcript directory, and direct/pasted transcript. Not for scheduling, meeting prep, live note-taking, or past meeting recall."
-version: 1.0.0
-author: Yuhan Wang
-license: MIT
-tags: [obsidian, meeting, transcript, knowledge, action-routing]
+description: "TRIGGER IMMEDIATELY when the user shares meeting output: pasted transcripts, dialogue text, .m4a recordings, transcript files, or says a call/sync just ended. Also /meeting. Produces a knowledge note with decisions, actions, and open questions. NOT for scheduling, prep, or live notes."
 ---
 
 ## Setup (Mode 1 — Auto-transcribe)

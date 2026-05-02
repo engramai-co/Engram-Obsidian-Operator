@@ -1,10 +1,6 @@
 ---
 name: deep-research
-description: "Conducts systematic deep research on a topic using parallel Opus agents, producing a comprehensive knowledge note saved to the Obsidian vault. Triggers on the explicit /deep-research command, AND on natural-language requests for deep dives, comprehensive/thorough/multi-angle research, structured research briefs, or persistent knowledge notes — e.g. 'do a deep dive on X', 'research X thoroughly for me', 'I need a comprehensive write-up on X', 'investigate X across multiple angles', 'compile a research note on X', 'spawn parallel agents to research X', 'save this research to my vault'. Also fires when the user wants a written, durable knowledge artifact in their Obsidian vault rather than a quick chat answer, or when researching open questions / risks / gaps from a project file. NOT for casual lookups, single-fact questions, 'look this up', 'search for', fact-checks, or general curiosity — those should use direct WebSearch. The bar is: the request warrants decomposition into parallel threads and structured synthesis, not a one-shot answer."
-version: 1.0.0
-author: Yuhan Wang
-license: MIT
-tags: [obsidian, research, deep-research, knowledge, agents]
+description: "TRIGGER for /deep-research, or for natural-language requests for a deep dive, comprehensive/multi-angle research, structured research brief, or a durable knowledge note saved to the vault. NOT for casual lookups, single-fact questions, or quick fact-checks (use WebSearch instead)."
 ---
 
 Conduct systematic deep research on a topic using parallel agents, producing a detailed knowledge note.

@@ -1,10 +1,6 @@
 ---
 name: vault-init
-description: "One-shot setup of an Obsidian vault for the Operator system. TRIGGER when the user has just installed the obsidian-operator plugin and needs to initialize a fresh vault, is asking how to 'set up my vault', 'initialize the vault', 'get started with Operator', 'bootstrap the folder structure', wants to copy the template folders, or asks what to do after installing the plugin. Also triggers on /vault-init, /onboard, /setup, /init-vault, 'onboard me', 'first-time setup', or any message where the user is staring at an empty vault and doesn't know where to start. Creates the 00_Strategy/01_Execution/02_Projects/03_Thinking/04_Knowledge/05_Content folder structure, copies CLAUDE.md into the vault root, walks the user through the CLAUDE.md Customization table (vault owner name, Apple Calendar name, Reminders list, meeting paths), and optionally sets up ~/.secrets + the transcription script. NOT for creating a single project (use /project-init), initializing a day (/daily-init), or initializing a week (/weekly-init). This is the very first thing a new user runs."
-version: 1.0.0
-author: Yuhan Wang
-license: MIT
-tags: [obsidian, setup, onboarding, initialization, vault]
+description: "TRIGGER for /vault-init, /onboard, /setup, 'first-time setup', 'set up my vault', or any new user staring at an empty vault. One-shot scaffold of the Operator vault structure (00–05 folders) plus CLAUDE.md customization walk-through. NOT for /project-init, /daily-init, or /weekly-init."
 ---
 
 Walk the user from "just installed the plugin" to "vault is ready for /daily-init" in one conversation. The README currently spells this out as a wall of shell commands; this skill replaces that with a guided, interactive flow that actually runs the commands for them.
@@ -63,7 +59,7 @@ The template provides:
 - `04_Knowledge/GitHub/`, `04_Knowledge/Academic/`, `04_Knowledge/AI-Weekly/` — standing destinations for `/daily-github`, `/daily-academic`, `/ai-weekly-digest`
 - `05_Content/Backlog.md` — empty content queue
 - `05_Content/Voice Guide.md` — voice profile template
-- `05_Content/Drafts/` and `05_Content/Published/` subdirs
+- `05_Content/Drafts/`, `05_Content/Published/`, and `05_Content/Archived/` subdirs
 
 After copy, list what was actually created vs. skipped. Briefly, e.g.:
 

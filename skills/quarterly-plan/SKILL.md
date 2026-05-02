@@ -1,10 +1,6 @@
 ---
 name: quarterly-plan
-description: "Use when the user wants to check on quarterly goals, assess objective status (on track/at risk/off track), initialize a new quarter's plan, review a completed quarter's results, or run a monthly pulse checkpoint. Triggers for: tracking quarterly goal progress, mid-quarter checkpoints, quarter-end retrospectives with objective-by-objective analysis, setting up a new quarter (e.g. 'set up Q2'), monthly pulse reports showing how goals are progressing, and horizon item tracking. Also handles the /quarterly-plan slash command with subcommands like init, review, and pulse. Do NOT use for annual vision/review, weekly planning, general strategy summaries, or meeting prep."
-version: 1.0.0
-author: Yuhan Wang
-license: MIT
-tags: [obsidian, strategy, quarterly, planning, goals]
+description: "TRIGGER for /quarterly-plan (subcommands: init, review, pulse), or when the user wants to check quarterly goals, assess objective status, set up a new quarter, review a completed one, or run a monthly pulse checkpoint. NOT for annual vision, weekly planning, or meeting prep."
 ---
 
 Strategic quarterly planning: init, review, and monthly pulse checkpoint.

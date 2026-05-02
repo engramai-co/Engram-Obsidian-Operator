@@ -1,10 +1,6 @@
 ---
 name: daily-academic
-description: "Invoke IMMEDIATELY for /daily-academic, or whenever the user mentions arXiv, new papers, preprints, research papers today, academic scanning, paper roundup, or asks what's new in AI/robotics/ML/NLP/CV research. This is the ONLY skill that fetches and ranks today's arXiv papers — do not attempt to manually search arXiv or summarize papers without it. Triggers on: 'check arxiv', 'new papers today', 'daily arxiv check', 'morning research scan', 'paper roundup', 'what dropped on arxiv', 'academic paper thing', 'scan papers', any mention of cs.AI/cs.RO/cs.CL/cs.LG/cs.CV categories, or any request to pull/fetch/scan today's research. Produces a knowledge note in 04_Knowledge/Academic/ with project-relevant annotations and appends summary to the daily note. Quality is gated hard: only papers from established labs/universities OR already accepted at top venues are included. NOT for: summarizing a specific paper the user already has, literature reviews, writing papers, or the weekly AI digest."
-version: 1.3.0
-author: Yuhan Wang
-license: MIT
-tags: [obsidian, arxiv, academic, research, knowledge, ai]
+description: "TRIGGER for /daily-academic, or when the user mentions arXiv, today's papers, preprints, paper roundup, or asks what's new in AI/robotics/ML/NLP/CV research. The ONLY skill that fetches and ranks today's arXiv papers — don't search arXiv manually without it. NOT for the weekly AI digest."
 ---
 
 Fetch today's notable arXiv papers across AI and robotics categories, produce a knowledge note with project-relevant annotations, plus a short summary in the daily note.

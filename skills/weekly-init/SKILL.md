@@ -1,10 +1,6 @@
 ---
 name: weekly-init
-description: "Invoke IMMEDIATELY when user wants to start a new week or says /weekly-init. Triggers on any request to set up, initialize, or kick off a week — including Monday morning setup, weekly planning, creating W## folders, building a weekly todo or blockers file, carrying over unfinished items, or pulling in deadline tasks. If the user mentions 'new week', 'start the week', 'get organized for this week', 'execution layer', or wants to carry forward from last week, this is the skill. Not for: weekly review/retrospective, daily briefing, calendar lookup, deadline plan creation, or progress tracking."
-version: 1.0.0
-author: Yuhan Wang
-license: MIT
-tags: [obsidian, weekly-planning, execution, carry-forward]
+description: "TRIGGER IMMEDIATELY for /weekly-init, or when the user wants to start a new week — Monday setup, weekly planning, creating W## folders, building a weekly todo/blockers, or carrying over unfinished items. NOT for weekly review/retrospective or daily briefings."
 ---
 
 Initialize the current week: create the week folder, carry unfinished items from last week, and populate the Weekly Todo.

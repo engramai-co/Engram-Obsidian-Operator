@@ -294,6 +294,8 @@ This is an opinionated system — the vault structure, note conventions, and ski
 
 We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for how to get started.
 
+- [Skill style guide](docs/skill-style-guide.md) — frontmatter, description, and body conventions
+- [Repo guide for agents](CLAUDE.md) — rules for agents working on this codebase
 - [Code of Conduct](CODE_OF_CONDUCT.md)
 - [Security Policy](SECURITY.md)
 

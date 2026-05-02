@@ -1,10 +1,6 @@
 ---
 name: daily-init
-description: "Daily kickoff ritual — invoke for /daily-init, \"start my day\", \"morning briefing\", \"set up today's note\", or any request to begin, initialize, or plan the workday. Builds today's daily note by pulling Gmail, calendar, weekly todos, yesterday's carry-forwards, and active deadline plans into a structured briefing with action items and a time-blocked schedule. Optional args: hours budget, manual items (e.g. \"/daily-init 6, buy groceries\"). Auto-triggers week/month/quarter boundary reviews when needed."
-version: 1.0.0
-author: Yuhan Wang
-license: MIT
-tags: [obsidian, daily-planning, briefing, execution, day-planner]
+description: "TRIGGER for /daily-init, 'start my day', 'morning briefing', or any request to begin or plan today. Builds the daily note from Gmail, calendar, weekly todos, carry-forwards, and active deadline plans. Auto-triggers week/month/quarter boundary reviews when needed."
 ---
 
 Generate today's daily briefing by gathering data from all sources below, then output a single concise briefing.

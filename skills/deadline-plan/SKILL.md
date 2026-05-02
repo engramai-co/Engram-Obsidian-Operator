@@ -1,10 +1,6 @@
 ---
 name: deadline-plan
-description: "Use when the user wants to create, view, or manage a deadline-driven work plan. This skill backward-schedules hours across weeks leading to a due date — ramping intensity for exams, steady pacing for coursework/assignments, or front-loaded effort for project milestones and demos. Invoke for: creating a deadline plan or study schedule for exams, papers, assignments, project phases, or MVP demos; checking deadline progress (hours done vs expected across plans); scheduling exam prep or coursework with total hour targets distributed over weeks; any /deadline-plan command. NOT for: adding single calendar events, daily briefings, weekly reviews, time-tracking lookups, or annual goal setting."
-version: 1.0.0
-author: Yuhan Wang
-license: MIT
-tags: [obsidian, deadline, scheduling, ramp, progress-tracking]
+description: "TRIGGER for /deadline-plan, or when the user wants to create or check a deadline-driven plan — exam prep, coursework, project milestones, or MVP demos — with backward-scheduled hours across weeks. NOT for single calendar events or daily briefings."
 ---
 
 Backward-schedule hard deadlines (exams, coursework, project milestones) across weeks with automatic progress tracking.

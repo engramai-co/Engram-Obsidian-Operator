@@ -1,10 +1,6 @@
 ---
 name: content-extract
-description: "Scan yesterday's vault notes and newsletter emails for publishable content ideas and append them to the content backlog. TRIGGER when the user wants to find content ideas, mine notes for posts, scan for publishable insights, extract content from their vault, or asks 'what should I write about'. Also triggers for /content-extract. Runs automatically as part of /daily-init post-briefing. Evaluates daily notes, knowledge notes, meeting syntheses, AI digests, thinking notes, and Substack newsletter emails against four content pillars (founder narrative, AI observer, builder workflow, personal reflection). NOT for drafting content (use /content-draft)."
-version: 1.0.0
-author: Yuhan Wang
-license: MIT
-tags: [obsidian, content, extraction, backlog, publishing]
+description: "TRIGGER for /content-extract, or when the user wants to find content ideas, mine notes for posts, or asks 'what should I write about'. Also auto-runs from /daily-init. Scans yesterday's vault notes and newsletter emails. NOT for drafting (use /content-draft)."
 ---
 
 Scan yesterday's notes for publishable insights and append content suggestions to the backlog.

@@ -1,10 +1,6 @@
 ---
 name: link-enrich
-description: "Obsidian vault graph doctor. Use whenever someone wants to improve, audit, or understand how their notes link to each other. This includes: finding unlinked mentions, inserting missing [[wiki-links]], creating Map of Content (MOC) or index notes for folders, detecting orphan notes, measuring link density, or analyzing hub connectivity. Trigger when a user says their graph is sparse, notes aren't connected, they need a MOC or index for a folder, or want to scan for missing connections. Scans the whole vault and can surgically add links or generate index notes. NOT for moving/organizing files, syncing projects, searching note contents, or formatting a single document."
-version: 1.0.0
-author: Yuhan Wang
-license: MIT
-tags: [obsidian, vault, maintenance, links, graph]
+description: "TRIGGER for /link-enrich, or when the user wants to audit or improve their Obsidian graph: find unlinked mentions, insert wiki-links, build a Map of Content (MOC), detect orphan notes, or analyze hub connectivity. NOT for moving/organizing files or formatting a single doc."
 ---
 
 Vault graph optimizer: scan for unlinked mentions, enrich notes with wiki-links, and generate Map of Content index notes.

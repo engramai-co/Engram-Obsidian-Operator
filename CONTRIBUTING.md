@@ -80,28 +80,20 @@ CLAUDE.md         — Vault configuration and AI agent instructions
 
 ## Writing Skills
 
-Each skill is a `SKILL.md` file with YAML frontmatter:
+Skill format conventions live in **[`docs/skill-style-guide.md`](docs/skill-style-guide.md)** — read it before adding or editing a skill. Headline rules:
 
-```yaml
----
-name: my-skill
-version: 1.0.0
-description: One-line description
-author: Your Name
-license: MIT
-tags: [obsidian, operator]
-user_invocable: true
----
-```
+- Frontmatter: `name` + `description` only. No `version`/`author`/`license`/`tags` (those are duplicated in `.claude-plugin/plugin.json`).
+- Description: ≤300 chars, trigger-only — describe *when* the skill should fire, not *how* it works.
+- Body: ≤250 lines. Use procedural step-by-step for deterministic flows; use Quick Reference + "When to use / NOT to use" for judgment-heavy skills.
 
-The markdown body is the prompt Claude Code receives when the skill is invoked.
+Repo-level guidelines for agents (auto-loaded as system context) live in **[`CLAUDE.md`](CLAUDE.md)**.
 
-### Skill Guidelines
+### Skill content guidelines
 
 - **Follow existing conventions** — read 2-3 existing skills before writing a new one
 - **Use the vault structure** defined in CLAUDE.md (00_Strategy through 05_Content)
 - **Use Obsidian wiki-links** (`[[Note Title]]`) for cross-references
-- **Follow the checkbox states** convention: `[ ]` todo, `[x]` done, `[>]` carry forward, `[-]` cancelled
+- **Follow the checkbox states** convention: `[ ]` todo, `[x]` done, `[>]` carry forward, `[-]` dropped
 - **Reference CLAUDE.md settings** for paths and preferences rather than hardcoding values
 - **Keep skills focused** — one skill, one job
 
