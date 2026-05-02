@@ -18,31 +18,26 @@ The Quick Start + Configuration sections of the README (`cp -r vault-template/*`
 2. **Skill assets directory.** Everything this skill copies — `vault-template/` and `CLAUDE.md` — is bundled inside the skill itself at `assets/`. Resolve the assets path in this order:
 
    ```bash
-   # 1. env var set by Claude Code when a plugin skill runs
+   # 1. env var set by the harness when a plugin skill runs
+   #    (Claude Code sets $CLAUDE_PLUGIN_ROOT to .../plugins/obsidian-operator/)
    [ -n "$CLAUDE_PLUGIN_ROOT" ] && echo "$CLAUDE_PLUGIN_ROOT/skills/vault-init/assets"
 
-   # 2. plugin cache — the real install layout has a double
-   # obsidian-operator/obsidian-operator/ nesting plus a version dir
-   ls -d ~/.claude/plugins/cache/obsidian-operator/obsidian-operator/*/ 2>/dev/null \
-     | sort -V | tail -1 \
-     | sed 's:$:skills/vault-init/assets:'
+   # 2. Claude Code plugin cache (versioned install path; nested plugin payload)
+   ls -d ~/.claude/plugins/cache/obsidian-operator/obsidian-operator/*/plugins/obsidian-operator/skills/vault-init/assets 2>/dev/null \
+     | sort -V | tail -1
 
-   # 3. marketplace checkout — flat, no version dir
-   [ -d ~/.claude/plugins/marketplaces/obsidian-operator ] \
-     && echo ~/.claude/plugins/marketplaces/obsidian-operator/skills/vault-init/assets
+   # 3. Claude Code marketplace checkout (flat, no version dir)
+   [ -d ~/.claude/plugins/marketplaces/obsidian-operator/plugins/obsidian-operator/skills/vault-init/assets ] \
+     && echo ~/.claude/plugins/marketplaces/obsidian-operator/plugins/obsidian-operator/skills/vault-init/assets
 
-   # 4. Codex CLI symlink target — readlink -f resolves to clone path
-   [ -L ~/.agents/skills/obsidian-operator ] \
-     && echo "$(readlink -f ~/.agents/skills/obsidian-operator)/vault-init/assets"
-
-   # 5. Codex CLI clone path (fallback if symlink missing)
-   [ -d ~/.codex/obsidian-operator/skills/vault-init/assets ] \
-     && echo ~/.codex/obsidian-operator/skills/vault-init/assets
+   # 4. Codex CLI plugin cache (mirror of openai-curated layout, hash-based)
+   ls -d ~/.codex/plugins/cache/obsidian-operator/obsidian-operator/*/plugins/obsidian-operator/skills/vault-init/assets 2>/dev/null \
+     | sort -V | tail -1
    ```
 
-   Use the first path that exists **and** contains both `vault-template/` and `CLAUDE.md`. If none do, ask the user: "I can't find the vault-init assets. Did you install via `/plugin install obsidian-operator` (Claude Code) or follow `.codex/INSTALL.md` to clone into `~/.codex/obsidian-operator` (Codex CLI)? (Paste path to the repo root and I'll look inside `skills/vault-init/assets/`.)"
+   Use the first path that exists **and** contains both `vault-template/` and `CLAUDE.md`. If none do, ask the user: "I can't find the vault-init assets. Did you install via `/plugin install obsidian-operator` (Claude Code) or `codex plugin marketplace add yuhanwang14/obsidian-operator` (Codex CLI)? (Paste the repo path and I'll look inside `plugins/obsidian-operator/skills/vault-init/assets/`.)"
 
-   If the user gives a local repo path, append `skills/vault-init/assets` and verify the two files are there before proceeding.
+   If the user gives a local repo path, append `plugins/obsidian-operator/skills/vault-init/assets` and verify the two files are there before proceeding.
 
 ## Step 2 — Sanity-check the vault
 
@@ -142,15 +137,23 @@ If **yes**:
 
 If **skip** or **later**: note in the final summary that `/meeting` still works with Modes 2 & 3 (transcript file or pasted text), and move on.
 
-## Step 7 — Optional: mention Gmail MCP + Apple Calendar
+## Step 7 — Platform-specific reminders
 
-Don't configure these — they're handled outside Claude Code. Just surface them in the final summary so the user knows they exist:
+Detect platform via env signal: if `$CODEX_HOME` is set → Codex CLI, otherwise → Claude Code. (Do not use `~/.codex/` directory existence as a signal — that resolves true on any machine where Codex was ever installed, even from a Claude Code session.)
 
-- **Gmail MCP** (for `/daily-init` email section):
-  - Claude Code: "Connect Google in Claude Code settings → MCP integrations."
-  - Codex CLI: "Configure a Gmail MCP server in `~/.codex/config.toml` — see `docs/README.codex.md` for compatible options (Google Workspace MCP, Composio Gmail, Nylas)."
-  - Skip if you don't need email in daily briefings — `/daily-init` will silently degrade.
+Surface (do **not** auto-configure) the platform-relevant items in the final summary.
+
+If Claude Code:
+- **Gmail** (for `/daily-init` email section): "Connect Google in Claude Code settings → MCP integrations." Skip if you don't need email — `/daily-init` will silently degrade.
+
+If Codex CLI:
+- **Gmail** (for `/daily-init` email section): "Codex ships an official Gmail connector — enable `gmail@openai-curated` in Codex's plugin manager." Skip if you don't need email.
+- **`/deep-research` parallel agents**: "Add `[features] multi_agent = true` to `~/.codex/config.toml` to enable parallel agent dispatch. Otherwise `/deep-research` falls back to sequential thread execution (slower, still functional)."
+
+Both platforms:
 - **Apple Calendar / Reminders** (macOS only): "`/deadline-plan` and `/add-events` will use the calendar/list names you just set. No OS setup needed."
+
+vault-init never writes `~/.codex/config.toml` itself. If `multi_agent` is missing, the `deep-research-enforce.sh` hook will emit a one-line fallback notice at `/deep-research` invocation time.
 
 ## Step 8 — Day-1 onboarding chain
 

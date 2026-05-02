@@ -16,7 +16,14 @@ Operator is an opinionated system of 19 Claude Code skills that turn an Obsidian
 /plugin install obsidian-operator
 ```
 
-**Codex CLI**: clone + symlink + register hook. See [`.codex/INSTALL.md`](.codex/INSTALL.md) for the 6-step install. After install, run `/vault-init` exactly as below.
+**Codex CLI**:
+
+```bash
+codex plugin marketplace add yuhanwang14/obsidian-operator
+# then enable obsidian-operator in Codex's plugin manager
+```
+
+> Upgrading from v1.9.x manual install? Remove the stale symlink first: `rm ~/.agents/skills/obsidian-operator`. See [docs/README.codex.md](docs/README.codex.md#upgrading-from-v19x-manual-install) for full upgrade steps.
 
 ### 2. Initialize the vault
 
@@ -44,8 +51,8 @@ claude       # or: codex
 
 ```bash
 git clone https://github.com/yuhanwang14/obsidian-operator.git
-cp -r obsidian-operator/skills/vault-init/assets/vault-template/* /path/to/your/vault/
-cp    obsidian-operator/skills/vault-init/assets/CLAUDE.md         /path/to/your/vault/
+cp -r obsidian-operator/plugins/obsidian-operator/skills/vault-init/assets/vault-template/* /path/to/your/vault/
+cp    obsidian-operator/plugins/obsidian-operator/skills/vault-init/assets/CLAUDE.md         /path/to/your/vault/
 # then edit the Customization table in CLAUDE.md by hand
 ```
 
@@ -56,7 +63,7 @@ cp    obsidian-operator/skills/vault-init/assets/CLAUDE.md         /path/to/your
 | Requirement | Required | Notes |
 |-------------|----------|-------|
 | [Obsidian](https://obsidian.md) | Yes | The vault app |
-| [Claude Code](https://claude.ai/code) **or** [Codex CLI](https://developers.openai.com/codex/cli) | Yes | One required. See [Codex install](.codex/INSTALL.md) and [docs/README.codex.md](docs/README.codex.md) for Codex CLI specifics. |
+| [Claude Code](https://claude.ai/code) **or** [Codex CLI](https://developers.openai.com/codex/cli) | Yes | One required. See [docs/README.codex.md](docs/README.codex.md) for Codex CLI specifics. |
 | [Day Planner](https://github.com/ivan-lednev/obsidian-day-planner) plugin | Recommended | Time-blocking in daily notes |
 | [Obsidian CLI](https://github.com/Obsidian-TTRPG-Community/obsidian-cli) | Recommended | Skills fall back to file tools if unavailable |
 | [ffmpeg](https://ffmpeg.org/) | Optional | For `/meeting` auto-transcription (`brew install ffmpeg`) |
@@ -65,7 +72,7 @@ cp    obsidian-operator/skills/vault-init/assets/CLAUDE.md         /path/to/your
 
 ## Configuration
 
-`/vault-init` handles the common settings interactively: the **Customization** table in [CLAUDE.md](skills/vault-init/assets/CLAUDE.md) (vault owner, calendar names, meeting paths) and, optionally, `~/.secrets` + the `/meeting` transcription script. Rerun it any time to update values.
+`/vault-init` handles the common settings interactively: the **Customization** table in [CLAUDE.md](plugins/obsidian-operator/skills/vault-init/assets/CLAUDE.md) (vault owner, calendar names, meeting paths) and, optionally, `~/.secrets` + the `/meeting` transcription script. Rerun it any time to update values.
 
 Two integrations live outside Claude Code and need a one-time setup of their own:
 

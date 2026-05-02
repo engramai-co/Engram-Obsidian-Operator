@@ -1,10 +1,10 @@
 # obsidian-operator on Codex CLI
 
-How obsidian-operator's 19 skills work on OpenAI Codex CLI. For install, see [`.codex/INSTALL.md`](../.codex/INSTALL.md).
+How obsidian-operator's 19 skills work on OpenAI Codex CLI. For install, see the [Quick Start](../README.md#quick-start) in the main README.
 
 ## How discovery works
 
-Codex CLI scans `~/.agents/skills/` at startup and parses each SKILL.md frontmatter. Routing is by the `description` field — natural-language requests + slash command patterns both work:
+Obsidian Operator ships as a Codex plugin (v2.0.0+). Once installed via `codex plugin marketplace add yuhanwang14/obsidian-operator` and enabled in Codex's plugin manager, Codex routes by each SKILL.md's `description` frontmatter:
 
 - `/daily-init 6` → matches `daily-init` description's slash trigger
 - "start my day" → matches `daily-init` description's natural-language phrase
@@ -16,8 +16,8 @@ Slash commands are not enforced — they're just one of several trigger patterns
 
 | Skill | Status | Notes |
 |---|---|---|
-| `vault-init` | ✅ full | Resolves assets via `~/.codex/obsidian-operator/...` cascade |
-| `daily-init` | ✅ full | Hook + Gmail MCP both required for full functionality (graceful degradation if missing) |
+| `vault-init` | ✅ full | Resolves assets via plugin cache cascade |
+| `daily-init` | ✅ full | Hook + Gmail connector both required for full functionality (graceful degradation if missing) |
 | `weekly-init`, `weekly-review` | ✅ full | No platform-specific deps |
 | `daily-github`, `daily-academic`, `ai-weekly-digest` | ✅ full | `WebSearch` / `WebFetch` are native on Codex |
 | `quarterly-plan`, `annual-vision` | ✅ full | osascript runs on macOS regardless of platform |
@@ -25,16 +25,22 @@ Slash commands are not enforced — they're just one of several trigger patterns
 | `project-init`, `project-sync`, `deadline-plan` | ✅ full | No platform-specific deps |
 | `add-events` | ✅ full | osascript |
 | `deep-research` | ⚠️ requires `multi_agent` feature flag | Falls back to sequential if not enabled |
-| `content-extract` | ⚠️ requires Gmail MCP for newsletter step | Skips silently if missing, continues with vault sources |
+| `content-extract` | ⚠️ requires Gmail connector for newsletter step | Skips silently if missing, continues with vault sources |
 | `content-draft`, `link-enrich` | ✅ full | No platform-specific deps |
 | `using-obsidian-operator` | ✅ full | Reference container only |
 
+## Optional configuration
+
+Two optional platform integrations:
+
+- **Gmail connector** (for `/daily-init` email section and `/content-extract` newsletter step): Codex ships an official Gmail connector — enable `gmail@openai-curated` in Codex's plugin manager. No third-party MCP needed.
+- **`/deep-research` parallel agents**: Add `[features] multi_agent = true` to `~/.codex/config.toml`. If missing, the `deep-research-enforce.sh` hook emits a one-line notice at runtime and falls back to sequential thread execution.
+
 ## Cross-platform tool mapping
 
-Skills are written in Claude Code vocabulary. Codex CLI's agent maps automatically for most cases (file ops, shell, web search). For dispatch primitives (`deep-research`'s parallel agents) and Gmail MCP (different server names), see:
+Skills are written in Claude Code vocabulary. Codex CLI's agent maps automatically for most cases (file ops, shell, web search). For dispatch primitives (`deep-research`'s parallel agents) see:
 
-- `skills/using-obsidian-operator/references/codex-tools.md`
-- `skills/using-obsidian-operator/references/codex-mcp.md`
+- `plugins/obsidian-operator/skills/using-obsidian-operator/references/codex-tools.md`
 
 ## Why Codex App is not supported
 
@@ -56,18 +62,22 @@ A future `vault-init --check` mode could detect drift; not implemented yet.
 
 ### Skills not appearing
 
+Check that the plugin is installed and enabled:
+
 ```bash
-ls -la ~/.agents/skills/obsidian-operator       # symlink resolves to your clone?
-ls ~/.codex/obsidian-operator/skills/ | wc -l   # 20?
+grep -A1 'obsidian-operator' ~/.codex/config.toml
+# Expected: [plugins."obsidian-operator@..."] enabled = true
 ```
 
-Restart Codex if the symlink is correct but skills don't activate.
+If missing, run `codex plugin marketplace add yuhanwang14/obsidian-operator` and enable in plugin manager.
 
 ### Hook not firing on `/daily-init`
 
 ```bash
+# Resolve plugin cache path (varies by version):
+PLUGIN_DIR=$(ls -d ~/.codex/plugins/cache/obsidian-operator/obsidian-operator/*/plugins/obsidian-operator 2>/dev/null | sort -V | tail -1)
 echo '{"hook_event_name":"UserPromptSubmit","prompt":"/daily-init"}' \
-  | bash ~/.codex/obsidian-operator/hooks/preflight-enforce.sh
+  | bash "$PLUGIN_DIR/hooks/preflight-enforce.sh"
 ```
 
 Should output JSON containing `hookSpecificOutput.additionalContext` if any boundary artifact is missing in your vault.
@@ -80,3 +90,20 @@ Verify `~/.codex/config.toml` contains:
 multi_agent = true
 ```
 Restart Codex after editing.
+
+## Upgrading from v1.9.x manual install
+
+If you previously followed `.codex/INSTALL.md` (clone + symlink + manual hook registration), clean up before adopting v2.0.0:
+
+```bash
+rm ~/.agents/skills/obsidian-operator                         # stale skill discovery symlink
+# remove the old obsidian-operator entry from ~/.codex/hooks.json (manual)
+# (optional) rm -rf ~/.codex/obsidian-operator                 # old clone path
+```
+
+Then install via the new flow:
+
+```bash
+codex plugin marketplace add yuhanwang14/obsidian-operator
+# enable obsidian-operator in Codex's plugin manager
+```

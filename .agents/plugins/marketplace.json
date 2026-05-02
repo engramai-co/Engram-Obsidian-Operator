@@ -1,0 +1,20 @@
+{
+  "name": "obsidian-operator",
+  "interface": {
+    "displayName": "Obsidian Operator"
+  },
+  "plugins": [
+    {
+      "name": "obsidian-operator",
+      "source": {
+        "source": "local",
+        "path": "./plugins/obsidian-operator"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

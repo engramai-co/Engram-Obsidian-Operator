@@ -25,5 +25,5 @@ logs/
 
 # Skill scratch & eval artifacts
 .workspaces/
-skills/*/evals/
+**/skills/*/evals/
 SKILL-IMPROVEMENT-STATUS.md
