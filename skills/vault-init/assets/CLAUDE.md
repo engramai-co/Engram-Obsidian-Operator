@@ -39,11 +39,12 @@ It is not a software development project; there are no build systems, test runne
   GitHub/               — daily trending repo reports (created by /daily-github)
   Academic/             — daily arXiv paper reports (created by /daily-academic)
   AI-Weekly/            — weekly AI landscape digests (created by /ai-weekly-digest)
-05_Content/             — content backlog, drafts, and published archive
+05_Content/             — content backlog, drafts, published, and archived items
   Backlog.md            — master content idea queue with pillar tags, priority-sorted by origin (P1 thinking/daily > P2 meeting > P3 newsletter/github/ai-weekly)
   Voice Guide.md        — per-format voice profiles for /content-draft
-  Drafts/               — platform-specific draft folders (created by /content-draft)
-  Published/            — archived published items
+  Drafts/               — work-in-progress drafts (created by /content-draft)
+  Published/            — drafts that shipped, kept for reference + voice calibration
+  Archived/             — drafts that were not published (moved from Drafts/ by /content-draft archive)
 ```
 
 Do not reorganize files across folders unless explicitly asked.
