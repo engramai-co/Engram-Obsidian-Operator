@@ -122,7 +122,3 @@ We'll likely decline contributions that:
 - Are too niche for general use
 
 When in doubt, open an issue to discuss before building.
-
-## Code of Conduct
-
-This project follows the [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.md). By participating, you agree to uphold it.
