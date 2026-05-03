@@ -25,7 +25,6 @@ codex plugin marketplace add yuhanwang14/obsidian-operator
 # 2. Launch Codex and enable the plugin via the TUI
 codex
 > /plugin           # opens the plugin manager — toggle obsidian-operator on
-> /vault-init       # walk through vault setup
 ```
 
 > Upgrading from v1.9.x manual install? Remove the stale symlink first: `rm ~/.agents/skills/obsidian-operator`. See [docs/README.codex.md](docs/README.codex.md#upgrading-from-v19x-manual-install) for full upgrade steps.
