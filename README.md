@@ -2,19 +2,19 @@
 
 An AI-native personal operating system built on Obsidian, Codex CLI, and Claude Code.
 
-Operator turns an Obsidian vault into a structured execution engine for daily briefings, projects, meetings, research, planning, and content. This productized build adds a native Obsidian dashboard so users can initialize the system and run common workflows without memorizing CLI commands.
+Operator turns an Obsidian vault into a structured execution engine for daily briefings, projects, meetings, research, planning, and content. This productized build adds a native **Operator Home** so users can see today's work, initialize the system, and run editable workflow shortcuts without memorizing CLI commands.
 
 This repository is based on [Yuhan Wang's Obsidian Operator](https://github.com/yuhanwang14/Obsidian-Operator) and keeps the original MIT license and skill system intact.
 
 ## Start with the Obsidian UI
 
-Use this path if you want the product experience: setup status, one-click vault initialization, project creation, and daily briefings inside Obsidian.
+Use this path if you want the product experience: setup status, one-click vault initialization, current work visibility, quick capture, editable workflow shortcuts, and daily briefings inside Obsidian.
 
 ### 1. Install prerequisites
 
 | Requirement | Required | Notes |
 |-------------|----------|-------|
-| [Obsidian](https://obsidian.md) | Yes | Desktop app required for the Operator control panel |
+| [Obsidian](https://obsidian.md) | Yes | Desktop app required for Operator Home |
 | [Codex CLI](https://developers.openai.com/codex/cli) | Yes | Default backend for one-click runs |
 | Claude Code | Optional | Detected if `claude` is available on PATH |
 | Gmail connector or MCP | Optional | Adds email context to `/daily-init` |
@@ -26,7 +26,7 @@ Log in to Codex once:
 codex login
 ```
 
-### 2. Install the Operator control panel
+### 2. Install Operator Home
 
 The Obsidian plugin lives at the repository root:
 
@@ -63,16 +63,21 @@ The dashboard will show:
 - Codex CLI and login status
 - Operator skills install status
 - Optional Gmail, Gemini, Calendar, and multi-agent status
-- Buttons for **Initialize vault**, **Create project**, and **Run daily briefing**
+- **Start my day** with available-hours and manual-items inputs
+- Active projects from `02_Projects/`, plus `## Now` next actions
+- Current-week waiting-on items and meetings from `Blockers.md`
+- Buttons for the five major workflow groups, each opening an editable Preview before the agent runs
+- Quick capture for ideas, tasks, meeting notes, and research questions
+- Last-run review with status, prompt, summary, raw log, and an expected-note opener when available
 
 ### 4. Run the first five-minute flow
 
 1. Click **Install Operator skills** if the dashboard says skills are missing.
 2. Click **Initialize vault**. This creates the six core folders plus `CLAUDE.md`, `AGENTS.md`, `05_Content/Backlog.md`, and `05_Content/Voice Guide.md` without overwriting existing files.
-3. Enter a project name and click **Create project**.
-4. Enter your available hours and click **Run daily briefing**.
+3. In **Work on project**, enter a project name and click **Create**.
+4. Enter your available hours and click **Start my day**. Review the Preview, then run it.
 
-The first background run asks for authorization. Operator launches Codex in the current vault with `workspace-write` permissions, never with full-disk or dangerous sandbox bypass settings by default.
+The first background run asks for authorization. Operator launches Codex in the current vault with `workspace-write` permissions, never with full-disk or dangerous sandbox bypass settings by default. Every workflow run now opens a Preview that shows the exact prompt and likely read/write areas before launch.
 
 ## Power User CLI Path
 

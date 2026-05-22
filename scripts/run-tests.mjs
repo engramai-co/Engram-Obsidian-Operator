@@ -1,24 +1,30 @@
 import esbuild from "esbuild";
-import { mkdirSync } from "node:fs";
+import { mkdirSync, readdirSync, rmSync } from "node:fs";
 import { builtinModules } from "node:module";
 import { spawnSync } from "node:child_process";
 
+rmSync(".test-out", { recursive: true, force: true });
 mkdirSync(".test-out", { recursive: true });
 
 const nodeExternals = builtinModules.flatMap((name) => [name, `node:${name}`]);
 
 await esbuild.build({
   bundle: true,
-  entryPoints: ["tests/runner.test.ts"],
+  entryPoints: ["tests/runner.test.ts", "tests/operator-home.test.ts"],
   external: ["obsidian", ...nodeExternals],
   format: "esm",
-  outfile: ".test-out/runner.test.mjs",
+  outdir: ".test-out",
+  outExtension: { ".js": ".mjs" },
   platform: "node",
   sourcemap: false,
   target: "node20",
 });
 
-const result = spawnSync(process.execPath, ["--test", ".test-out/runner.test.mjs"], {
+const testFiles = readdirSync(".test-out")
+  .filter((file) => file.endsWith(".mjs"))
+  .map((file) => `.test-out/${file}`);
+
+const result = spawnSync(process.execPath, ["--test", ...testFiles], {
   stdio: "inherit",
 });
 

@@ -19,6 +19,10 @@ export interface OperatorRunRecord {
   id: string;
   backend: OperatorBackend;
   prompt: string;
+  workflowLabel?: string;
+  expectedOpenPath?: string;
+  readAreas?: string[];
+  writeAreas?: string[];
   status: "running" | "success" | "failed" | "cancelled";
   startedAt: string;
   endedAt?: string;

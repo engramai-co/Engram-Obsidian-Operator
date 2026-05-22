@@ -1,7 +1,7 @@
 {
   "name": "operator-control",
-  "version": "0.1.0",
-  "description": "Obsidian desktop control panel for Obsidian Operator onboarding and daily workflows.",
+  "version": "0.2.0",
+  "description": "Obsidian desktop home dashboard for Obsidian Operator onboarding and daily workflows.",
   "main": "main.js",
   "scripts": {
     "build": "tsc -noEmit && node esbuild.config.mjs production",

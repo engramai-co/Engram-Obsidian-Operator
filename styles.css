@@ -166,6 +166,70 @@
   margin: 10px 0 0;
 }
 
+.operator-home-grid,
+.operator-workflow-grid,
+.operator-preview-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.operator-home-panel,
+.operator-workflow-card,
+.operator-preview-panel {
+  background: var(--background-secondary);
+  border: 1px solid var(--operator-border);
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.operator-home-panel h4,
+.operator-workflow-card h4 {
+  margin: 0 0 6px;
+}
+
+.operator-workflow-card {
+  align-content: start;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.operator-workflow-card p {
+  margin: 0;
+}
+
+.operator-list {
+  margin: 8px 0;
+  padding-inline-start: 18px;
+}
+
+.operator-list li {
+  margin: 0 0 8px;
+}
+
+.operator-list li > strong,
+.operator-list li > span {
+  display: block;
+}
+
+.operator-inline-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.operator-select {
+  min-height: 32px;
+}
+
+.operator-prompt-input {
+  min-height: 72px;
+  resize: vertical;
+  width: 100%;
+}
+
 .operator-advanced-list {
   display: grid;
   gap: 8px;
@@ -187,6 +251,7 @@
 }
 
 .operator-run-meta {
+  align-items: center;
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
@@ -196,6 +261,30 @@
 .operator-run-meta span {
   color: var(--text-muted);
   font-size: var(--font-ui-small);
+}
+
+.operator-run-prompt {
+  display: block;
+  margin-bottom: 8px;
+  white-space: pre-wrap;
+}
+
+.operator-run-summary {
+  background: var(--background-secondary);
+  border: 1px solid var(--operator-border);
+  border-radius: 8px;
+  margin: 8px 0;
+  padding: 10px;
+}
+
+.operator-run-summary.is-failed {
+  border-color: color-mix(in srgb, var(--operator-bad) 55%, transparent);
+  color: var(--text-error);
+}
+
+.operator-log-details summary,
+.operator-disclosure summary {
+  cursor: pointer;
 }
 
 .operator-log {
@@ -210,4 +299,28 @@
 
 .operator-consent-modal p {
   color: var(--text-muted);
+}
+
+.operator-preview-modal .operator-field {
+  margin: 12px 0;
+}
+
+.operator-preview-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.operator-preview-meta span {
+  background: var(--background-secondary);
+  border: 1px solid var(--operator-border);
+  border-radius: 999px;
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+  padding: 3px 8px;
+}
+
+.operator-preview-panel strong {
+  display: block;
+  margin-bottom: 6px;
 }
