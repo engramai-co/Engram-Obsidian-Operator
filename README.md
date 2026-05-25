@@ -2,13 +2,13 @@
 
 An AI-native personal operating system built on Obsidian, Codex CLI, and Claude Code.
 
-Operator turns an Obsidian vault into a structured execution engine for daily briefings, projects, meetings, research, planning, and content. This productized build adds a native **Operator Home** so users can see today's work, initialize the system, and run editable workflow shortcuts without memorizing CLI commands.
+Operator turns an Obsidian vault into a structured execution engine for daily briefings, projects, meetings, research, planning, and content. This productized build adds a native **Operator Home** that keeps Markdown as the primary interface: today's note, weekly queue, projects, blockers, quick capture, and agent runs are surfaced without forcing users to memorize CLI commands.
 
 This repository is based on [Yuhan Wang's Obsidian Operator](https://github.com/yuhanwang14/Obsidian-Operator) and keeps the original MIT license and skill system intact.
 
 ## Start with the Obsidian UI
 
-Use this path if you want the product experience: setup status, one-click vault initialization, current work visibility, quick capture, editable workflow shortcuts, and daily briefings inside Obsidian.
+Use this path if you want the product experience: one-click vault initialization, a Today-first Markdown home, native quick capture, native project creation, and editable agent workflows inside Obsidian.
 
 ### 1. Install prerequisites
 
@@ -59,25 +59,24 @@ Click the Operator dashboard icon in the left ribbon, or run **Operator: Open da
 
 The dashboard will show:
 
-- Vault setup status
-- Codex CLI and login status
-- Operator skills install status
-- Optional Gmail, Gemini, Calendar, and multi-agent status
-- **Start my day** with available-hours and manual-items inputs
+- **Today** from the current daily note: `## Focus`, `### Action Items`, `## Schedule`, and the current weekly queue
+- **Start my day** with available-hours and manual-items inputs, opening an editable Preview before the agent runs
+- Native **Quick Capture** for ideas, tasks, meeting notes, and research questions without leaving Operator Home
 - Active projects from `02_Projects/`, plus `## Now` next actions
-- Current-week waiting-on items and meetings from `Blockers.md`
-- Buttons for the five major workflow groups, each opening an editable Preview before the agent runs
-- Quick capture for ideas, tasks, meeting notes, and research questions
-- Last-run review with status, prompt, summary, raw log, and an expected-note opener when available
+- Current-week meetings and waiting-on items from `Blockers.md`
+- Native project creation that writes `02_Projects/<Project>/<Project>.md` and `04_Knowledge/<Project>/` directly
+- Collapsed advanced workflows for weekly planning/review, project sync, deadline plans, meetings, content, research, and custom prompts
+- Collapsed setup health for Codex, skills, optional integrations, and vault initialization state
+- Last-run review with status, summary, raw log, and an expected-note opener when available
 
 ### 4. Run the first five-minute flow
 
 1. Click **Install Operator skills** if the dashboard says skills are missing.
 2. Click **Initialize vault**. This creates the six core folders plus `CLAUDE.md`, `AGENTS.md`, `05_Content/Backlog.md`, and `05_Content/Voice Guide.md` without overwriting existing files.
-3. In **Work on project**, enter a project name and click **Create**.
+3. In **Active projects**, click **New** and create a native Markdown project note.
 4. Enter your available hours and click **Start my day**. Review the Preview, then run it.
 
-The first background run asks for authorization. Operator launches Codex in the current vault with `workspace-write` permissions, never with full-disk or dangerous sandbox bypass settings by default. Every workflow run now opens a Preview that shows the exact prompt and likely read/write areas before launch.
+The first background run asks for authorization. Operator launches Codex in the current vault with `workspace-write` permissions, never with full-disk or dangerous sandbox bypass settings by default. Fixed structural tasks such as vault initialization, quick capture, and new project scaffolding run through the Obsidian API; reasoning-heavy work such as daily briefings, project sync, meeting synthesis, content drafting, and deep research still runs through editable agent previews.
 
 ## Power User CLI Path
 

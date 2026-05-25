@@ -6,6 +6,26 @@ export interface ActiveProjectSummary {
   nextActions: string[];
 }
 
+export interface MarkdownActionItem {
+  text: string;
+  raw: string;
+}
+
+export interface DailyNoteSummary {
+  exists: boolean;
+  focus: string[];
+  tasks: MarkdownActionItem[];
+  carriedForward: MarkdownActionItem[];
+  schedule: string[];
+  captureCount: number;
+}
+
+export interface WeeklyTodoSummary {
+  exists: boolean;
+  openTasks: MarkdownActionItem[];
+  carriedForward: MarkdownActionItem[];
+}
+
 export interface WaitingOnItem {
   text: string;
   raw: string;
@@ -109,6 +129,74 @@ export function parseBlockers(markdown: string, today = new Date(), projectNames
   return { waitingOn, meetings };
 }
 
+export function parseDailyNote(markdown: string, exists = markdown.trim().length > 0): DailyNoteSummary {
+  const focus = extractHeadingSection(markdown, "Focus")
+    .split("\n")
+    .map(cleanMarkdownLine)
+    .filter(Boolean)
+    .slice(0, 5);
+
+  const taskLines = [
+    extractHeadingSection(markdown, "Tasks"),
+    extractHeadingSectionAtAnyLevel(markdown, "Action Items"),
+    extractHeadingSectionAtAnyLevel(markdown, "Next Actions"),
+  ].join("\n");
+  const parsedTasks = taskLines
+    .split("\n")
+    .map(parseTaskLine)
+    .filter((item): item is ParsedTaskLine => !!item);
+
+  const schedule = [
+    extractHeadingSection(markdown, "Schedule"),
+    extractHeadingSection(markdown, "Time Blocks"),
+    extractHeadingSection(markdown, "Calendar"),
+  ]
+    .join("\n")
+    .split("\n")
+    .map(cleanMarkdownLine)
+    .filter(Boolean)
+    .slice(0, 8);
+
+  const captureCount = extractHeadingSection(markdown, "Capture")
+    .split("\n")
+    .map(cleanMarkdownLine)
+    .filter(Boolean).length;
+
+  return {
+    exists,
+    focus,
+    tasks: parsedTasks
+      .filter((item) => item.checked.trim() === "")
+      .map(taskLineToActionItem)
+      .slice(0, 8),
+    carriedForward: parsedTasks
+      .filter((item) => item.checked.trim() === ">")
+      .map(taskLineToActionItem)
+      .slice(0, 8),
+    schedule,
+    captureCount,
+  };
+}
+
+export function parseWeeklyTodo(markdown: string, exists = markdown.trim().length > 0): WeeklyTodoSummary {
+  const parsedTasks = markdown
+    .split("\n")
+    .map(parseTaskLine)
+    .filter((item): item is ParsedTaskLine => !!item);
+
+  return {
+    exists,
+    openTasks: parsedTasks
+      .filter((item) => item.checked.trim() === "")
+      .map(taskLineToActionItem)
+      .slice(0, 12),
+    carriedForward: parsedTasks
+      .filter((item) => item.checked.trim() === ">")
+      .map(taskLineToActionItem)
+      .slice(0, 8),
+  };
+}
+
 export function extractHeadingSection(markdown: string, heading: string, level = 2): string {
   const lines = markdown.split(/\r?\n/);
   const marker = `${"#".repeat(level)} ${heading}`.toLowerCase();
@@ -117,6 +205,31 @@ export function extractHeadingSection(markdown: string, heading: string, level =
     return "";
   }
 
+  const section: string[] = [];
+  const headingPattern = /^#{1,6}\s+/;
+  for (let index = start + 1; index < lines.length; index += 1) {
+    const line = lines[index] ?? "";
+    if (headingPattern.test(line.trim())) {
+      const nextLevel = line.trim().match(/^#+/)?.[0].length ?? 6;
+      if (nextLevel <= level) {
+        break;
+      }
+    }
+    section.push(line);
+  }
+
+  return section.join("\n").trim();
+}
+
+export function extractHeadingSectionAtAnyLevel(markdown: string, heading: string): string {
+  const lines = markdown.split(/\r?\n/);
+  const markerPattern = new RegExp(`^#{1,6}\\s+${escapeRegExp(heading)}\\s*$`, "i");
+  const start = lines.findIndex((line) => markerPattern.test(line.trim()));
+  if (start === -1) {
+    return "";
+  }
+
+  const level = lines[start].trim().match(/^#+/)?.[0].length ?? 2;
   const section: string[] = [];
   const headingPattern = /^#{1,6}\s+/;
   for (let index = start + 1; index < lines.length; index += 1) {
@@ -174,6 +287,13 @@ function parseTaskLine(line: string): ParsedTaskLine | null {
     checked: match[1],
     text: match[2],
     raw: line,
+  };
+}
+
+function taskLineToActionItem(item: ParsedTaskLine): MarkdownActionItem {
+  return {
+    raw: item.raw,
+    text: cleanMarkdownLine(item.text),
   };
 }
 
@@ -236,4 +356,8 @@ function classifyMeetingDate(date: Date, today: Date): { dateIso: string; timing
 function detectProjectName(text: string, projectNames: string[]): string | undefined {
   const lowerText = text.toLowerCase();
   return projectNames.find((name) => lowerText.includes(name.toLowerCase()));
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }

@@ -50,6 +50,7 @@
 .operator-hero-actions,
 .operator-controls-row,
 .operator-form-row,
+.operator-command-strip,
 .operator-modal-actions {
   align-items: flex-end;
   display: flex;
@@ -168,6 +169,7 @@
 
 .operator-home-grid,
 .operator-workflow-grid,
+.operator-today-grid,
 .operator-preview-grid {
   display: grid;
   gap: 10px;
@@ -176,6 +178,7 @@
 
 .operator-home-panel,
 .operator-workflow-card,
+.operator-note-panel,
 .operator-preview-panel {
   background: var(--background-secondary);
   border: 1px solid var(--operator-border);
@@ -184,8 +187,37 @@
 }
 
 .operator-home-panel h4,
-.operator-workflow-card h4 {
+.operator-workflow-card h4,
+.operator-note-panel h4 {
   margin: 0 0 6px;
+}
+
+.operator-today-section {
+  border-color: color-mix(in srgb, var(--text-accent) 28%, var(--operator-border));
+}
+
+.operator-command-strip {
+  margin-bottom: 12px;
+}
+
+.operator-focus-panel {
+  background: var(--background-primary-alt);
+}
+
+.operator-panel-title-row {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.operator-panel-title-row h4 {
+  margin: 0;
+}
+
+.operator-quiet-button {
+  font-size: var(--font-ui-small);
 }
 
 .operator-workflow-card {
@@ -206,6 +238,10 @@
 
 .operator-list li {
   margin: 0 0 8px;
+}
+
+.operator-plain-list {
+  margin-bottom: 0;
 }
 
 .operator-list li > strong,
@@ -302,6 +338,10 @@
 }
 
 .operator-preview-modal .operator-field {
+  margin: 12px 0;
+}
+
+.operator-project-modal .operator-field {
   margin: 12px 0;
 }
 
