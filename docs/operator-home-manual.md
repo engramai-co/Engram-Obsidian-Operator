@@ -39,6 +39,7 @@ codex login
 ## Daily Use
 
 - **Today** shows the current daily note's `## Focus`, `### Action Items`, `## Schedule`, and current weekly queue.
+- Edit task state in the Markdown note itself. Operator Home intentionally does not turn tasks into a CRM-style task manager.
 - **Quick Capture** appends ideas, tasks, meeting notes, or research questions to today's note without launching an agent.
 - **Active projects** shows active project notes from `02_Projects/` and each note's `## Now` section.
 - **Meetings** and **Waiting on** come from the current week's `Blockers.md`.
@@ -66,6 +67,7 @@ Open **More workflows** for less frequent or reasoning-heavy work:
 - **Prep / Process meeting** for agendas, transcripts, decisions, and actions.
 - **Extract ideas / Draft / Deep research** for content and research workflows.
 - **Agent prompt / CLI command** for raw slash commands or freeform prompts.
+- **Copy CLI handoff** copies the vault `cd` command plus the prompt so power users can continue in Codex CLI without the Obsidian UI getting in the way.
 
 Every agent workflow opens a Preview showing the exact prompt and likely read/write areas before launching Codex or Claude.
 

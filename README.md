@@ -75,7 +75,7 @@ The dashboard will show:
 - Active projects from `02_Projects/`, plus `## Now` next actions
 - Current-week meetings and waiting-on items from `Blockers.md`
 - Native project creation that writes `02_Projects/<Project>/<Project>.md` and `04_Knowledge/<Project>/` directly
-- Collapsed advanced workflows for weekly planning/review, project sync, deadline plans, meetings, content, research, custom prompts, and legacy slash commands such as `/project-init`
+- Collapsed advanced workflows for weekly planning/review, project sync, deadline plans, meetings, content, research, custom prompts, CLI handoff, and legacy slash commands such as `/project-init`
 - Collapsed setup health for Codex, skills, optional integrations, and vault initialization state
 - Last-run review with status, summary, raw log, and an expected-note opener when available
 

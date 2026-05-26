@@ -418,7 +418,8 @@ class OperatorDashboardView extends ItemView {
     }
 
     if (!status.vault.ready) {
-      this.renderSetup(root, status, false);
+      this.renderOnboarding(root, status);
+      this.renderSetup(root, status, true);
       this.renderRunLog(root);
       return;
     }
@@ -429,6 +430,48 @@ class OperatorDashboardView extends ItemView {
     this.renderWorkflowShortcuts(root, status, home);
     this.renderSetup(root, status, true);
     this.renderRunLog(root);
+  }
+
+  private renderOnboarding(root: HTMLElement, status: OperatorEnvironmentStatus): void {
+    const section = createSection(root, "Get started", "Set up the Markdown system once, then use Operator Home as a light native control layer.");
+    const steps = section.createDiv({ cls: "operator-onboarding-grid" });
+
+    renderStepCard(
+      steps,
+      "1",
+      "Install skills",
+      status.operatorSkills === "ready" ? "Operator skills are installed." : "Install or update the Codex skill bundle.",
+      status.operatorSkills === "ready" ? "ready" : "needed",
+    );
+    renderStepCard(
+      steps,
+      "2",
+      "Initialize vault",
+      status.vault.ready ? "Core folders and agent config are present." : "Create the folders, AGENTS.md, CLAUDE.md, and starter content files.",
+      status.vault.ready ? "ready" : "needed",
+    );
+    renderStepCard(
+      steps,
+      "3",
+      "Start day",
+      canRunCodexWorkflows(status) ? "Daily briefing is ready to run." : "Start my day unlocks after Codex, login, skills, and vault setup are ready.",
+      canRunCodexWorkflows(status) ? "ready" : "locked",
+    );
+
+    const controls = section.createDiv({ cls: "operator-controls-row" });
+    createButton(controls, "download", status.operatorSkills === "ready" || status.operatorSkills === "warning" ? "Update Operator skills" : "Install Operator skills", () => {
+      void this.plugin.installOrUpdateCodexMarketplace();
+    }, undefined, status.codexCli !== "ready" || !!this.plugin.activeRun);
+    createButton(controls, "folder-check", status.vault.ready ? "Refresh vault setup" : "Initialize vault", () => {
+      void this.plugin.initializeVaultFromUi();
+    }, "mod-cta", !!this.plugin.activeRun);
+
+    if (status.codexCli !== "ready" || status.codexLogin !== "ready") {
+      section.createEl("p", {
+        cls: "operator-help",
+        text: "Codex CLI and login are required before agent workflows can run. Setup health below shows the exact missing piece.",
+      });
+    }
   }
 
   private renderSetup(root: HTMLElement, status: OperatorEnvironmentStatus, collapsed: boolean): void {
@@ -661,6 +704,10 @@ class OperatorDashboardView extends ItemView {
       cls: "operator-prompt-input",
       attr: { rows: "3", placeholder: "/daily-init 6, /project-init MyProject, or review a note" },
     });
+    createButton(advanced, "copy", "Copy CLI handoff", () => {
+      const prompt = custom.value.trim() || "/daily-init 6";
+      void copyTextToClipboard(buildCliHandoff(this.plugin.getVaultPath(), prompt), "CLI handoff copied.");
+    });
     createButton(advanced, "terminal", "Preview and run", () => {
       const prompt = requireInput(custom, "a prompt");
       if (prompt) {
@@ -885,6 +932,9 @@ class RunPreviewModal extends Modal {
       this.resolve(null);
       this.close();
     });
+    createButton(row, "copy", "Copy prompt", () => {
+      void copyTextToClipboard(promptInput.value, "Prompt copied.");
+    });
     createButton(row, "play", "Run", () => {
       const edited = describePrompt(promptInput.value);
       this.resolve({
@@ -1034,6 +1084,24 @@ function requireInput(input: HTMLInputElement | HTMLTextAreaElement, label: stri
   return null;
 }
 
+function buildCliHandoff(vaultPath: string | null, prompt: string): string {
+  const cdLine = vaultPath ? `cd ${shellQuote(vaultPath)}` : "cd <your-vault-path>";
+  return `${cdLine}\ncodex\n# paste into Codex: ${prompt}`;
+}
+
+function shellQuote(value: string): string {
+  return `'${value.replace(/'/g, "'\\''")}'`;
+}
+
+async function copyTextToClipboard(value: string, successMessage: string): Promise<void> {
+  try {
+    await navigator.clipboard.writeText(value);
+    new Notice(successMessage);
+  } catch (error) {
+    new Notice(`Copy failed: ${formatError(error)}`);
+  }
+}
+
 function createButton(
   parent: HTMLElement,
   icon: string,
@@ -1075,6 +1143,20 @@ function renderStatusTile(
   header.createSpan({ text: label });
   header.createSpan({ cls: "operator-chip", text: optional && state === "missing" ? "optional" : state });
   tile.createEl("p", { text: detail });
+}
+
+function renderStepCard(
+  parent: HTMLElement,
+  step: string,
+  title: string,
+  detail: string,
+  state: "ready" | "needed" | "locked",
+): void {
+  const card = parent.createDiv({ cls: `operator-step-card is-${state}` });
+  const header = card.createDiv({ cls: "operator-step-header" });
+  header.createSpan({ cls: "operator-step-number", text: step });
+  header.createEl("strong", { text: title });
+  card.createEl("p", { text: detail });
 }
 
 function renderAdvancedItem(
