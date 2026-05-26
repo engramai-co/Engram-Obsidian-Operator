@@ -587,7 +587,7 @@ class OperatorDashboardView extends ItemView {
   }
 
   private renderWorkflowShortcuts(root: HTMLElement, status: OperatorEnvironmentStatus, home: OperatorHomeState): void {
-    const section = createDisclosureSection(root, "More workflows", "Agent workflows stay available, but the daily surface stays Markdown-first.");
+    const section = createDisclosureSection(root, "More workflows", "Native actions handle fixed structure; agent workflows and CLI-style prompts stay available here.");
     const canRun = this.canRun(status);
     const grid = section.createDiv({ cls: "operator-workflow-grid" });
 
@@ -599,9 +599,15 @@ class OperatorDashboardView extends ItemView {
       void this.plugin.previewAndRunWorkflow(buildWorkflowSpec("weekly-review"));
     }, undefined, !canRun);
 
-    const project = createWorkflowCard(grid, "Work on project", "Create, sync, or deadline-plan a project.");
+    const project = createWorkflowCard(grid, "Work on project", "Create structure natively, or run agent workflows when context needs synthesis.");
     const projectInput = createInlineInput(project, "Project name", "Customer Discovery", home.activeProjects[0]?.name ?? "");
-    createButton(project, "folder-plus", "Create natively", () => void this.plugin.openProjectCreation(projectInput.value));
+    createButton(project, "folder-plus", "New project", () => void this.plugin.openProjectCreation(projectInput.value));
+    createButton(project, "terminal", "Run /project-init", () => {
+      const projectName = requireInput(projectInput, "a project name");
+      if (projectName) {
+        void this.plugin.previewAndRunWorkflow(buildWorkflowSpec("project-init", projectName));
+      }
+    }, undefined, !canRun);
     createButton(project, "refresh-cw", "Sync", () => {
       const projectName = requireInput(projectInput, "a project name");
       if (projectName) {
@@ -650,10 +656,10 @@ class OperatorDashboardView extends ItemView {
       }
     }, undefined, !canRun);
 
-    const advanced = createWorkflowCard(grid, "Advanced prompt", "Keep the full skill surface reachable.");
+    const advanced = createWorkflowCard(grid, "Agent prompt / CLI command", "Run any slash command or freeform agent prompt without leaving Obsidian.");
     const custom = advanced.createEl("textarea", {
       cls: "operator-prompt-input",
-      attr: { rows: "3", placeholder: "/daily-init 6, review grant proposal" },
+      attr: { rows: "3", placeholder: "/daily-init 6, /project-init MyProject, or review a note" },
     });
     createButton(advanced, "terminal", "Preview and run", () => {
       const prompt = requireInput(custom, "a prompt");
@@ -910,7 +916,7 @@ class NativeProjectModal extends Modal {
     contentEl.createEl("h2", { text: "Create project" });
     contentEl.createEl("p", {
       cls: "operator-muted",
-      text: "This is a native Obsidian action: it creates the Markdown project note and knowledge folder directly.",
+      text: "This native fast path creates the Markdown project note and knowledge folder directly. Use /project-init from More workflows if you want the agent-guided path.",
     });
 
     const nameInput = createInlineInput(contentEl, "Project name", "Customer Discovery", this.initialName);

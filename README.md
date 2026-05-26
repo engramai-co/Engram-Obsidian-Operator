@@ -6,6 +6,16 @@ Operator turns an Obsidian vault into a structured execution engine for daily br
 
 This repository is based on [Yuhan Wang's Obsidian Operator](https://github.com/yuhanwang14/Obsidian-Operator) and keeps the original MIT license and skill system intact.
 
+## Product Model
+
+Operator has three interaction layers:
+
+- **Native Obsidian actions** for fixed structure: vault initialization, quick capture, new project scaffolding, and opening key Markdown notes.
+- **Agent workflows** for reasoning-heavy work: daily briefings, weekly reviews, project sync, meeting synthesis, content drafting, and deep research.
+- **CLI power path** for open-ended work: Codex CLI and Claude Code remain available for multi-turn conversations, ad hoc prompts, and raw slash commands.
+
+For a compact end-user guide, see [Operator Home Manual](docs/operator-home-manual.md).
+
 ## Start with the Obsidian UI
 
 Use this path if you want the product experience: one-click vault initialization, a Today-first Markdown home, native quick capture, native project creation, and editable agent workflows inside Obsidian.
@@ -65,7 +75,7 @@ The dashboard will show:
 - Active projects from `02_Projects/`, plus `## Now` next actions
 - Current-week meetings and waiting-on items from `Blockers.md`
 - Native project creation that writes `02_Projects/<Project>/<Project>.md` and `04_Knowledge/<Project>/` directly
-- Collapsed advanced workflows for weekly planning/review, project sync, deadline plans, meetings, content, research, and custom prompts
+- Collapsed advanced workflows for weekly planning/review, project sync, deadline plans, meetings, content, research, custom prompts, and legacy slash commands such as `/project-init`
 - Collapsed setup health for Codex, skills, optional integrations, and vault initialization state
 - Last-run review with status, summary, raw log, and an expected-note opener when available
 
