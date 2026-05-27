@@ -1,16 +1,24 @@
-import { App, normalizePath, TFile } from "obsidian";
+import type { App, TFile } from "obsidian";
 import { getDailyNotePath, getExecutionWeekFolder } from "./dates";
 import {
   type ActiveProjectSummary,
   type BlockersSummary,
+  type DailyNoteSummary,
+  type MeetingItem,
+  type WeeklyTodoSummary,
   parseActiveProjectNote,
   parseBlockers,
+  parseDailyNote,
+  parseWeeklyTodo,
 } from "./vault-parsers";
 
 export interface OperatorHomeState {
   weekFolder: string;
   dailyNotePath: string;
+  weeklyTodoPath: string;
   blockersPath: string;
+  daily: DailyNoteSummary;
+  weeklyTodo: WeeklyTodoSummary;
   activeProjects: ActiveProjectSummary[];
   blockers: BlockersSummary;
 }
@@ -18,16 +26,29 @@ export interface OperatorHomeState {
 export async function readOperatorHomeState(app: App, date = new Date()): Promise<OperatorHomeState> {
   const activeProjects = await readActiveProjects(app);
   const weekFolder = getExecutionWeekFolder(date);
+  const dailyNotePath = getDailyNotePath(date);
+  const weeklyTodoPath = `${weekFolder}/Weekly Todo.md`;
   const blockersPath = `${weekFolder}/Blockers.md`;
+  const dailyFile = app.vault.getAbstractFileByPath(dailyNotePath);
+  const weeklyTodoFile = app.vault.getAbstractFileByPath(weeklyTodoPath);
   const blockersFile = app.vault.getAbstractFileByPath(blockersPath);
-  const blockersMarkdown = blockersFile instanceof TFile ? await app.vault.read(blockersFile) : "";
+  const dailyMarkdown = isVaultFile(dailyFile) ? await app.vault.read(dailyFile) : "";
+  const weeklyTodoMarkdown = isVaultFile(weeklyTodoFile) ? await app.vault.read(weeklyTodoFile) : "";
+  const blockersMarkdown = isVaultFile(blockersFile) ? await app.vault.read(blockersFile) : "";
+  const blockers = parseBlockers(blockersMarkdown, date, activeProjects.map((project) => project.name));
 
   return {
     weekFolder,
-    dailyNotePath: getDailyNotePath(date),
+    dailyNotePath,
+    weeklyTodoPath,
     blockersPath,
+    daily: parseDailyNote(dailyMarkdown, isVaultFile(dailyFile)),
+    weeklyTodo: parseWeeklyTodo(weeklyTodoMarkdown, isVaultFile(weeklyTodoFile)),
     activeProjects,
-    blockers: parseBlockers(blockersMarkdown, date, activeProjects.map((project) => project.name)),
+    blockers: {
+      waitingOn: blockers.waitingOn,
+      meetings: sortMeetingsForToday(blockers.meetings),
+    },
   };
 }
 
@@ -69,7 +90,7 @@ async function readActiveProjects(app: App): Promise<ActiveProjectSummary[]> {
 
 async function ensureDailyNote(app: App, path: string, date: Date): Promise<TFile> {
   const existing = app.vault.getAbstractFileByPath(path);
-  if (existing instanceof TFile) {
+  if (isVaultFile(existing)) {
     return existing;
   }
   if (existing) {
@@ -80,7 +101,7 @@ async function ensureDailyNote(app: App, path: string, date: Date): Promise<TFil
 }
 
 async function ensureFolderPath(app: App, folderPath: string): Promise<void> {
-  const segments = normalizePath(folderPath).split("/");
+  const segments = normalizeVaultPath(folderPath).split("/");
   let current = "";
   for (const segment of segments) {
     current = current ? `${current}/${segment}` : segment;
@@ -88,6 +109,14 @@ async function ensureFolderPath(app: App, folderPath: string): Promise<void> {
       await app.vault.createFolder(current);
     }
   }
+}
+
+function normalizeVaultPath(path: string): string {
+  return path.replace(/\\/g, "/").replace(/\/+/g, "/").replace(/^\/|\/$/g, "");
+}
+
+function isVaultFile(value: unknown): value is TFile {
+  return !!value && typeof value === "object" && "extension" in value;
 }
 
 function insertUnderCapture(markdown: string, line: string): string {
@@ -111,4 +140,22 @@ function formatCaptureLine(kind: "idea" | "task" | "meeting" | "research", text:
     default:
       return `- Idea: ${text}`;
   }
+}
+
+function sortMeetingsForToday(meetings: MeetingItem[]): MeetingItem[] {
+  const rank: Record<MeetingItem["timing"], number> = {
+    today: 0,
+    tomorrow: 1,
+    upcoming: 2,
+    unknown: 3,
+    past: 4,
+  };
+
+  return [...meetings].sort((a, b) => {
+    const rankDelta = rank[a.timing] - rank[b.timing];
+    if (rankDelta !== 0) {
+      return rankDelta;
+    }
+    return (a.dateIso ?? "9999-99-99").localeCompare(b.dateIso ?? "9999-99-99");
+  });
 }

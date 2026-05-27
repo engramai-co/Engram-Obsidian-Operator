@@ -17,6 +17,7 @@ import {
 } from "obsidian";
 import { formatDateKey } from "./dates";
 import { appendQuickCapture, readOperatorHomeState, type OperatorHomeState } from "./home-state";
+import { createNativeProject, normalizeProjectName, type NativeProjectInput } from "./projects";
 import {
   buildBackendCommand,
   buildCodexMarketplaceAddCommand,
@@ -173,7 +174,27 @@ export default class OperatorControlPlugin extends Plugin {
       new Notice("Enter a project name first.");
       return;
     }
-    await this.previewAndRunWorkflow(buildWorkflowSpec("project-init", trimmed));
+    await this.openProjectCreation(trimmed);
+  }
+
+  async openProjectCreation(projectName = ""): Promise<void> {
+    new NativeProjectModal(this.app, projectName, (input) => {
+      if (input) {
+        void this.createProjectFromUi(input);
+      }
+    }).open();
+  }
+
+  async createProjectFromUi(input: NativeProjectInput): Promise<void> {
+    try {
+      const result = await createNativeProject(this.app, input);
+      new Notice(`Project created at ${result.notePath}.`);
+      await this.openVaultPath(result.notePath);
+      await this.refreshStatus();
+      this.renderViews();
+    } catch (error) {
+      new Notice(`Project setup failed: ${formatError(error)}`);
+    }
   }
 
   async previewAndRunWorkflow(spec: OperatorWorkflowRunSpec): Promise<void> {
@@ -251,7 +272,6 @@ export default class OperatorControlPlugin extends Plugin {
     try {
       const path = await appendQuickCapture(this.app, kind, text);
       new Notice(`Captured to ${path}.`);
-      await this.openVaultPath(path);
       this.renderViews();
     } catch (error) {
       new Notice(`Capture failed: ${formatError(error)}`);
@@ -376,14 +396,19 @@ class OperatorDashboardView extends ItemView {
     container.empty();
     container.addClass("operator-control-view");
 
+    const status = this.plugin.status ?? (await this.plugin.refreshStatus());
+    const home = await readOperatorHomeState(this.app);
+
     const root = container.createDiv({ cls: "operator-control" });
     const header = root.createDiv({ cls: "operator-hero" });
     const titleWrap = header.createDiv();
-    titleWrap.createEl("p", { cls: "operator-eyebrow", text: "Operator Home" });
-    titleWrap.createEl("h2", { text: "Know what to do next, without memorizing commands." });
+    titleWrap.createEl("p", { cls: "operator-eyebrow", text: "Operator" });
+    titleWrap.createEl("h2", { text: "Today in your vault" });
     titleWrap.createEl("p", {
       cls: "operator-muted",
-      text: "Read the vault, launch existing workflows, and review agent runs without turning Operator into a closed app.",
+      text: status.vault.ready
+        ? `${formatDateKey(new Date())} · ${home.dailyNotePath}`
+        : "Initialize the Markdown structure once, then use the vault itself as the interface.",
     });
 
     const headerActions = header.createDiv({ cls: "operator-hero-actions" });
@@ -392,21 +417,61 @@ class OperatorDashboardView extends ItemView {
       createButton(headerActions, "square", "Cancel run", () => this.plugin.cancelActiveRun(), "operator-danger");
     }
 
-    const status = this.plugin.status ?? (await this.plugin.refreshStatus());
-    const home = await readOperatorHomeState(this.app);
-
     if (!status.vault.ready) {
-      this.renderSetup(root, status, false);
+      this.renderOnboarding(root, status);
+      this.renderSetup(root, status, true);
       this.renderRunLog(root);
       return;
     }
 
-    this.renderStartDay(root, status);
+    this.renderToday(root, status, home);
+    this.renderQuickCapture(root, home);
     this.renderHomePanels(root, home);
     this.renderWorkflowShortcuts(root, status, home);
-    this.renderQuickCapture(root);
     this.renderSetup(root, status, true);
     this.renderRunLog(root);
+  }
+
+  private renderOnboarding(root: HTMLElement, status: OperatorEnvironmentStatus): void {
+    const section = createSection(root, "Get started", "Set up the Markdown system once, then use Operator Home as a light native control layer.");
+    const steps = section.createDiv({ cls: "operator-onboarding-grid" });
+
+    renderStepCard(
+      steps,
+      "1",
+      "Install skills",
+      status.operatorSkills === "ready" ? "Operator skills are installed." : "Install or update the Codex skill bundle.",
+      status.operatorSkills === "ready" ? "ready" : "needed",
+    );
+    renderStepCard(
+      steps,
+      "2",
+      "Initialize vault",
+      status.vault.ready ? "Core folders and agent config are present." : "Create the folders, AGENTS.md, CLAUDE.md, and starter content files.",
+      status.vault.ready ? "ready" : "needed",
+    );
+    renderStepCard(
+      steps,
+      "3",
+      "Start day",
+      canRunCodexWorkflows(status) ? "Daily briefing is ready to run." : "Start my day unlocks after Codex, login, skills, and vault setup are ready.",
+      canRunCodexWorkflows(status) ? "ready" : "locked",
+    );
+
+    const controls = section.createDiv({ cls: "operator-controls-row" });
+    createButton(controls, "download", status.operatorSkills === "ready" || status.operatorSkills === "warning" ? "Update Operator skills" : "Install Operator skills", () => {
+      void this.plugin.installOrUpdateCodexMarketplace();
+    }, undefined, status.codexCli !== "ready" || !!this.plugin.activeRun);
+    createButton(controls, "folder-check", status.vault.ready ? "Refresh vault setup" : "Initialize vault", () => {
+      void this.plugin.initializeVaultFromUi();
+    }, "mod-cta", !!this.plugin.activeRun);
+
+    if (status.codexCli !== "ready" || status.codexLogin !== "ready") {
+      section.createEl("p", {
+        cls: "operator-help",
+        text: "Codex CLI and login are required before agent workflows can run. Setup health below shows the exact missing piece.",
+      });
+    }
   }
 
   private renderSetup(root: HTMLElement, status: OperatorEnvironmentStatus, collapsed: boolean): void {
@@ -435,9 +500,13 @@ class OperatorDashboardView extends ItemView {
     }, "mod-cta", !!this.plugin.activeRun);
   }
 
-  private renderStartDay(root: HTMLElement, status: OperatorEnvironmentStatus): void {
-    const section = createSection(root, "Start Day", "One editable shortcut into the existing /daily-init workflow.");
-    const row = section.createDiv({ cls: "operator-form-row" });
+  private renderToday(root: HTMLElement, status: OperatorEnvironmentStatus, home: OperatorHomeState): void {
+    const section = createSection(root, "Today", home.daily.exists
+      ? "Markdown remains the workspace. Operator only surfaces the note's current state."
+      : "No daily note yet. Start a briefing or capture something to create it.");
+    section.addClass("operator-today-section");
+
+    const row = section.createDiv({ cls: "operator-command-strip" });
     const hoursWrap = row.createDiv({ cls: "operator-field" });
     hoursWrap.createEl("label", { text: "Available hours" });
     const hoursInput = hoursWrap.createEl("input", {
@@ -466,6 +535,8 @@ class OperatorDashboardView extends ItemView {
     createButton(row, "sun", "Start my day", () => {
       void this.plugin.runDailyBriefing(Number(hoursInput.value) || this.plugin.settings.availableHours, manualInput.value);
     }, "mod-cta", !canRun);
+    createButton(row, "file-text", "Open today", () => void this.plugin.openVaultPath(home.dailyNotePath), undefined, !home.daily.exists);
+    createButton(row, "list-checks", "Open week", () => void this.plugin.openVaultPath(home.weeklyTodoPath), undefined, !home.weeklyTodo.exists);
 
     if (!canRun) {
       section.createEl("p", {
@@ -473,19 +544,46 @@ class OperatorDashboardView extends ItemView {
         text: "Daily briefing unlocks after Codex, login, Operator skills, and vault setup are ready.",
       });
     }
+
+    const grid = section.createDiv({ cls: "operator-today-grid" });
+    const focus = grid.createDiv({ cls: "operator-note-panel operator-focus-panel" });
+    focus.createEl("h4", { text: "Focus" });
+    renderTextList(focus, home.daily.focus, home.daily.exists ? "No ## Focus section yet." : "Start my day will write today's focus.");
+
+    const tasks = grid.createDiv({ cls: "operator-note-panel" });
+    tasks.createEl("h4", { text: "Next actions" });
+    const actions = [...home.daily.tasks, ...home.daily.carriedForward].slice(0, 8).map((item) => item.text);
+    renderTextList(tasks, actions, home.weeklyTodo.openTasks.length > 0
+      ? "Today's note has no open tasks. Check the weekly list below."
+      : "No open tasks found yet.");
+
+    const schedule = grid.createDiv({ cls: "operator-note-panel" });
+    schedule.createEl("h4", { text: "Schedule" });
+    const meetingsToday = home.blockers.meetings
+      .filter((meeting) => meeting.timing === "today")
+      .map((meeting) => meeting.dateIso ? `${meeting.dateIso} - ${meeting.text}` : meeting.text);
+    renderTextList(schedule, home.daily.schedule.length > 0 ? home.daily.schedule : meetingsToday, "No schedule lines or meetings for today.");
+
+    if (home.weeklyTodo.openTasks.length > 0) {
+      const week = grid.createDiv({ cls: "operator-note-panel" });
+      week.createEl("h4", { text: "Weekly queue" });
+      renderTextList(week, home.weeklyTodo.openTasks.map((item) => item.text).slice(0, 6), "Weekly Todo has no open tasks.");
+    }
   }
 
   private renderHomePanels(root: HTMLElement, home: OperatorHomeState): void {
-    const section = createSection(root, "Current Work", `${home.weekFolder} is the source of truth for today's blockers and meetings.`);
+    const section = createSection(root, "Current Work", `${home.weekFolder} supplies project context, blockers, and meeting prep.`);
     const grid = section.createDiv({ cls: "operator-home-grid" });
 
     const projects = grid.createDiv({ cls: "operator-home-panel" });
-    projects.createEl("h4", { text: "Active projects" });
+    const projectsHeader = projects.createDiv({ cls: "operator-panel-title-row" });
+    projectsHeader.createEl("h4", { text: "Active projects" });
+    createButton(projectsHeader, "folder-plus", "New", () => void this.plugin.openProjectCreation(), "operator-quiet-button");
     if (home.activeProjects.length === 0) {
-      projects.createEl("p", { cls: "operator-muted", text: "No active project notes found in 02_Projects/." });
+      projects.createEl("p", { cls: "operator-muted", text: "No active project notes found. Create one natively, then sync when it has context." });
     } else {
       const list = projects.createEl("ul", { cls: "operator-list" });
-      for (const project of home.activeProjects.slice(0, 6)) {
+      for (const project of home.activeProjects.slice(0, 5)) {
         const item = list.createEl("li");
         item.createEl("strong", { text: project.name });
         item.createEl("span", { text: project.nextActions.join(" ") });
@@ -497,25 +595,14 @@ class OperatorDashboardView extends ItemView {
       }
     }
 
-    const waiting = grid.createDiv({ cls: "operator-home-panel" });
-    waiting.createEl("h4", { text: "Waiting on / blockers" });
-    if (home.blockers.waitingOn.length === 0) {
-      waiting.createEl("p", { cls: "operator-muted", text: "No unchecked Waiting On items in this week's Blockers.md." });
-    } else {
-      const list = waiting.createEl("ul", { cls: "operator-list" });
-      for (const item of home.blockers.waitingOn.slice(0, 8)) {
-        list.createEl("li", { text: item.text });
-      }
-    }
-    createButton(waiting, "file-text", "Open blockers", () => void this.plugin.openVaultPath(home.blockersPath));
-
     const meetings = grid.createDiv({ cls: "operator-home-panel" });
     meetings.createEl("h4", { text: "Meetings" });
-    if (home.blockers.meetings.length === 0) {
-      meetings.createEl("p", { cls: "operator-muted", text: "No unchecked meetings found in this week's Blockers.md." });
+    const visibleMeetings = home.blockers.meetings.filter((meeting) => meeting.timing !== "past").slice(0, 5);
+    if (visibleMeetings.length === 0) {
+      meetings.createEl("p", { cls: "operator-muted", text: "No upcoming unchecked meetings found in this week's Blockers.md." });
     } else {
       const list = meetings.createEl("ul", { cls: "operator-list" });
-      for (const meeting of home.blockers.meetings.slice(0, 8)) {
+      for (const meeting of visibleMeetings) {
         const item = list.createEl("li");
         item.createEl("strong", { text: meeting.timing });
         item.createEl("span", { text: meeting.dateIso ? `${meeting.dateIso} - ${meeting.text}` : meeting.text });
@@ -528,10 +615,22 @@ class OperatorDashboardView extends ItemView {
         }
       }
     }
+    createButton(meetings, "file-text", "Open blockers", () => void this.plugin.openVaultPath(home.blockersPath));
+
+    const waiting = grid.createDiv({ cls: "operator-home-panel" });
+    waiting.createEl("h4", { text: "Waiting on" });
+    if (home.blockers.waitingOn.length === 0) {
+      waiting.createEl("p", { cls: "operator-muted", text: "No unchecked Waiting On items in this week's Blockers.md." });
+    } else {
+      const list = waiting.createEl("ul", { cls: "operator-list" });
+      for (const item of home.blockers.waitingOn.slice(0, 6)) {
+        list.createEl("li", { text: item.text });
+      }
+    }
   }
 
   private renderWorkflowShortcuts(root: HTMLElement, status: OperatorEnvironmentStatus, home: OperatorHomeState): void {
-    const section = createSection(root, "Workflows", "Buttons are shortcuts into editable prompts. CLI and raw skills still work.");
+    const section = createDisclosureSection(root, "More workflows", "Native actions handle fixed structure; agent workflows and CLI-style prompts stay available here.");
     const canRun = this.canRun(status);
     const grid = section.createDiv({ cls: "operator-workflow-grid" });
 
@@ -543,9 +642,10 @@ class OperatorDashboardView extends ItemView {
       void this.plugin.previewAndRunWorkflow(buildWorkflowSpec("weekly-review"));
     }, undefined, !canRun);
 
-    const project = createWorkflowCard(grid, "Work on project", "Create, sync, or deadline-plan a project.");
+    const project = createWorkflowCard(grid, "Work on project", "Create structure natively, or run agent workflows when context needs synthesis.");
     const projectInput = createInlineInput(project, "Project name", "Customer Discovery", home.activeProjects[0]?.name ?? "");
-    createButton(project, "folder-plus", "Create", () => {
+    createButton(project, "folder-plus", "New project", () => void this.plugin.openProjectCreation(projectInput.value));
+    createButton(project, "terminal", "Run /project-init", () => {
       const projectName = requireInput(projectInput, "a project name");
       if (projectName) {
         void this.plugin.previewAndRunWorkflow(buildWorkflowSpec("project-init", projectName));
@@ -599,10 +699,14 @@ class OperatorDashboardView extends ItemView {
       }
     }, undefined, !canRun);
 
-    const advanced = createWorkflowCard(grid, "Advanced prompt", "Keep the full skill surface reachable.");
+    const advanced = createWorkflowCard(grid, "Agent prompt / CLI command", "Run any slash command or freeform agent prompt without leaving Obsidian.");
     const custom = advanced.createEl("textarea", {
       cls: "operator-prompt-input",
-      attr: { rows: "3", placeholder: "/daily-init 6, review grant proposal" },
+      attr: { rows: "3", placeholder: "/daily-init 6, /project-init MyProject, or review a note" },
+    });
+    createButton(advanced, "copy", "Copy CLI handoff", () => {
+      const prompt = custom.value.trim() || "/daily-init 6";
+      void copyTextToClipboard(buildCliHandoff(this.plugin.getVaultPath(), prompt), "CLI handoff copied.");
     });
     createButton(advanced, "terminal", "Preview and run", () => {
       const prompt = requireInput(custom, "a prompt");
@@ -612,8 +716,10 @@ class OperatorDashboardView extends ItemView {
     }, "mod-cta", !canRun);
   }
 
-  private renderQuickCapture(root: HTMLElement): void {
-    const section = createSection(root, "Quick Capture", "Append lightweight inputs to today's note without starting an agent run.");
+  private renderQuickCapture(root: HTMLElement, home: OperatorHomeState): void {
+    const section = createSection(root, "Quick Capture", home.daily.captureCount > 0
+      ? `${home.daily.captureCount} captured item(s) in today's note.`
+      : "Append lightweight inputs to today's note without starting an agent run.");
     const row = section.createDiv({ cls: "operator-form-row" });
     const select = row.createEl("select", { cls: "operator-select" });
     select.createEl("option", { attr: { value: "idea" }, text: "Idea" });
@@ -826,11 +932,93 @@ class RunPreviewModal extends Modal {
       this.resolve(null);
       this.close();
     });
+    createButton(row, "copy", "Copy prompt", () => {
+      void copyTextToClipboard(promptInput.value, "Prompt copied.");
+    });
     createButton(row, "play", "Run", () => {
       const edited = describePrompt(promptInput.value);
       this.resolve({
         ...edited,
         label: edited.id === this.spec.id ? this.spec.label : edited.label,
+      });
+      this.close();
+    }, "mod-cta");
+  }
+
+  onClose(): void {
+    this.contentEl.empty();
+  }
+}
+
+class NativeProjectModal extends Modal {
+  constructor(
+    app: App,
+    private readonly initialName: string,
+    private readonly resolve: (input: NativeProjectInput | null) => void,
+  ) {
+    super(app);
+  }
+
+  onOpen(): void {
+    const { contentEl } = this;
+    contentEl.empty();
+    contentEl.addClass("operator-project-modal");
+    contentEl.createEl("h2", { text: "Create project" });
+    contentEl.createEl("p", {
+      cls: "operator-muted",
+      text: "This native fast path creates the Markdown project note and knowledge folder directly. Use /project-init from More workflows if you want the agent-guided path.",
+    });
+
+    const nameInput = createInlineInput(contentEl, "Project name", "Customer Discovery", this.initialName);
+    const pathPreview = contentEl.createEl("p", { cls: "operator-help" });
+    const updatePreview = () => {
+      const normalized = normalizeProjectName(nameInput.value);
+      pathPreview.setText(normalized
+        ? `Will create 02_Projects/${normalized}/${normalized}.md`
+        : "Enter a project name to preview the note path.");
+    };
+    nameInput.addEventListener("input", updatePreview);
+    updatePreview();
+
+    const categoryInput = createInlineInput(contentEl, "Category", "project, startup, academic, side-project", "project");
+    const descriptionField = contentEl.createDiv({ cls: "operator-field" });
+    descriptionField.createEl("label", { text: "One-line description" });
+    const descriptionInput = descriptionField.createEl("textarea", {
+      cls: "operator-prompt-input",
+      attr: { rows: "2", placeholder: "What is this project in one sentence?" },
+    });
+
+    const nowField = contentEl.createDiv({ cls: "operator-field" });
+    nowField.createEl("label", { text: "Immediate focus" });
+    const nowInput = nowField.createEl("textarea", {
+      cls: "operator-prompt-input",
+      attr: { rows: "3", placeholder: "Ship prototype\nValidate with first users" },
+    });
+
+    const risksField = contentEl.createDiv({ cls: "operator-field" });
+    risksField.createEl("label", { text: "Risks" });
+    const risksInput = risksField.createEl("textarea", {
+      cls: "operator-prompt-input",
+      attr: { rows: "2", placeholder: "Optional; leave blank for none identified yet" },
+    });
+
+    const row = contentEl.createDiv({ cls: "operator-modal-actions" });
+    createButton(row, "x", "Cancel", () => {
+      this.resolve(null);
+      this.close();
+    });
+    createButton(row, "folder-plus", "Create", () => {
+      const name = requireInput(nameInput, "a project name");
+      if (!name) {
+        return;
+      }
+
+      this.resolve({
+        name,
+        category: categoryInput.value,
+        description: descriptionInput.value,
+        now: nowInput.value,
+        risks: risksInput.value,
       });
       this.close();
     }, "mod-cta");
@@ -873,6 +1061,18 @@ function createInlineInput(parent: HTMLElement, label: string, placeholder: stri
   return input;
 }
 
+function renderTextList(parent: HTMLElement, items: string[], emptyText: string): void {
+  if (items.length === 0) {
+    parent.createEl("p", { cls: "operator-muted", text: emptyText });
+    return;
+  }
+
+  const list = parent.createEl("ul", { cls: "operator-list operator-plain-list" });
+  for (const item of items) {
+    list.createEl("li", { text: item });
+  }
+}
+
 function requireInput(input: HTMLInputElement | HTMLTextAreaElement, label: string): string | null {
   const value = input.value.trim();
   if (value) {
@@ -882,6 +1082,24 @@ function requireInput(input: HTMLInputElement | HTMLTextAreaElement, label: stri
   input.focus();
   new Notice(`Enter ${label} first.`);
   return null;
+}
+
+function buildCliHandoff(vaultPath: string | null, prompt: string): string {
+  const cdLine = vaultPath ? `cd ${shellQuote(vaultPath)}` : "cd <your-vault-path>";
+  return `${cdLine}\ncodex\n# paste into Codex: ${prompt}`;
+}
+
+function shellQuote(value: string): string {
+  return `'${value.replace(/'/g, "'\\''")}'`;
+}
+
+async function copyTextToClipboard(value: string, successMessage: string): Promise<void> {
+  try {
+    await navigator.clipboard.writeText(value);
+    new Notice(successMessage);
+  } catch (error) {
+    new Notice(`Copy failed: ${formatError(error)}`);
+  }
 }
 
 function createButton(
@@ -925,6 +1143,20 @@ function renderStatusTile(
   header.createSpan({ text: label });
   header.createSpan({ cls: "operator-chip", text: optional && state === "missing" ? "optional" : state });
   tile.createEl("p", { text: detail });
+}
+
+function renderStepCard(
+  parent: HTMLElement,
+  step: string,
+  title: string,
+  detail: string,
+  state: "ready" | "needed" | "locked",
+): void {
+  const card = parent.createDiv({ cls: `operator-step-card is-${state}` });
+  const header = card.createDiv({ cls: "operator-step-header" });
+  header.createSpan({ cls: "operator-step-number", text: step });
+  header.createEl("strong", { text: title });
+  card.createEl("p", { text: detail });
 }
 
 function renderAdvancedItem(

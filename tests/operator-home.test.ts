@@ -1,7 +1,9 @@
 import { strict as assert } from "node:assert";
 import test from "node:test";
 import { getDailyNotePath, getExecutionWeekFolder, getIsoWeekInfo } from "../src/dates";
-import { parseActiveProjectNote, parseBlockers } from "../src/vault-parsers";
+import { appendQuickCapture, readOperatorHomeState } from "../src/home-state";
+import { buildProjectNote, createNativeProject, normalizeProjectName } from "../src/projects";
+import { parseActiveProjectNote, parseBlockers, parseDailyNote, parseWeeklyTodo } from "../src/vault-parsers";
 import { buildStartDaySpec, buildWorkflowSpec, describePrompt } from "../src/workflows";
 
 test("computes ISO week folders and daily note paths", () => {
@@ -77,6 +79,94 @@ test("parses waiting-on items and meeting timing from Blockers", () => {
   assert.equal(summary.meetings[1].timing, "tomorrow");
 });
 
+test("parses today note focus, actions, schedule, and capture count", () => {
+  const summary = parseDailyNote(`# 2026-05-22
+
+## Focus
+
+- Ship the native Operator Home
+- Keep the daily surface simple
+
+## Briefing
+
+### Action Items
+
+- [ ] Review UI against real vault
+- [>] Carry project note edits
+- [x] Done item
+
+## Schedule
+
+- 10:00 Design review
+
+## Capture
+
+- Idea: make CLI advanced-only
+`);
+
+  assert.deepEqual(summary.focus, [
+    "Ship the native Operator Home",
+    "Keep the daily surface simple",
+  ]);
+  assert.deepEqual(summary.tasks.map((item) => item.text), ["Review UI against real vault"]);
+  assert.deepEqual(summary.carriedForward.map((item) => item.text), ["Carry project note edits"]);
+  assert.deepEqual(summary.schedule, ["10:00 Design review"]);
+  assert.equal(summary.captureCount, 1);
+});
+
+test("parses weekly todo open work separately from completed work", () => {
+  const summary = parseWeeklyTodo(`# Weekly Todo
+
+- [ ] Native project creation
+- [>] Carry dashboard polish
+- [x] Old complete task
+`);
+
+  assert.deepEqual(summary.openTasks.map((item) => item.text), ["Native project creation"]);
+  assert.deepEqual(summary.carriedForward.map((item) => item.text), ["Carry dashboard polish"]);
+});
+
+test("builds native project notes with normalized paths and placeholders", () => {
+  const date = new Date("2026-05-22T09:00:00");
+  assert.equal(normalizeProjectName("Customer Discovery / MVP"), "Customer-Discovery-MVP");
+
+  const note = buildProjectNote("Customer-Discovery-MVP", {
+    name: "Customer Discovery / MVP",
+    category: "startup",
+    description: "A lightweight validation sprint.",
+    now: "Interview five users\nDraft landing page",
+    risks: "",
+  }, date);
+
+  assert.match(note, /status: active/);
+  assert.match(note, /date: 2026-05-22/);
+  assert.match(note, /project: Customer-Discovery-MVP/);
+  assert.match(note, /- Interview five users/);
+  assert.match(note, /- \(none identified yet\)/);
+});
+
+test("native project creation and quick capture update the markdown home state", async () => {
+  const app = createFakeApp();
+  const date = new Date("2026-05-22T09:00:00");
+
+  const project = await createNativeProject(app as never, {
+    name: "Customer Discovery",
+    category: "startup",
+    description: "A lightweight validation sprint.",
+    now: "Interview five users",
+    risks: "",
+  }, date);
+  assert.equal(project.notePath, "02_Projects/Customer-Discovery/Customer-Discovery.md");
+
+  await appendQuickCapture(app as never, "task", "Review interview notes", date);
+  const home = await readOperatorHomeState(app as never, date);
+
+  assert.equal(home.daily.exists, true);
+  assert.equal(home.daily.captureCount, 1);
+  assert.deepEqual(home.activeProjects.map((item) => item.name), ["Customer-Discovery"]);
+  assert.deepEqual(home.activeProjects[0].nextActions, ["Interview five users"]);
+});
+
 test("builds editable workflow prompt specs", () => {
   const date = new Date("2026-05-22T09:00:00");
   const start = buildStartDaySpec(7, "review deck, email Kai", date);
@@ -93,3 +183,45 @@ test("builds editable workflow prompt specs", () => {
   assert.equal(described.prompt, "/deep-research AI evals");
   assert.equal(described.search, true);
 });
+
+function createFakeApp(): {
+  vault: {
+    getMarkdownFiles: () => Array<{ path: string; extension: string }>;
+    getAbstractFileByPath: (path: string) => { path: string; extension?: string } | null;
+    read: (file: { path: string }) => Promise<string>;
+    create: (path: string, content: string) => Promise<{ path: string; extension: string }>;
+    createFolder: (path: string) => Promise<void>;
+    process: (file: { path: string }, update: (current: string) => string) => Promise<void>;
+  };
+} {
+  const files = new Map<string, string>();
+  const folders = new Set<string>();
+
+  return {
+    vault: {
+      getMarkdownFiles: () => [...files.keys()]
+        .filter((path) => path.endsWith(".md"))
+        .map((path) => ({ path, extension: "md" })),
+      getAbstractFileByPath: (path: string) => {
+        if (files.has(path)) {
+          return { path, extension: path.split(".").pop() ?? "" };
+        }
+        if (folders.has(path)) {
+          return { path };
+        }
+        return null;
+      },
+      read: async (file: { path: string }) => files.get(file.path) ?? "",
+      create: async (path: string, content: string) => {
+        files.set(path, content);
+        return { path, extension: path.split(".").pop() ?? "" };
+      },
+      createFolder: async (path: string) => {
+        folders.add(path);
+      },
+      process: async (file: { path: string }, update: (current: string) => string) => {
+        files.set(file.path, update(files.get(file.path) ?? ""));
+      },
+    },
+  };
+}
