@@ -120,13 +120,13 @@ export function resolveAnnualShortcutInput(
   };
 }
 
-export function resolveWeeklyPeriodInput(_mode: "init" | "review", value: string, date = new Date()): string {
+export function resolveWeeklyPeriodInput(mode: "init" | "review", value: string, date = new Date()): string {
   const week = parseExplicitIsoWeek(value);
   if (week) {
     return week;
   }
 
-  if (/\blast\b/i.test(value)) {
+  if (mode === "review" && /\blast\b/i.test(value)) {
     return getIsoWeekInfo(addDays(date, -7)).label;
   }
 

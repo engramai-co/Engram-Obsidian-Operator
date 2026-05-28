@@ -802,7 +802,7 @@ class OperatorDashboardView extends ItemView {
     const grid = section.createDiv({ cls: "operator-workflow-grid" });
 
     const planWeek = createWorkflowCard(grid, "Plan week", "Open or review the current execution layer.");
-    const weekInput = createInlineInput(planWeek, "Week", "2026-W21 or last");
+    const weekInput = createInlineInput(planWeek, "Week", "2026-W21; review accepts last");
     createAgentWorkflowButton(planWeek, "calendar-plus", "Weekly setup", () => {
       void this.plugin.previewAndRunWorkflow(buildWorkflowSpec("weekly-init", resolveWeeklyPeriodInput("init", weekInput.value)));
     });

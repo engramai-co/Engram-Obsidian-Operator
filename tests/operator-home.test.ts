@@ -440,7 +440,7 @@ test("builds editable workflow prompt specs", () => {
   assert.equal(resolveWeeklyPeriodInput("init", "2026-W3", date), "2026-W03");
   assert.equal(resolveWeeklyPeriodInput("review", "review 2025-w52"), "2025-W52");
   assert.equal(resolveWeeklyPeriodInput("review", "last week", date), "2026-W20");
-  assert.equal(resolveWeeklyPeriodInput("init", "last", date), "2026-W20");
+  assert.equal(resolveWeeklyPeriodInput("init", "last", date), "");
   assert.equal(resolveWeeklyPeriodInput("review", "later"), "");
   assert.equal(resolveAnnualYearInput("vision", "2025", date), "2025");
   assert.equal(resolveAnnualYearInput("review", "review 2025", date), "2025");
@@ -530,6 +530,8 @@ test("builds editable workflow prompt specs", () => {
   assert.equal(buildWorkflowSpec("weekly-init", "", date).label, "Plan 2026-W21");
   assert.deepEqual(buildWorkflowSpec("weekly-init", "", date).targetNotes, ["Execution week: 2026-W21"]);
   assert.match(buildWorkflowSpec("weekly-init", "", date).prompt, /^\/weekly-init 2026-W21\n\nOperator run metadata/);
+  assert.equal(buildWorkflowSpec("weekly-init", resolveWeeklyPeriodInput("init", "last", date), date).expectedOpenPath, "01_Execution/2026-W21/Weekly Todo.md");
+  assert.match(buildWorkflowSpec("weekly-init", resolveWeeklyPeriodInput("init", "last", date), date).prompt, /^\/weekly-init 2026-W21\n\nOperator run metadata/);
   assert.equal(buildWorkflowSpec("weekly-init", "2026-W18", date).expectedOpenPath, "01_Execution/2026-W18/Weekly Todo.md");
   assert.equal(buildWorkflowSpec("weekly-init", "2026-W18", date).label, "Plan 2026-W18");
   assert.deepEqual(buildWorkflowSpec("weekly-init", "2026-W18", date).targetNotes, ["Execution week: 2026-W18"]);
