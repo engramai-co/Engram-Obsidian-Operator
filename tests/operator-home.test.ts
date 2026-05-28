@@ -159,6 +159,15 @@ test("strategy workflow previews label exact write targets", () => {
   ]);
 });
 
+test("advanced strategy prompts run with explicit resolved targets", () => {
+  const date = new Date("2026-05-22T09:00:00");
+
+  assert.match(describePrompt("/annual-vision", date).prompt, /^\/annual-vision 2026\n\nOperator run metadata/);
+  assert.match(describePrompt("/annual-vision review", date).prompt, /^\/annual-vision review 2025\n\nOperator run metadata/);
+  assert.match(describePrompt("/quarterly-plan init", date).prompt, /^\/quarterly-plan init 2026-Q2\n\nOperator run metadata/);
+  assert.match(describePrompt("/quarterly-plan review", date).prompt, /^\/quarterly-plan review 2026-Q1\n\nOperator run metadata/);
+});
+
 test("quarterly-plan skill documents explicit UI targets", () => {
   const skill = readFileSync("plugins/obsidian-operator/skills/quarterly-plan/SKILL.md", "utf8");
 
@@ -747,9 +756,9 @@ test("builds editable workflow prompt specs", () => {
   assert.equal(buildWorkflowSpec("content-draft", "pricing launch notes", date).label, "Draft pricing launch notes");
   assert.equal(buildWorkflowSpec("content-draft", "", date).label, "Draft content");
   assert.equal(buildWorkflowSpec("deep-research", "operator onboarding UX", date).label, "Deep research operator onboarding UX");
-  assert.match(describePrompt("/annual-vision review", date).prompt, /^\/annual-vision review\n\nOperator run metadata/);
+  assert.match(describePrompt("/annual-vision review", date).prompt, /^\/annual-vision review 2025\n\nOperator run metadata/);
   assert.match(buildWorkflowSpec("quarterly-plan", "pulse 05", date).prompt, /^\/quarterly-plan pulse 05\n\nOperator run metadata/);
-  assert.match(describePrompt("/quarterly-plan init", date).prompt, /^\/quarterly-plan init\n\nOperator run metadata/);
+  assert.match(describePrompt("/quarterly-plan init", date).prompt, /^\/quarterly-plan init 2026-Q2\n\nOperator run metadata/);
   assert.match(describePrompt("/weekly-review", date).prompt, /^\/weekly-review\n\nOperator run metadata/);
   assert.match(buildWorkflowSpec("ai-weekly-digest", "last", date).prompt, /^\/ai-weekly-digest 2026-W20\n\nOperator run metadata/);
   assert.equal(buildWorkflowSpec("ai-weekly-digest", "", date).expectedOpenPath, "04_Knowledge/AI-Weekly/2026-W21 - AI Weekly Digest.md");

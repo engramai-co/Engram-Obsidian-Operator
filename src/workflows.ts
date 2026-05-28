@@ -600,10 +600,6 @@ function normalizeKnownPromptForRun(command: OperatorWorkflowId, prompt: string,
     return prompt;
   }
 
-  if (commandArgs.split(/\s+/, 1)[0].toLowerCase() !== "pulse") {
-    return prompt;
-  }
-
   const normalizedArgs = getQuarterlyPromptArgs(commandArgs, date);
   return normalizedArgs === commandArgs ? prompt : withArgs(`/${command}`, normalizedArgs);
 }
@@ -623,7 +619,7 @@ function isBareLastShorthand(value: string): boolean {
 }
 
 function normalizeAnnualTargetArgs(args: string, date: Date): string {
-  if (!/\b(last|next)\b/i.test(args) || /\b20\d{2}\b/.test(args)) {
+  if (/\b20\d{2}\b/.test(args)) {
     return args;
   }
 
