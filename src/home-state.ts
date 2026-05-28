@@ -89,8 +89,12 @@ export async function updateMarkdownTaskState(
   }
 
   await app.vault.process(file, (current) => {
-    if (!current.includes(rawLine)) {
+    const occurrences = current.split(rawLine).length - 1;
+    if (occurrences === 0) {
       throw new Error("Selected task was not found in the source note.");
+    }
+    if (occurrences > 1) {
+      throw new Error("Selected task appears more than once in the source note. Open the note to edit the exact item.");
     }
     return current.replace(rawLine, updatedLine);
   });

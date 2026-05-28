@@ -199,6 +199,26 @@ test("updates markdown task state in the source note", async () => {
   assert.match(markdown, /- \[ \] Carry research/);
 });
 
+test("does not update ambiguous duplicate markdown task lines", async () => {
+  const app = createFakeApp();
+  await app.vault.create("01_Execution/2026-W21/Weekly Todo.md", [
+    "# Weekly Todo",
+    "",
+    "- [ ] Follow up",
+    "- [ ] Follow up",
+  ].join("\n"));
+
+  await assert.rejects(
+    updateMarkdownTaskState(app as never, "01_Execution/2026-W21/Weekly Todo.md", "- [ ] Follow up", "x"),
+    /appears more than once/,
+  );
+
+  const file = app.vault.getAbstractFileByPath("01_Execution/2026-W21/Weekly Todo.md");
+  const markdown = await app.vault.read(file as { path: string });
+  assert.equal((markdown.match(/- \[x\] Follow up/g) ?? []).length, 0);
+  assert.equal((markdown.match(/- \[ \] Follow up/g) ?? []).length, 2);
+});
+
 test("builds editable workflow prompt specs", () => {
   const date = new Date("2026-05-22T09:00:00");
   const start = buildStartDaySpec(7, "review deck, email Kai", date);
