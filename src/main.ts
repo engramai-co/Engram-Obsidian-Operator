@@ -764,7 +764,7 @@ class OperatorDashboardView extends ItemView {
         }
       }
     }
-    createButton(meetings, "file-text", "Open blockers", () => void this.plugin.openVaultPath(home.blockersPath));
+    createButton(meetings, "file-text", "Open blockers", () => void this.plugin.openVaultPath(home.blockersPath), undefined, !home.blockersExists);
 
     const waiting = grid.createDiv({ cls: "operator-home-panel" });
     waiting.createEl("h4", { text: "Waiting on" });

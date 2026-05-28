@@ -332,10 +332,22 @@ test("native project creation and quick capture update the markdown home state",
   const dailyMarkdown = await app.vault.read(dailyFile as { path: string });
 
   assert.equal(home.daily.exists, true);
+  assert.equal(home.blockersExists, false);
   assert.equal(home.daily.captureCount, 2);
   assert.match(dailyMarkdown, /- \[ \] Review interview notes\n- \[ \] Send follow-up/);
   assert.deepEqual(home.activeProjects.map((item) => item.name), ["Customer-Discovery"]);
   assert.deepEqual(home.activeProjects[0].nextActions, ["Interview five users"]);
+});
+
+test("reads blocker note existence for disabled open affordances", async () => {
+  const app = createFakeApp();
+  const date = new Date("2026-05-22T09:00:00");
+
+  assert.equal((await readOperatorHomeState(app as never, date)).blockersExists, false);
+
+  await app.vault.create("01_Execution/2026-W21/Blockers.md", "# Blockers\n");
+
+  assert.equal((await readOperatorHomeState(app as never, date)).blockersExists, true);
 });
 
 test("updates markdown task state in the source note", async () => {
@@ -387,6 +399,7 @@ test("dashboard wires blocker rows to native done actions", () => {
 
   assert.match(source, /updateTaskFromUi\(home\.blockersPath, meeting, "x"\)/);
   assert.match(source, /updateTaskFromUi\(home\.blockersPath, item, "x"\)/);
+  assert.match(source, /"Open blockers"[\s\S]*!home\.blockersExists/);
 });
 
 test("does not update ambiguous duplicate markdown task lines", async () => {

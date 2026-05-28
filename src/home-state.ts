@@ -17,6 +17,7 @@ export interface OperatorHomeState {
   dailyNotePath: string;
   weeklyTodoPath: string;
   blockersPath: string;
+  blockersExists: boolean;
   daily: DailyNoteSummary;
   weeklyTodo: WeeklyTodoSummary;
   activeProjects: ActiveProjectSummary[];
@@ -42,6 +43,7 @@ export async function readOperatorHomeState(app: App, date = new Date()): Promis
     dailyNotePath,
     weeklyTodoPath,
     blockersPath,
+    blockersExists: isVaultFile(blockersFile),
     daily: parseDailyNote(dailyMarkdown, isVaultFile(dailyFile)),
     weeklyTodo: parseWeeklyTodo(weeklyTodoMarkdown, isVaultFile(weeklyTodoFile)),
     activeProjects,
