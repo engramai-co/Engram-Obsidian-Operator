@@ -133,6 +133,10 @@ test("workflow previews name exact daily and weekly write targets", () => {
   assert.deepEqual(buildWorkflowSpec("weekly-review", "last", date).writeAreas, [
     "Weekly Review: 01_Execution/2026-W21/Weekly Review.md",
   ]);
+  assert.deepEqual(buildWorkflowSpec("ai-weekly-digest", "last", date).writeAreas, [
+    "AI weekly digest: 04_Knowledge/AI-Weekly/2026-W21 - AI Weekly Digest.md",
+    "Weekly Review block when present: 01_Execution/2026-W21/Weekly Review.md",
+  ]);
 });
 
 test("quarterly-plan skill documents explicit UI targets", () => {
@@ -734,7 +738,10 @@ test("builds editable workflow prompt specs", () => {
   assert.match(buildWorkflowSpec("ai-weekly-digest", "", date).prompt, /^\/ai-weekly-digest 2026-W21\n\nOperator run metadata/);
   assert.equal(buildWorkflowSpec("ai-weekly-digest", "last", date).expectedOpenPath, "04_Knowledge/AI-Weekly/2026-W20 - AI Weekly Digest.md");
   assert.equal(buildWorkflowSpec("ai-weekly-digest", "last", date).label, "AI weekly 2026-W20");
-  assert.deepEqual(buildWorkflowSpec("ai-weekly-digest", "last", date).writeAreas, ["04_Knowledge/AI-Weekly/ and the target week's Weekly Review when present"]);
+  assert.deepEqual(buildWorkflowSpec("ai-weekly-digest", "last", date).writeAreas, [
+    "AI weekly digest: 04_Knowledge/AI-Weekly/2026-W20 - AI Weekly Digest.md",
+    "Weekly Review block when present: 01_Execution/2026-W20/Weekly Review.md",
+  ]);
   assert.deepEqual(buildWorkflowSpec("ai-weekly-digest", "last", date).targetNotes, ["AI weekly target: 2026-W20"]);
   assert.equal(buildWorkflowSpec("ai-weekly-digest", "2026-W18", date).expectedOpenPath, "04_Knowledge/AI-Weekly/2026-W18 - AI Weekly Digest.md");
   assert.equal(buildWorkflowSpec("ai-weekly-digest", "2026-W3", date).expectedOpenPath, "04_Knowledge/AI-Weekly/2026-W03 - AI Weekly Digest.md");

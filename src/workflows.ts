@@ -199,10 +199,14 @@ export function buildWorkflowSpec(
       ]);
     case "ai-weekly-digest":
       const aiWeeklyTarget = getAiWeeklyDigestTarget(cleanedArgs, date);
+      const aiWeeklyDigestPath = `04_Knowledge/AI-Weekly/${aiWeeklyTarget} - AI Weekly Digest.md`;
       return {
         ...simpleSpec(id, `AI weekly ${aiWeeklyTarget}`, withArgs("/ai-weekly-digest", getAiWeeklyDigestPromptArgs(cleanedArgs, aiWeeklyTarget)), [
           "Recent AI research, GitHub trending notes, RSS and web sources",
-        ], ["04_Knowledge/AI-Weekly/ and the target week's Weekly Review when present"], date, `04_Knowledge/AI-Weekly/${aiWeeklyTarget} - AI Weekly Digest.md`, [
+        ], [
+          `AI weekly digest: ${aiWeeklyDigestPath}`,
+          `Weekly Review block when present: 01_Execution/${aiWeeklyTarget}/Weekly Review.md`,
+        ], date, aiWeeklyDigestPath, [
           `AI weekly target: ${aiWeeklyTarget}`,
         ]),
         search: true,
