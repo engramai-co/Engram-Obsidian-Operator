@@ -293,14 +293,13 @@ test("builds editable workflow prompt specs", () => {
   assert.equal(custom.prompt, "review the current note");
 });
 
-test("builds CLI handoff with the same enhanced daily prompt safely commented", () => {
+test("builds CLI handoff as a runnable codex exec command with the enhanced daily prompt", () => {
   const handoff = buildCliHandoff("/tmp/My Vault", "/daily-init 4.5", new Date("2026-05-22T09:00:00"));
 
-  assert.match(handoff, /^cd '\/tmp\/My Vault'\ncodex\n# Paste this prompt into Codex:/);
-  assert.match(handoff, /# \/daily-init 4\.5/);
-  assert.match(handoff, /# Daily pre-flight guard:/);
-  assert.match(handoff, /# Local date: 2026-05-22/);
-  assert.equal(handoff.split("\n").filter((line) => line.includes("Daily pre-flight guard")).every((line) => line.startsWith("# ")), true);
+  assert.match(handoff, /^cd '\/tmp\/My Vault'\ncodex exec --cd '\/tmp\/My Vault' --skip-git-repo-check --sandbox workspace-write --ask-for-approval on-request --search /);
+  assert.match(handoff, /'\/daily-init 4\.5/);
+  assert.match(handoff, /Daily pre-flight guard:/);
+  assert.match(handoff, /Local date: 2026-05-22/);
 });
 
 function createFakeApp(): {
