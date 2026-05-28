@@ -77,7 +77,7 @@ Click the Operator dashboard icon in the left ribbon, or run **Operator: Open da
 The dashboard will show:
 
 - **Today** from the current daily note: `## Focus`, `### Action Items`, `## Schedule`, and the current weekly queue
-- **Start my day** with available-hours inputs that preserve half-hour budgets, manual-items input, and an editable Preview that includes local date, time, timezone, ISO week, quarter, exact target notes, and only the weekly/monthly/quarterly boundary actions relevant to today's date; fixed weekly, AI weekly, and strategy shortcuts emit explicit targets, annual shortcuts expose a visible year field that accepts text containing `YYYY`, while advanced prompts preserve raw slash commands
+- **Start my day** with available-hours inputs that preserve half-hour budgets, manual-items input, and an editable Preview that includes local date, time, timezone, ISO week, quarter, exact target notes, and only the weekly/monthly/quarterly boundary actions relevant to today's date; fixed weekly setup/review, AI weekly, and strategy shortcuts emit explicit targets, annual shortcuts expose a visible year field that accepts text containing `YYYY`, while advanced prompts preserve raw slash commands
 - Native **Done** and **Carry** actions for visible daily and weekly tasks, editing the source Markdown checkbox instead of creating a separate task database
 - Native **Quick Capture** for ideas, tasks, meeting notes, and research questions without leaving Operator Home
 - Active projects from `02_Projects/`, plus `## Now` next actions
@@ -181,7 +181,7 @@ See [CLAUDE.md](skills/vault-init/assets/CLAUDE.md) for full conventions, frontm
 
 | Skill | Description |
 |-------|-------------|
-| `weekly-init` | Create or update week folder + Weekly Todo — carries items from last week, injects deadline tasks, populates Blockers from calendar. Merges into existing files without overwriting. |
+| `weekly-init` | Create or update target week folder + Weekly Todo — accepts explicit `YYYY-WXX`, carries items from the prior week, injects deadline tasks, populates Blockers from calendar. Merges into existing files without overwriting. |
 | `weekly-review` | AI synthesis of the week — progress, stalled items, patterns, intention tracking, horizon items, next-week focus |
 | `ai-weekly-digest` | Curated AI landscape digest — research trends (aggregated from `/daily-academic` reports), big tech, startups, open-source, landscape. Merges new findings into existing digests. |
 

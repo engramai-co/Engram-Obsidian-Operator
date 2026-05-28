@@ -106,10 +106,11 @@ export function buildWorkflowSpec(
   const cleanedArgs = normalizeWorkflowArgs(id, args);
   switch (id) {
     case "weekly-init":
-      return simpleSpec(id, `Plan ${getIsoWeekInfo(date).label}`, "/weekly-init", [
+      const weeklyInitTarget = getWeeklyInitTarget(cleanedArgs, date);
+      return simpleSpec(id, `Plan ${weeklyInitTarget}`, withArgs("/weekly-init", weeklyInitTarget), [
         "Recent daily notes, last week Weekly Todo, Blockers, project deadline plans",
-      ], ["Current week Weekly Todo and Blockers"], date, `${getExecutionWeekFolder(date)}/Weekly Todo.md`, [
-        `Execution week: ${getIsoWeekInfo(date).label}`,
+      ], ["Target week Weekly Todo and Blockers"], date, `01_Execution/${weeklyInitTarget}/Weekly Todo.md`, [
+        `Execution week: ${weeklyInitTarget}`,
       ]);
     case "weekly-review":
       const weeklyReviewFolder = getWeeklyReviewFolder(cleanedArgs, date);
@@ -402,6 +403,11 @@ function getWeeklyReviewFolder(args: string, date: Date): string {
     ? addDays(date, -7)
     : date;
   return `01_Execution/${getIsoWeekInfo(target).label}`;
+}
+
+function getWeeklyInitTarget(args: string, date: Date): string {
+  const explicit = args.match(/\b(\d{4}-W\d{2})\b/i)?.[1];
+  return explicit ? explicit.toUpperCase() : getIsoWeekInfo(date).label;
 }
 
 function getWeeklyReviewPromptArgs(args: string, weeklyReviewFolder: string): string {

@@ -318,6 +318,11 @@ test("builds editable workflow prompt specs", () => {
   assert.equal(buildWorkflowSpec("weekly-init", "", date).expectedOpenPath, "01_Execution/2026-W21/Weekly Todo.md");
   assert.equal(buildWorkflowSpec("weekly-init", "", date).label, "Plan 2026-W21");
   assert.deepEqual(buildWorkflowSpec("weekly-init", "", date).targetNotes, ["Execution week: 2026-W21"]);
+  assert.match(buildWorkflowSpec("weekly-init", "", date).prompt, /^\/weekly-init 2026-W21\n\nOperator run metadata/);
+  assert.equal(buildWorkflowSpec("weekly-init", "2026-W18", date).expectedOpenPath, "01_Execution/2026-W18/Weekly Todo.md");
+  assert.equal(buildWorkflowSpec("weekly-init", "2026-W18", date).label, "Plan 2026-W18");
+  assert.deepEqual(buildWorkflowSpec("weekly-init", "2026-W18", date).targetNotes, ["Execution week: 2026-W18"]);
+  assert.match(buildWorkflowSpec("weekly-init", "2026-W18", date).prompt, /^\/weekly-init 2026-W18\n\nOperator run metadata/);
   assert.equal(buildWorkflowSpec("weekly-review", "", date).expectedOpenPath, "01_Execution/2026-W21/Weekly Review.md");
   assert.equal(buildWorkflowSpec("weekly-review", "", date).label, "Review 2026-W21");
   assert.deepEqual(buildWorkflowSpec("weekly-review", "", date).targetNotes, ["Review week: 2026-W21"]);
@@ -425,6 +430,7 @@ test("builds editable workflow prompt specs", () => {
 
   const typedWeeklyReview = describePrompt("/weekly-review", date);
   assert.match(typedWeeklyReview.prompt, /^\/weekly-review\n\nOperator run metadata/);
+  assert.equal(describePrompt("/weekly-init 2026-W18", date).expectedOpenPath, "01_Execution/2026-W18/Weekly Todo.md");
 
   const editedWeeklyReview = resolveEditedPreviewSpec(buildWorkflowSpec("weekly-review", "", date), "/weekly-review 2026-W18", date);
   assert.equal(editedWeeklyReview.label, "Review 2026-W18");
