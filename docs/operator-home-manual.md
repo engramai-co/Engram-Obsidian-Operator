@@ -65,10 +65,10 @@ npm run install:plugin -- "<your vault>"
 
 ## Daily Use
 
-- **Today** shows the current daily note's `## Focus`, `### Action Items`, `## Schedule`, and current weekly queue.
+- **Today** shows the current daily note's `## Focus`, `### Action Items`, task checkboxes in `## Capture`, `## Schedule`, and current weekly queue.
 - Deferred future items under `#### Deferred` stay out of today's **Next actions** until `/daily-init` promotes them back into the main action list.
 - Use **Done** or **Carry** on visible daily and weekly tasks for quick checkbox edits. Operator Home writes those changes back to the source Markdown note and intentionally does not turn tasks into a CRM-style task manager.
-- **Quick Capture** appends ideas, tasks, meeting notes, or research questions to today's note without launching an agent. Paste multiple lines to create multiple Markdown capture items at once.
+- **Quick Capture** appends ideas, tasks, meeting notes, or research questions to today's note without launching an agent. Paste multiple lines to create multiple Markdown capture items at once; captured task checkboxes appear in today's **Next actions**.
 - **Active projects** shows active project notes from `02_Projects/` and each note's `## Now` section.
 - **Meetings** and **Waiting on** come from the current week's `Blockers.md`.
 - **Last Run** shows the latest agent run summary and raw log when you need to debug.

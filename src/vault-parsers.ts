@@ -140,6 +140,7 @@ export function parseDailyNote(markdown: string, exists = markdown.trim().length
     extractHeadingSection(markdown, "Tasks"),
     removeNestedHeadingSection(extractHeadingSectionAtAnyLevel(markdown, "Action Items"), "Deferred"),
     extractHeadingSectionAtAnyLevel(markdown, "Next Actions"),
+    extractHeadingSection(markdown, "Capture"),
   ].join("\n");
   const parsedTasks = taskLines
     .split("\n")

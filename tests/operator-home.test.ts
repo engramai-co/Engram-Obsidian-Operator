@@ -245,6 +245,22 @@ test("does not surface deferred future daily items as today's next actions", () 
   assert.deepEqual(summary.carriedForward.map((item) => item.text), ["Carry project note edits"]);
 });
 
+test("surfaces captured task checkboxes as today's next actions", () => {
+  const summary = parseDailyNote(`# 2026-05-22
+
+## Capture
+
+- Idea: Keep CLI available for advanced prompts
+- [ ] Reply to Alice about the timeline
+- [>] Carry captured budget review
+- Meeting note: Standup was moved to 2pm
+`);
+
+  assert.deepEqual(summary.tasks.map((item) => item.text), ["Reply to Alice about the timeline"]);
+  assert.deepEqual(summary.carriedForward.map((item) => item.text), ["Carry captured budget review"]);
+  assert.equal(summary.captureCount, 4);
+});
+
 test("parses weekly todo open work separately from completed work", () => {
   const summary = parseWeeklyTodo(`# Weekly Todo
 
