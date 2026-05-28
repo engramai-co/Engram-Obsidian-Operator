@@ -190,7 +190,7 @@ See [CLAUDE.md](skills/vault-init/assets/CLAUDE.md) for full conventions, frontm
 | Skill | Description |
 |-------|-------------|
 | `quarterly-plan` | Three modes: `init YYYY-QX`, `review YYYY-QX`, `pulse YYYY-MM` for explicit targets. Init and review update existing files rather than aborting. |
-| `annual-vision` | Annual vision setting or year-end retrospective — reads existing files as baseline for updates |
+| `annual-vision` | Annual vision or `review YYYY` retrospective with explicit target years — reads existing files as baseline for updates |
 
 ### Knowledge & Synthesis
 

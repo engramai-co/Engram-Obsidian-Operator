@@ -72,6 +72,13 @@ test("quarterly-plan skill documents explicit UI targets", () => {
   assert.match(skill, /Review Mode[\s\S]*If the prompt includes `review YYYY-QX`/);
 });
 
+test("annual-vision skill documents explicit UI targets", () => {
+  const skill = readFileSync("plugins/obsidian-operator/skills/annual-vision/SKILL.md", "utf8");
+
+  assert.match(skill, /If the prompt includes `review`, use Review Mode/);
+  assert.match(skill, /If the prompt includes `20\d{2}`, use that as the target year/);
+});
+
 test("parses active project notes from frontmatter and ## Now", () => {
   const project = parseActiveProjectNote(
     "02_Projects/FM-Copilot/FM-Copilot.md",
