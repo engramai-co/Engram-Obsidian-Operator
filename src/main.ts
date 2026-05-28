@@ -1104,7 +1104,7 @@ class RunPreviewModal extends Modal {
     const { contentEl } = this;
     contentEl.empty();
     contentEl.addClass("operator-preview-modal");
-    contentEl.createEl("h2", { text: `Preview: ${this.spec.label}` });
+    const title = contentEl.createEl("h2", { text: `Preview: ${this.spec.label}` });
     contentEl.createEl("p", {
       cls: "operator-muted",
       text: "Review and edit the exact prompt before Operator launches the agent.",
@@ -1113,9 +1113,7 @@ class RunPreviewModal extends Modal {
     const meta = contentEl.createDiv({ cls: "operator-preview-meta" });
     meta.createSpan({ text: `Backend: ${this.backend}` });
     meta.createSpan({ text: `Vault: ${this.vaultPath}` });
-    if (this.spec.expectedOpenPath) {
-      meta.createSpan({ text: `Expected note: ${this.spec.expectedOpenPath}` });
-    }
+    const expectedNote = meta.createSpan();
 
     const field = contentEl.createDiv({ cls: "operator-field" });
     field.createEl("label", { text: "Prompt" });
@@ -1126,14 +1124,24 @@ class RunPreviewModal extends Modal {
     promptInput.value = this.spec.prompt;
 
     const columns = contentEl.createDiv({ cls: "operator-preview-grid" });
-    if (this.spec.targetNotes?.length) {
-      renderAreaList(columns, "Targets", this.spec.targetNotes);
-    }
-    renderAreaList(columns, "Likely reads", this.spec.readAreas);
-    renderAreaList(columns, "Likely writes", this.spec.writeAreas);
-    if (this.spec.runNotes?.length) {
-      renderAreaList(contentEl, "May also run", this.spec.runNotes);
-    }
+    const runNotes = contentEl.createDiv();
+    const renderResolvedPreview = () => {
+      const resolved = resolveEditedPreviewSpec(this.spec, promptInput.value);
+      title.setText(`Preview: ${resolved.label}`);
+      expectedNote.setText(resolved.expectedOpenPath ? `Expected note: ${resolved.expectedOpenPath}` : "Expected note: not predicted");
+      columns.empty();
+      runNotes.empty();
+      if (resolved.targetNotes?.length) {
+        renderAreaList(columns, "Targets", resolved.targetNotes);
+      }
+      renderAreaList(columns, "Likely reads", resolved.readAreas);
+      renderAreaList(columns, "Likely writes", resolved.writeAreas);
+      if (resolved.runNotes?.length) {
+        renderAreaList(runNotes, "May also run", resolved.runNotes);
+      }
+    };
+    promptInput.addEventListener("input", renderResolvedPreview);
+    renderResolvedPreview();
 
     const row = contentEl.createDiv({ cls: "operator-modal-actions" });
     createButton(row, "x", "Cancel", () => {
