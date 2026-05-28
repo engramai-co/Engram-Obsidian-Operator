@@ -892,7 +892,7 @@ class OperatorDashboardView extends ItemView {
     if (lastRun.expectedOpenPath) {
       const expectedFile = this.app.vault.getAbstractFileByPath(lastRun.expectedOpenPath);
       const expectedExists = expectedFile instanceof TFile;
-      meta.createSpan({ text: formatExpectedNoteStatus(lastRun.expectedOpenPath, expectedExists) });
+      meta.createSpan({ text: formatExpectedNoteStatus(lastRun.expectedOpenPath, expectedExists, lastRun.status) });
       createButton(meta, "file-text", "Open expected note", () => {
         void this.plugin.openVaultPath(lastRun.expectedOpenPath ?? "");
       }, undefined, !expectedExists);

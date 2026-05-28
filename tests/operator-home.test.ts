@@ -33,12 +33,16 @@ test("formats run completion notices with expected-note status", () => {
   );
   assert.equal(formatRunCompletionNotice("failed"), "Operator run failed.");
   assert.equal(
-    formatExpectedNoteStatus("01_Execution/2026-W21/2026-05-22.md", false),
+    formatExpectedNoteStatus("01_Execution/2026-W21/2026-05-22.md", false, "success"),
     "Expected note missing: 01_Execution/2026-W21/2026-05-22.md",
   );
   assert.equal(
-    formatExpectedNoteStatus("01_Execution/2026-W21/2026-05-22.md", true),
+    formatExpectedNoteStatus("01_Execution/2026-W21/2026-05-22.md", true, "running"),
     "Expected note ready: 01_Execution/2026-W21/2026-05-22.md",
+  );
+  assert.equal(
+    formatExpectedNoteStatus("01_Execution/2026-W21/2026-05-22.md", false, "running"),
+    "Expected note pending: 01_Execution/2026-W21/2026-05-22.md",
   );
 });
 
