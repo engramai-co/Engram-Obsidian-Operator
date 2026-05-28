@@ -1021,6 +1021,9 @@ class RunPreviewModal extends Modal {
     const meta = contentEl.createDiv({ cls: "operator-preview-meta" });
     meta.createSpan({ text: `Backend: ${this.backend}` });
     meta.createSpan({ text: `Vault: ${this.vaultPath}` });
+    if (this.spec.expectedOpenPath) {
+      meta.createSpan({ text: `Expected note: ${this.spec.expectedOpenPath}` });
+    }
 
     const field = contentEl.createDiv({ cls: "operator-field" });
     field.createEl("label", { text: "Prompt" });
@@ -1031,6 +1034,9 @@ class RunPreviewModal extends Modal {
     promptInput.value = this.spec.prompt;
 
     const columns = contentEl.createDiv({ cls: "operator-preview-grid" });
+    if (this.spec.targetNotes?.length) {
+      renderAreaList(columns, "Targets", this.spec.targetNotes);
+    }
     renderAreaList(columns, "Likely reads", this.spec.readAreas);
     renderAreaList(columns, "Likely writes", this.spec.writeAreas);
     if (this.spec.runNotes?.length) {

@@ -27,6 +27,7 @@ export interface OperatorWorkflowRunSpec {
   readAreas: string[];
   writeAreas: string[];
   expectedOpenPath?: string;
+  targetNotes?: string[];
   runNotes?: string[];
   search?: boolean;
 }
@@ -36,6 +37,7 @@ export function buildStartDaySpec(hours: number, manualItems: string, date = new
   const cleanedManualItems = normalizeInlineArgs(manualItems);
   const context = `Operator run metadata (do not treat as manual action items):\n${formatRunContext(date)}`;
   const preflightGuard = formatDailyPreflightGuard();
+  const dailyNotePath = getDailyNotePath(date);
   const prompt = cleanedManualItems
     ? `/daily-init ${safeHours}\n\n${context}\n\n${preflightGuard}\n\nManual items to consider today:\n${cleanedManualItems}`
     : `/daily-init ${safeHours}\n\n${context}\n\n${preflightGuard}`;
@@ -56,7 +58,12 @@ export function buildStartDaySpec(hours: number, manualItems: string, date = new
       "04_Knowledge/ daily GitHub, academic, and AI notes",
       "05_Content/Backlog.md content ideas",
     ],
-    expectedOpenPath: getDailyNotePath(date),
+    expectedOpenPath: dailyNotePath,
+    targetNotes: [
+      `Daily note: ${dailyNotePath}`,
+      `Execution week: ${getIsoWeekInfo(date).label}`,
+      `Planning quarter: ${getQuarterInfo(date).label}`,
+    ],
     runNotes: [
       "Pre-flight may close last week: /weekly-review, then /ai-weekly-digest.",
       "Pre-flight may close last month: /quarterly-plan pulse for the target month.",
@@ -77,11 +84,16 @@ export function buildWorkflowSpec(
     case "weekly-init":
       return simpleSpec(id, "Plan this week", "/weekly-init", [
         "Recent daily notes, last week Weekly Todo, Blockers, project deadline plans",
-      ], ["Current week Weekly Todo and Blockers"], date, `${getExecutionWeekFolder(date)}/Weekly Todo.md`);
+      ], ["Current week Weekly Todo and Blockers"], date, `${getExecutionWeekFolder(date)}/Weekly Todo.md`, [
+        `Execution week: ${getIsoWeekInfo(date).label}`,
+      ]);
     case "weekly-review":
+      const weeklyReviewFolder = getWeeklyReviewFolder(cleanedArgs, date);
       return simpleSpec(id, "Review this week", "/weekly-review", [
         "This week's daily notes, Weekly Todo, Blockers, and active projects",
-      ], ["Current week Weekly Review.md"], date, `${getWeeklyReviewFolder(cleanedArgs, date)}/Weekly Review.md`);
+      ], ["Current week Weekly Review.md"], date, `${weeklyReviewFolder}/Weekly Review.md`, [
+        `Review week: ${weeklyReviewFolder.replace("01_Execution/", "")}`,
+      ]);
     case "ai-weekly-digest":
       return {
         ...simpleSpec(id, "AI weekly digest", withArgs("/ai-weekly-digest", cleanedArgs), [
@@ -118,11 +130,15 @@ export function buildWorkflowSpec(
     case "quarterly-plan":
       return simpleSpec(id, "Quarterly planning", withArgs("/quarterly-plan", cleanedArgs), [
         "Annual vision, quarterly plans/reviews, weekly reviews, active projects, horizon items",
-      ], ["00_Strategy/YYYY-QX/ planning, review, or monthly pulse notes"], date, getQuarterlyExpectedPath(cleanedArgs, date));
+      ], ["00_Strategy/YYYY-QX/ planning, review, or monthly pulse notes"], date, getQuarterlyExpectedPath(cleanedArgs, date), [
+        getQuarterlyTargetNote(cleanedArgs, date),
+      ]);
     case "annual-vision":
       return simpleSpec(id, "Annual vision", withArgs("/annual-vision", cleanedArgs), [
         "Current and prior annual vision/review, quarterly reviews, active projects",
-      ], ["00_Strategy/YYYY Vision.md or YYYY Annual Review.md"], date, getAnnualExpectedPath(cleanedArgs, date));
+      ], ["00_Strategy/YYYY Vision.md or YYYY Annual Review.md"], date, getAnnualExpectedPath(cleanedArgs, date), [
+        getAnnualTargetNote(cleanedArgs, date),
+      ]);
     case "add-events":
       return simpleSpec(id, "Add events", withArgs("/add-events", cleanedArgs), [
         "Pasted event descriptions and project context",
@@ -210,8 +226,9 @@ function simpleSpec(
   writeAreas: string[],
   date = new Date(),
   expectedOpenPath?: string,
+  targetNotes?: string[],
 ): OperatorWorkflowRunSpec {
-  return { id, label, prompt: appendRunMetadata(prompt, date), readAreas, writeAreas, expectedOpenPath };
+  return { id, label, prompt: appendRunMetadata(prompt, date), readAreas, writeAreas, expectedOpenPath, targetNotes };
 }
 
 function withArgs(command: string, args: string): string {
@@ -286,6 +303,12 @@ function getAnnualExpectedPath(args: string, date: Date): string {
   return `00_Strategy/${year} ${mode}.md`;
 }
 
+function getAnnualTargetNote(args: string, date: Date): string {
+  const year = Number(args.match(/\b(20\d{2})\b/)?.[1] ?? date.getFullYear());
+  const mode = args.toLowerCase().includes("review") ? "Annual review" : "Annual vision";
+  return `${mode} target: ${year}`;
+}
+
 function getQuarterlyExpectedPath(args: string, date: Date): string {
   const mode = args.split(/\s+/, 1)[0].toLowerCase();
   if (mode === "review") {
@@ -299,6 +322,20 @@ function getQuarterlyExpectedPath(args: string, date: Date): string {
   }
   const quarter = parseQuarterArg(args) ?? getQuarterInfo(date);
   return `00_Strategy/${quarter.label}/Quarterly Plan.md`;
+}
+
+function getQuarterlyTargetNote(args: string, date: Date): string {
+  const mode = args.split(/\s+/, 1)[0].toLowerCase();
+  if (mode === "review") {
+    const quarter = parseQuarterArg(args) ?? getPreviousQuarter(date);
+    return `Quarterly review target: ${quarter.label}`;
+  }
+  if (mode === "pulse") {
+    const target = parsePulseMonth(args, date);
+    return `Monthly pulse target: ${target.year}-${String(target.month).padStart(2, "0")}`;
+  }
+  const quarter = parseQuarterArg(args) ?? getQuarterInfo(date);
+  return `Quarterly plan target: ${quarter.label}`;
 }
 
 function parseQuarterArg(args: string): { year: number; quarter: number; label: string } | null {
