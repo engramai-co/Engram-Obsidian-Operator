@@ -93,7 +93,7 @@ The dashboard will show:
 1. Click **Install Codex skills** if the dashboard says Codex skills are missing. Claude users can switch the backend in settings and copy the Claude install commands from **Setup health**.
 2. Click **Initialize vault**. This creates the six core folders plus `CLAUDE.md`, `AGENTS.md`, `05_Content/Backlog.md`, and `05_Content/Voice Guide.md` without overwriting existing files.
 3. In **Active projects**, click **New** and create a native Markdown project note.
-4. Enter your available hours and click **Start my day**. Review the Preview, then run it.
+4. Enter your available hours, optionally add one manual item per line, and click **Start my day**. Review the Preview, then run it.
 
 The first background run asks for authorization. Operator launches Codex in the current vault with `workspace-write` permissions, never with full-disk or dangerous sandbox bypass settings by default. Fixed structural tasks such as vault initialization, quick capture, and new project scaffolding run through the Obsidian API; reasoning-heavy work such as daily briefings, project sync, meeting synthesis, content drafting, and deep research still runs through editable agent previews.
 

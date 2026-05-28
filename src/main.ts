@@ -644,7 +644,7 @@ class OperatorDashboardView extends ItemView {
       cls: "operator-manual-input",
       attr: {
         rows: "2",
-        placeholder: "Optional: call Alice, review deck",
+        placeholder: "Optional: one item per line",
       },
     });
 
