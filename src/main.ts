@@ -45,6 +45,7 @@ import {
   describePrompt,
   normalizeDailyHours,
   resolveAdvancedPrompt,
+  resolveAvailableHoursInput,
   type OperatorWorkflowRunSpec,
 } from "./workflows";
 
@@ -565,7 +566,10 @@ class OperatorDashboardView extends ItemView {
       },
     });
     hoursInput.addEventListener("change", () => {
-      this.plugin.settings.availableHours = normalizeDailyHours(Number(hoursInput.value));
+      const resolvedHours = resolveAvailableHoursInput(hoursInput.value, this.plugin.settings.availableHours);
+      this.plugin.settings.availableHours = resolvedHours;
+      hoursInput.value = String(resolvedHours);
+      this.updateAdvancedPromptPlaceholders(resolvedHours);
       void this.plugin.saveSettings();
     });
 
@@ -579,7 +583,8 @@ class OperatorDashboardView extends ItemView {
 
     const canRun = this.canRun(status);
     createButton(row, "sun", "Start my day", () => {
-      void this.plugin.runDailyBriefing(Number(hoursInput.value) || this.plugin.settings.availableHours, manualInput.value);
+      const resolvedHours = resolveAvailableHoursInput(hoursInput.value, this.plugin.settings.availableHours);
+      void this.plugin.runDailyBriefing(resolvedHours, manualInput.value);
     }, "mod-cta", !canRun);
     createButton(row, "file-text", "Open today", () => void this.plugin.openVaultPath(home.dailyNotePath), undefined, !home.daily.exists);
     createButton(row, "list-checks", "Open week", () => void this.plugin.openVaultPath(home.weeklyTodoPath), undefined, !home.weeklyTodo.exists);
@@ -822,6 +827,13 @@ class OperatorDashboardView extends ItemView {
       const prompt = resolveAdvancedPrompt(custom.value, this.plugin.settings.availableHours);
       void this.plugin.previewAndRunWorkflow(describePrompt(prompt));
     }, "mod-cta", !canRun);
+  }
+
+  private updateAdvancedPromptPlaceholders(hours: number): void {
+    const placeholder = buildAdvancedPromptPlaceholder(hours);
+    for (const promptInput of Array.from(this.contentEl.querySelectorAll<HTMLTextAreaElement>(".operator-prompt-input"))) {
+      promptInput.placeholder = placeholder;
+    }
   }
 
   private renderQuickCapture(root: HTMLElement, home: OperatorHomeState): void {

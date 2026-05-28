@@ -87,6 +87,14 @@ export function resolveAdvancedPrompt(prompt: string, availableHours: number): s
   return prompt.trim() || buildDefaultDailyPrompt(availableHours);
 }
 
+export function resolveAvailableHoursInput(value: string, fallbackHours: number): number {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return normalizeDailyHours(fallbackHours);
+  }
+  return normalizeDailyHours(parsed);
+}
+
 export function buildWorkflowSpec(
   id: OperatorWorkflowId,
   args = "",
