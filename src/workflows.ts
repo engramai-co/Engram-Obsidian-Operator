@@ -39,6 +39,7 @@ export function buildStartDaySpec(hours: number, manualItems: string, date = new
   const preflightGuard = formatDailyPreflightGuard(date);
   const boundaryTargets = getDailyBoundaryTargets(date);
   const dailyNotePath = getDailyNotePath(date);
+  const weekFolder = getExecutionWeekFolder(date);
   const prompt = cleanedManualItems
     ? `/daily-init ${safeHours}\n\n${context}\n\n${preflightGuard}\n\nManual items to consider today:\n${cleanedManualItems}`
     : `/daily-init ${safeHours}\n\n${context}\n\n${preflightGuard}`;
@@ -54,10 +55,10 @@ export function buildStartDaySpec(hours: number, manualItems: string, date = new
       "Gmail, calendar, GitHub, arXiv when configured",
     ],
     writeAreas: [
-      "Today's daily note briefing and schedule",
-      "Current week Weekly Todo / Blockers sync updates",
-      "04_Knowledge/ daily GitHub, academic, and AI notes",
-      "05_Content/Backlog.md content ideas",
+      `Daily note: ${dailyNotePath}`,
+      `Weekly Todo: ${weekFolder}/Weekly Todo.md`,
+      `Blockers: ${weekFolder}/Blockers.md`,
+      "Knowledge notes under 04_Knowledge/ and content ideas in 05_Content/Backlog.md when configured",
     ],
     expectedOpenPath: dailyNotePath,
     targetNotes: [
@@ -179,9 +180,13 @@ export function buildWorkflowSpec(
   switch (id) {
     case "weekly-init":
       const weeklyInitTarget = getWeeklyInitTarget(cleanedArgs, date);
+      const weeklyInitFolder = `01_Execution/${weeklyInitTarget}`;
       return simpleSpec(id, `Plan ${weeklyInitTarget}`, withArgs("/weekly-init", weeklyInitTarget), [
         "Recent daily notes, last week Weekly Todo, Blockers, project deadline plans",
-      ], ["Target week Weekly Todo and Blockers"], date, `01_Execution/${weeklyInitTarget}/Weekly Todo.md`, [
+      ], [
+        `Weekly Todo: ${weeklyInitFolder}/Weekly Todo.md`,
+        `Blockers: ${weeklyInitFolder}/Blockers.md`,
+      ], date, `${weeklyInitFolder}/Weekly Todo.md`, [
         `Execution week: ${weeklyInitTarget}`,
       ]);
     case "weekly-review":
@@ -189,7 +194,7 @@ export function buildWorkflowSpec(
       const weeklyReviewLabel = weeklyReviewFolder.replace("01_Execution/", "");
       return simpleSpec(id, `Review ${weeklyReviewLabel}`, withArgs("/weekly-review", getWeeklyReviewPromptArgs(cleanedArgs, weeklyReviewFolder)), [
         "Target week's daily notes, Weekly Todo, Blockers, and active projects",
-      ], ["Target week Weekly Review.md"], date, `${weeklyReviewFolder}/Weekly Review.md`, [
+      ], [`Weekly Review: ${weeklyReviewFolder}/Weekly Review.md`], date, `${weeklyReviewFolder}/Weekly Review.md`, [
         `Review week: ${weeklyReviewLabel}`,
       ]);
     case "ai-weekly-digest":

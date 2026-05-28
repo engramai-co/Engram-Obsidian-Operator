@@ -117,6 +117,24 @@ test("builds date-aware workflow input placeholders", () => {
   assert.doesNotMatch(source, /"2026-Q2 or 2026-04"/);
 });
 
+test("workflow previews name exact daily and weekly write targets", () => {
+  const date = new Date("2026-05-28T09:00:00");
+
+  assert.deepEqual(buildStartDaySpec(6, "", date).writeAreas, [
+    "Daily note: 01_Execution/2026-W22/2026-05-28.md",
+    "Weekly Todo: 01_Execution/2026-W22/Weekly Todo.md",
+    "Blockers: 01_Execution/2026-W22/Blockers.md",
+    "Knowledge notes under 04_Knowledge/ and content ideas in 05_Content/Backlog.md when configured",
+  ]);
+  assert.deepEqual(buildWorkflowSpec("weekly-init", "", date).writeAreas, [
+    "Weekly Todo: 01_Execution/2026-W22/Weekly Todo.md",
+    "Blockers: 01_Execution/2026-W22/Blockers.md",
+  ]);
+  assert.deepEqual(buildWorkflowSpec("weekly-review", "last", date).writeAreas, [
+    "Weekly Review: 01_Execution/2026-W21/Weekly Review.md",
+  ]);
+});
+
 test("quarterly-plan skill documents explicit UI targets", () => {
   const skill = readFileSync("plugins/obsidian-operator/skills/quarterly-plan/SKILL.md", "utf8");
 
