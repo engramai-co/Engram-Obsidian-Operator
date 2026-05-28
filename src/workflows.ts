@@ -341,7 +341,7 @@ function formatDailyPreflightGuard(date = new Date()): string {
   return [
     "Daily pre-flight guard:",
     "Do not rely on CLI hooks being available in this Obsidian-launched run.",
-    "Run missing weekly, monthly, and quarterly boundary workflows before writing today's briefing, in the daily-init order: /weekly-review, /ai-weekly-digest, /quarterly-plan pulse, /quarterly-plan review, /quarterly-plan init, then /weekly-init.",
+    `Run missing weekly, monthly, and quarterly boundary workflows before writing today's briefing, in the daily-init order: /weekly-review, /ai-weekly-digest, /quarterly-plan pulse, /quarterly-plan review, /quarterly-plan init, then /weekly-init ${targets.currentWeek}.`,
     "Use these concrete targets when a boundary check fires:",
     `- Last week review: /weekly-review ${targets.lastWeek}`,
     `- Last week AI digest: /ai-weekly-digest ${targets.lastWeek}`,
