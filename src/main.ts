@@ -906,7 +906,10 @@ class OperatorDashboardView extends ItemView {
     });
     createButton(advanced, "copy", "Copy CLI handoff", () => {
       const prompt = resolveAdvancedPrompt(custom.value, this.plugin.settings.availableHours);
-      void copyTextToClipboard(buildCliHandoff(this.plugin.getVaultPath(), prompt, new Date(), this.plugin.settings.backend), "CLI handoff copied.");
+      void copyTextToClipboard(buildCliHandoff(this.plugin.getVaultPath(), prompt, new Date(), this.plugin.settings.backend, {
+        codexPath: this.plugin.status?.resolvedPaths.codex ?? this.plugin.settings.codexPath,
+        claudePath: this.plugin.status?.resolvedPaths.claude ?? this.plugin.settings.claudePath,
+      }), "CLI handoff copied.");
     });
     createAgentWorkflowButton(advanced, "terminal", "Preview and run", () => {
       const prompt = resolveAdvancedPrompt(custom.value, this.plugin.settings.availableHours);

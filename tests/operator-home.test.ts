@@ -580,6 +580,11 @@ test("builds CLI handoff as a runnable codex exec command with the enhanced dail
   assert.match(handoff, /'\/daily-init 4\.5/);
   assert.match(handoff, /Daily pre-flight guard:/);
   assert.match(handoff, /Local date: 2026-05-22/);
+
+  const resolvedHandoff = buildCliHandoff("/tmp/My Vault", "/daily-init 4.5", new Date("2026-05-22T09:00:00"), "codex", {
+    codexPath: "/Users/herschel/.nvm/versions/node/v24.14.0/bin/codex",
+  });
+  assert.match(resolvedHandoff, /^cd '\/tmp\/My Vault'\n'\/Users\/herschel\/\.nvm\/versions\/node\/v24\.14\.0\/bin\/codex' exec /);
 });
 
 test("builds CLI handoff for Claude when Claude backend is selected", () => {
@@ -588,6 +593,11 @@ test("builds CLI handoff for Claude when Claude backend is selected", () => {
   assert.match(handoff, /^cd '\/tmp\/My Vault'\nclaude -p /);
   assert.match(handoff, /'\/annual-vision review/);
   assert.match(handoff, /Operator run metadata/);
+
+  const resolvedHandoff = buildCliHandoff("/tmp/My Vault", "/annual-vision review", new Date("2026-05-22T09:00:00"), "claude", {
+    claudePath: "/opt/homebrew/bin/claude",
+  });
+  assert.match(resolvedHandoff, /^cd '\/tmp\/My Vault'\n'\/opt\/homebrew\/bin\/claude' -p /);
 });
 
 function createFakeApp(): {

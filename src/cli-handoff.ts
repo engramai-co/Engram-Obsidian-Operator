@@ -6,6 +6,7 @@ export function buildCliHandoff(
   prompt: string,
   date = new Date(),
   backend: OperatorBackend = "codex",
+  paths: { codexPath?: string; claudePath?: string } = {},
 ): string {
   const rawPrompt = prompt.trim() || "/daily-init 6";
   const spec = describePrompt(rawPrompt, date);
@@ -14,12 +15,12 @@ export function buildCliHandoff(
   if (backend === "claude") {
     return [
       cdLine,
-      ["claude", "-p", shellQuote(spec.prompt)].join(" "),
+      [shellQuote(paths.claudePath ?? "claude"), "-p", shellQuote(spec.prompt)].join(" "),
     ].join("\n");
   }
 
   const args = [
-    "codex",
+    shellQuote(paths.codexPath ?? "codex"),
     "exec",
     "--cd",
     shellQuote(targetVault),
@@ -40,5 +41,8 @@ export function buildCliHandoff(
 }
 
 function shellQuote(value: string): string {
+  if (!value.includes("/") && /^[A-Za-z0-9_.:-]+$/.test(value)) {
+    return value;
+  }
   return `'${value.replace(/'/g, "'\\''")}'`;
 }
