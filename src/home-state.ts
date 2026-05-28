@@ -72,6 +72,30 @@ export async function appendQuickCapture(
   return dailyPath;
 }
 
+export async function updateMarkdownTaskState(
+  app: App,
+  path: string,
+  rawLine: string,
+  marker: " " | "x" | ">",
+): Promise<void> {
+  const file = app.vault.getAbstractFileByPath(path);
+  if (!isVaultFile(file)) {
+    throw new Error(`${path} is not a note.`);
+  }
+
+  const updatedLine = rawLine.replace(/^(\s*[-*]\s+\[)[^\]](\]\s+)/, `$1${marker}$2`);
+  if (updatedLine === rawLine) {
+    throw new Error("Selected line is not a Markdown task.");
+  }
+
+  await app.vault.process(file, (current) => {
+    if (!current.includes(rawLine)) {
+      throw new Error("Selected task was not found in the source note.");
+    }
+    return current.replace(rawLine, updatedLine);
+  });
+}
+
 async function readActiveProjects(app: App): Promise<ActiveProjectSummary[]> {
   const projectFiles = app.vault
     .getMarkdownFiles()

@@ -78,6 +78,7 @@ The dashboard will show:
 
 - **Today** from the current daily note: `## Focus`, `### Action Items`, `## Schedule`, and the current weekly queue
 - **Start my day** with available-hours inputs that preserve half-hour budgets, manual-items input, and an editable Preview that includes local date, time, timezone, ISO week, and quarter as metadata before the agent runs; boundary tasks such as weekly review/setup, AI weekly digest, monthly pulse, and quarterly plan/review still auto-run when needed
+- Native **Done** and **Carry** actions for visible daily and weekly tasks, editing the source Markdown checkbox instead of creating a separate task database
 - Native **Quick Capture** for ideas, tasks, meeting notes, and research questions without leaving Operator Home
 - Active projects from `02_Projects/`, plus `## Now` next actions
 - Current-week meetings and waiting-on items from `Blockers.md`

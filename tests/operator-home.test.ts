@@ -1,7 +1,7 @@
 import { strict as assert } from "node:assert";
 import test from "node:test";
 import { formatRunContext, getDailyNotePath, getExecutionWeekFolder, getIsoWeekInfo, getQuarterInfo } from "../src/dates";
-import { appendQuickCapture, readOperatorHomeState } from "../src/home-state";
+import { appendQuickCapture, readOperatorHomeState, updateMarkdownTaskState } from "../src/home-state";
 import { buildProjectNote, createNativeProject, normalizeProjectName } from "../src/projects";
 import { parseActiveProjectNote, parseBlockers, parseDailyNote, parseWeeklyTodo } from "../src/vault-parsers";
 import { buildStartDaySpec, buildWorkflowSpec, describePrompt } from "../src/workflows";
@@ -178,6 +178,25 @@ test("native project creation and quick capture update the markdown home state",
   assert.equal(home.daily.captureCount, 1);
   assert.deepEqual(home.activeProjects.map((item) => item.name), ["Customer-Discovery"]);
   assert.deepEqual(home.activeProjects[0].nextActions, ["Interview five users"]);
+});
+
+test("updates markdown task state in the source note", async () => {
+  const app = createFakeApp();
+  await app.vault.create("01_Execution/2026-W21/Weekly Todo.md", [
+    "# Weekly Todo",
+    "",
+    "- [ ] Ship UX review",
+    "- [>] Carry research",
+  ].join("\n"));
+
+  await updateMarkdownTaskState(app as never, "01_Execution/2026-W21/Weekly Todo.md", "- [ ] Ship UX review", "x");
+  await updateMarkdownTaskState(app as never, "01_Execution/2026-W21/Weekly Todo.md", "- [>] Carry research", " ");
+
+  const file = app.vault.getAbstractFileByPath("01_Execution/2026-W21/Weekly Todo.md");
+  const markdown = await app.vault.read(file as { path: string });
+
+  assert.match(markdown, /- \[x\] Ship UX review/);
+  assert.match(markdown, /- \[ \] Carry research/);
 });
 
 test("builds editable workflow prompt specs", () => {

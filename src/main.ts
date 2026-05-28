@@ -16,7 +16,7 @@ import {
   setIcon,
 } from "obsidian";
 import { formatDateKey, getIsoWeekInfo, getQuarterInfo } from "./dates";
-import { appendQuickCapture, readOperatorHomeState, type OperatorHomeState } from "./home-state";
+import { appendQuickCapture, readOperatorHomeState, updateMarkdownTaskState, type OperatorHomeState } from "./home-state";
 import { createNativeProject, normalizeProjectName, type NativeProjectInput } from "./projects";
 import {
   buildBackendCommand,
@@ -34,6 +34,7 @@ import {
   type OperatorEnvironmentStatus,
   type StatusState,
 } from "./status";
+import type { MarkdownActionItem } from "./vault-parsers";
 import { initializeVault, type VaultInitializationResult } from "./vault-init";
 import {
   buildStartDaySpec,
@@ -206,6 +207,16 @@ export default class OperatorControlPlugin extends Plugin {
       this.renderViews();
     } catch (error) {
       new Notice(`Project setup failed: ${formatError(error)}`);
+    }
+  }
+
+  async updateTaskFromUi(path: string, item: MarkdownActionItem, marker: " " | "x" | ">"): Promise<void> {
+    try {
+      await updateMarkdownTaskState(this.app, path, item.raw, marker);
+      new Notice(marker === "x" ? "Task marked done." : marker === ">" ? "Task carried forward." : "Task reopened.");
+      this.renderViews();
+    } catch (error) {
+      new Notice(`Task update failed: ${formatError(error)}`);
     }
   }
 
@@ -589,8 +600,8 @@ class OperatorDashboardView extends ItemView {
 
     const tasks = grid.createDiv({ cls: "operator-note-panel" });
     tasks.createEl("h4", { text: "Next actions" });
-    const actions = [...home.daily.tasks, ...home.daily.carriedForward].slice(0, 8).map((item) => item.text);
-    renderTextList(tasks, actions, home.weeklyTodo.openTasks.length > 0
+    const actions = [...home.daily.tasks, ...home.daily.carriedForward].slice(0, 8);
+    this.renderActionItems(tasks, actions, home.dailyNotePath, home.weeklyTodo.openTasks.length > 0
       ? "Today's note has no open tasks. Check the weekly list below."
       : "No open tasks found yet.");
 
@@ -604,7 +615,27 @@ class OperatorDashboardView extends ItemView {
     if (home.weeklyTodo.openTasks.length > 0) {
       const week = grid.createDiv({ cls: "operator-note-panel" });
       week.createEl("h4", { text: "Weekly queue" });
-      renderTextList(week, home.weeklyTodo.openTasks.map((item) => item.text).slice(0, 6), "Weekly Todo has no open tasks.");
+      this.renderActionItems(week, home.weeklyTodo.openTasks.slice(0, 6), home.weeklyTodoPath, "Weekly Todo has no open tasks.");
+    }
+  }
+
+  private renderActionItems(parent: HTMLElement, items: MarkdownActionItem[], sourcePath: string, emptyText: string): void {
+    if (items.length === 0) {
+      parent.createEl("p", { cls: "operator-muted", text: emptyText });
+      return;
+    }
+
+    const list = parent.createEl("ul", { cls: "operator-list" });
+    for (const item of items) {
+      const row = list.createEl("li");
+      row.createEl("span", { text: item.text });
+      const actions = row.createDiv({ cls: "operator-inline-actions" });
+      createButton(actions, "check", "Done", () => {
+        void this.plugin.updateTaskFromUi(sourcePath, item, "x");
+      });
+      createButton(actions, "corner-down-right", "Carry", () => {
+        void this.plugin.updateTaskFromUi(sourcePath, item, ">");
+      });
     }
   }
 
