@@ -161,15 +161,17 @@ export function buildWorkflowSpec(
         "Project note, existing deadline plan, calendar/reminder context when available",
       ], ["Project Deadline Plan.md and related reminders"], date);
     case "quarterly-plan":
+      const quarterlyExpectedPath = getQuarterlyExpectedPath(cleanedArgs, date);
       return simpleSpec(id, getQuarterlyWorkflowLabel(cleanedArgs, date), withArgs("/quarterly-plan", getQuarterlyPromptArgs(cleanedArgs, date)), [
         "Annual vision, quarterly plans/reviews, weekly reviews, active projects, horizon items",
-      ], ["00_Strategy/YYYY-QX/ planning, review, or monthly pulse notes"], date, getQuarterlyExpectedPath(cleanedArgs, date), [
+      ], [quarterlyExpectedPath], date, quarterlyExpectedPath, [
         getQuarterlyTargetNote(cleanedArgs, date),
       ]);
     case "annual-vision":
+      const annualExpectedPath = getAnnualExpectedPath(cleanedArgs, date);
       return simpleSpec(id, getAnnualWorkflowLabel(cleanedArgs, date), withArgs("/annual-vision", getAnnualPromptArgs(cleanedArgs, date)), [
         "Current and prior annual vision/review, quarterly reviews, active projects",
-      ], ["00_Strategy/YYYY Vision.md or YYYY Annual Review.md"], date, getAnnualExpectedPath(cleanedArgs, date), [
+      ], [annualExpectedPath], date, annualExpectedPath, [
         getAnnualTargetNote(cleanedArgs, date),
       ]);
     case "add-events":
