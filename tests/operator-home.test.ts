@@ -4,6 +4,7 @@ import { formatRunContext, getDailyNotePath, getExecutionWeekFolder, getIsoWeekI
 import { appendQuickCapture, readOperatorHomeState, updateMarkdownTaskState } from "../src/home-state";
 import { buildCliHandoff } from "../src/cli-handoff";
 import { buildProjectNote, createNativeProject, normalizeProjectName } from "../src/projects";
+import { formatRunCompletionNotice } from "../src/run-notices";
 import { parseActiveProjectNote, parseBlockers, parseDailyNote, parseWeeklyTodo } from "../src/vault-parsers";
 import { buildAdvancedPromptPlaceholder, buildDefaultDailyPrompt, buildStartDaySpec, buildWorkflowSpec, describePrompt, resolveAdvancedPrompt, resolveAnnualYearInput, resolveAvailableHoursInput, resolveEditedPreviewSpec } from "../src/workflows";
 
@@ -19,6 +20,18 @@ test("computes ISO week folders and daily note paths", () => {
   assert.equal(getDailyNotePath(date), "01_Execution/2026-W01/2026-01-01.md");
   assert.equal(hasLocalDateChanged("2026-05-22", new Date("2026-05-22T23:59:00")), false);
   assert.equal(hasLocalDateChanged("2026-05-22", new Date("2026-05-23T00:01:00")), true);
+});
+
+test("formats run completion notices with expected-note status", () => {
+  assert.equal(
+    formatRunCompletionNotice("success", "01_Execution/2026-W21/2026-05-22.md", true),
+    "Operator run finished. Opened 01_Execution/2026-W21/2026-05-22.md.",
+  );
+  assert.equal(
+    formatRunCompletionNotice("success", "01_Execution/2026-W21/2026-05-22.md", false),
+    "Operator run finished. Expected note not found yet: 01_Execution/2026-W21/2026-05-22.md.",
+  );
+  assert.equal(formatRunCompletionNotice("failed"), "Operator run failed.");
 });
 
 test("formats run context for agent prompts with local clock and planning period", () => {

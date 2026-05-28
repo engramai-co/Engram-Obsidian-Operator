@@ -27,6 +27,7 @@ import {
   truncateOutput,
   type RunningProcess,
 } from "./runner";
+import { formatRunCompletionNotice } from "./run-notices";
 import { DEFAULT_SETTINGS, type OperatorRunRecord, type OperatorSettings } from "./settings";
 import {
   canRunBackendWorkflows,
@@ -355,14 +356,16 @@ export default class OperatorControlPlugin extends Plugin {
     this.activeRun = null;
     this.activeRunBuffer = null;
     await this.saveSettings();
+    let openedExpectedNote = false;
     if (status === "success" && this.settings.lastRun?.expectedOpenPath) {
       const file = this.app.vault.getAbstractFileByPath(this.settings.lastRun.expectedOpenPath);
       if (file instanceof TFile) {
         await this.app.workspace.getLeaf(false).openFile(file);
+        openedExpectedNote = true;
       }
     }
     this.renderViews();
-    new Notice(status === "success" ? "Operator run finished." : `Operator run ${status}.`);
+    new Notice(formatRunCompletionNotice(status, this.settings.lastRun?.expectedOpenPath, openedExpectedNote));
   }
 
   private async confirmRunPreview(spec: OperatorWorkflowRunSpec): Promise<OperatorWorkflowRunSpec | null> {
