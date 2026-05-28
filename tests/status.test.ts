@@ -5,6 +5,7 @@ import {
   formatWorkflowLockHelp,
   getBackendReadiness,
   getFreshBackendReadinessForRun,
+  getFreshWorkflowLaunchGate,
   type OperatorEnvironmentStatus,
 } from "../src/status";
 
@@ -78,6 +79,18 @@ test("workflow run readiness always uses freshly refreshed status", async () => 
   assert.equal(refreshes, 1);
   assert.equal(result.status, freshStatus);
   assert.equal(result.readiness.ready, true);
+});
+
+test("workflow launch gate reports backend-specific setup before preview", async () => {
+  const result = await getFreshWorkflowLaunchGate(async () => createStatus({
+    claudeCli: "ready",
+    claudeSkills: "missing",
+  }), "claude", "Project sync");
+
+  assert.equal(result.ready, false);
+  assert.match(result.noticeText, /Project sync needs setup first/);
+  assert.match(result.noticeText, /Claude Operator skills/);
+  assert.doesNotMatch(result.noticeText, /Codex/);
 });
 
 function createStatus(overrides: Partial<OperatorEnvironmentStatus>): OperatorEnvironmentStatus {

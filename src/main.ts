@@ -36,6 +36,7 @@ import {
   formatWorkflowLockHelp,
   getBackendReadiness,
   getFreshBackendReadinessForRun,
+  getFreshWorkflowLaunchGate,
   type OperatorEnvironmentStatus,
   type StatusState,
 } from "./status";
@@ -246,6 +247,16 @@ export default class OperatorControlPlugin extends Plugin {
   }
 
   async previewAndRunWorkflow(spec: OperatorWorkflowRunSpec): Promise<void> {
+    const gate = await getFreshWorkflowLaunchGate(
+      () => this.refreshStatus(),
+      this.settings.backend,
+      spec.label,
+    );
+    if (!gate.ready) {
+      new Notice(gate.noticeText);
+      return;
+    }
+
     const confirmed = await this.confirmRunPreview(spec);
     if (!confirmed) {
       return;

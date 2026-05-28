@@ -121,6 +121,22 @@ export async function getFreshBackendReadinessForRun(
   };
 }
 
+export async function getFreshWorkflowLaunchGate(
+  refreshStatus: () => Promise<OperatorEnvironmentStatus>,
+  backend: OperatorBackend,
+  actionLabel = "Agent workflow",
+): Promise<{ status: OperatorEnvironmentStatus; readiness: BackendReadiness; ready: boolean; noticeText: string }> {
+  const { status, readiness } = await getFreshBackendReadinessForRun(refreshStatus, backend);
+  return {
+    status,
+    readiness,
+    ready: readiness.ready,
+    noticeText: readiness.ready
+      ? readiness.helpText
+      : formatWorkflowLockHelp(status, backend, actionLabel),
+  };
+}
+
 export function getBackendReadiness(status: OperatorEnvironmentStatus, backend: OperatorBackend): BackendReadiness {
   const blockers: string[] = [];
   if (!status.vault.ready) {
