@@ -78,6 +78,15 @@ export function buildAdvancedPromptPlaceholder(hours: number): string {
   return `${buildDefaultDailyPrompt(hours)}, /project-init MyProject, or review a note`;
 }
 
+export function buildWeeklyPeriodPlaceholder(date = new Date()): string {
+  return `${getIsoWeekInfo(date).label}; review accepts last`;
+}
+
+export function buildStrategyPeriodPlaceholder(date = new Date()): string {
+  const month = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+  return `${getQuarterInfo(date).label} or ${month}`;
+}
+
 export function resolveAdvancedPrompt(prompt: string, availableHours: number): string {
   return prompt.trim() || buildDefaultDailyPrompt(availableHours);
 }

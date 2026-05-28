@@ -48,7 +48,9 @@ import { initializeVault, type VaultInitializationResult } from "./vault-init";
 import {
   buildAdvancedPromptPlaceholder,
   buildDefaultDailyPrompt,
+  buildStrategyPeriodPlaceholder,
   buildStartDaySpec,
+  buildWeeklyPeriodPlaceholder,
   buildWorkflowSpec,
   describePrompt,
   normalizeDailyHours,
@@ -813,8 +815,9 @@ class OperatorDashboardView extends ItemView {
     ) => createButton(parent, icon, label, onClick, extraClass, !canRun, lockHelp);
     const grid = section.createDiv({ cls: "operator-workflow-grid" });
 
+    const now = new Date();
     const planWeek = createWorkflowCard(grid, "Plan week", "Open or review the current execution layer.");
-    const weekInput = createInlineInput(planWeek, "Week", "2026-W21; review accepts last");
+    const weekInput = createInlineInput(planWeek, "Week", buildWeeklyPeriodPlaceholder(now));
     createAgentWorkflowButton(planWeek, "calendar-plus", "Weekly setup", () => {
       void this.plugin.previewAndRunWorkflow(buildWorkflowSpec("weekly-init", resolveWeeklyPeriodInput("init", weekInput.value)));
     });
@@ -824,7 +827,7 @@ class OperatorDashboardView extends ItemView {
 
     const strategy = createWorkflowCard(grid, "Strategy review", "Annual vision/review, quarterly plans, monthly pulses, and quarter reviews stay one click away.");
     const annualYearInput = createInlineInput(strategy, "Year", "YYYY; vision accepts next; review accepts last");
-    const strategyPeriodInput = createInlineInput(strategy, "Period", "2026-Q2 or 2026-04");
+    const strategyPeriodInput = createInlineInput(strategy, "Period", buildStrategyPeriodPlaceholder(now));
     createAgentWorkflowButton(strategy, "compass", "Annual vision", () => {
       const annual = resolveAnnualShortcutInput("vision", annualYearInput.value);
       annualYearInput.value = annual.nextInputValue;

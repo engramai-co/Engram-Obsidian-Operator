@@ -9,7 +9,7 @@ import { buildProjectNote, createNativeProject, normalizeProjectName } from "../
 import { formatExpectedNoteStatus, formatRunCompletionNotice } from "../src/run-notices";
 import { buildTodayScheduleLines } from "../src/today-surface";
 import { parseActiveProjectNote, parseBlockers, parseDailyNote, parseWeeklyTodo } from "../src/vault-parsers";
-import { buildAdvancedPromptPlaceholder, buildDefaultDailyPrompt, buildStartDaySpec, buildWorkflowSpec, describePrompt, resolveAdvancedPrompt, resolveAnnualShortcutInput, resolveAnnualYearInput, resolveAvailableHoursInput, resolveEditedPreviewSpec, resolveQuarterlyPeriodInput, resolveWeeklyPeriodInput } from "../src/workflows";
+import { buildAdvancedPromptPlaceholder, buildDefaultDailyPrompt, buildStrategyPeriodPlaceholder, buildStartDaySpec, buildWeeklyPeriodPlaceholder, buildWorkflowSpec, describePrompt, resolveAdvancedPrompt, resolveAnnualShortcutInput, resolveAnnualYearInput, resolveAvailableHoursInput, resolveEditedPreviewSpec, resolveQuarterlyPeriodInput, resolveWeeklyPeriodInput } from "../src/workflows";
 
 test("computes ISO week folders and daily note paths", () => {
   const date = new Date("2026-01-01T12:00:00");
@@ -103,6 +103,18 @@ test("formats run context for agent prompts with local clock and planning period
   assert.match(formatRunContext(date), /ISO week: 2026-W21/);
   assert.match(formatRunContext(date), /Quarter: 2026-Q2/);
   assert.match(formatDashboardRunContext(date), /^2026-05-22 09:15 .+ · 2026-W21 · 2026-Q2$/);
+});
+
+test("builds date-aware workflow input placeholders", () => {
+  const date = new Date("2026-05-28T09:00:00");
+  const source = readFileSync("src/main.ts", "utf8");
+
+  assert.equal(buildWeeklyPeriodPlaceholder(date), "2026-W22; review accepts last");
+  assert.equal(buildStrategyPeriodPlaceholder(date), "2026-Q2 or 2026-05");
+  assert.match(source, /const now = new Date\(\);[\s\S]*buildWeeklyPeriodPlaceholder\(now\)/);
+  assert.match(source, /buildStrategyPeriodPlaceholder\(now\)/);
+  assert.doesNotMatch(source, /"2026-W21; review accepts last"/);
+  assert.doesNotMatch(source, /"2026-Q2 or 2026-04"/);
 });
 
 test("quarterly-plan skill documents explicit UI targets", () => {
