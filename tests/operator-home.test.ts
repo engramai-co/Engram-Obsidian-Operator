@@ -302,6 +302,14 @@ test("builds CLI handoff as a runnable codex exec command with the enhanced dail
   assert.match(handoff, /Local date: 2026-05-22/);
 });
 
+test("builds CLI handoff for Claude when Claude backend is selected", () => {
+  const handoff = buildCliHandoff("/tmp/My Vault", "/annual-vision review", new Date("2026-05-22T09:00:00"), "claude");
+
+  assert.match(handoff, /^cd '\/tmp\/My Vault'\nclaude -p /);
+  assert.match(handoff, /'\/annual-vision review/);
+  assert.match(handoff, /Operator run metadata/);
+});
+
 function createFakeApp(): {
   vault: {
     getMarkdownFiles: () => Array<{ path: string; extension: string }>;

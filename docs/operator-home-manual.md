@@ -97,7 +97,7 @@ Open **More workflows** for less frequent or reasoning-heavy work:
 - **AI weekly / GitHub trends / Academic scan** for optional intelligence automations.
 - **Add events** for routing calendar and reminder commitments into the weekly system. Paste one event or deadline per line.
 - **Agent prompt / CLI command** for raw slash commands or freeform prompts.
-- **Copy CLI handoff** copies a runnable `codex exec` command using the same enhanced prompt shown in Preview, so power users can continue in Terminal without retyping the prompt.
+- **Copy CLI handoff** copies a runnable Codex or Claude command for the selected backend using the same enhanced prompt shown in Preview, so power users can continue in Terminal without retyping the prompt.
 
 Every agent workflow opens a Preview showing the exact prompt and likely read/write areas before launching Codex or Claude. Built-in workflows include local date, time, timezone, ISO week, and quarter as metadata, not manual tasks, so daily scheduling, weekly planning, annual vision, quarterly planning, and research runs do not depend on hidden agent clock assumptions. **Start my day** also shows the original boundary cascade before launch and includes a prompt-level pre-flight guard, so Obsidian-launched runs do not depend solely on interactive CLI hooks for weekly review/setup, AI weekly digest, monthly pulse, and quarterly plan/review.
 

@@ -1,10 +1,23 @@
 import { describePrompt } from "./workflows";
+import type { OperatorBackend } from "./settings";
 
-export function buildCliHandoff(vaultPath: string | null, prompt: string, date = new Date()): string {
+export function buildCliHandoff(
+  vaultPath: string | null,
+  prompt: string,
+  date = new Date(),
+  backend: OperatorBackend = "codex",
+): string {
   const rawPrompt = prompt.trim() || "/daily-init 6";
   const spec = describePrompt(rawPrompt, date);
   const targetVault = vaultPath ?? "<your-vault-path>";
   const cdLine = `cd ${shellQuote(targetVault)}`;
+  if (backend === "claude") {
+    return [
+      cdLine,
+      ["claude", "-p", shellQuote(spec.prompt)].join(" "),
+    ].join("\n");
+  }
+
   const args = [
     "codex",
     "exec",

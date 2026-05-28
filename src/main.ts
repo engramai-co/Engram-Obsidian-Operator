@@ -813,7 +813,7 @@ class OperatorDashboardView extends ItemView {
     });
     createButton(advanced, "copy", "Copy CLI handoff", () => {
       const prompt = custom.value.trim() || "/daily-init 6";
-      void copyTextToClipboard(buildCliHandoff(this.plugin.getVaultPath(), prompt), "CLI handoff copied.");
+      void copyTextToClipboard(buildCliHandoff(this.plugin.getVaultPath(), prompt, new Date(), this.plugin.settings.backend), "CLI handoff copied.");
     });
     createButton(advanced, "terminal", "Preview and run", () => {
       const prompt = requireInput(custom, "a prompt");
