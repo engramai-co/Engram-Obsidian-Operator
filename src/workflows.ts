@@ -111,17 +111,18 @@ export function buildWorkflowSpec(
   const cleanedArgs = normalizeWorkflowArgs(id, args);
   switch (id) {
     case "weekly-init":
-      return simpleSpec(id, "Plan this week", "/weekly-init", [
+      return simpleSpec(id, `Plan ${getIsoWeekInfo(date).label}`, "/weekly-init", [
         "Recent daily notes, last week Weekly Todo, Blockers, project deadline plans",
       ], ["Current week Weekly Todo and Blockers"], date, `${getExecutionWeekFolder(date)}/Weekly Todo.md`, [
         `Execution week: ${getIsoWeekInfo(date).label}`,
       ]);
     case "weekly-review":
       const weeklyReviewFolder = getWeeklyReviewFolder(cleanedArgs, date);
-      return simpleSpec(id, "Review this week", withArgs("/weekly-review", getWeeklyReviewPromptArgs(cleanedArgs, weeklyReviewFolder)), [
+      const weeklyReviewLabel = weeklyReviewFolder.replace("01_Execution/", "");
+      return simpleSpec(id, `Review ${weeklyReviewLabel}`, withArgs("/weekly-review", getWeeklyReviewPromptArgs(cleanedArgs, weeklyReviewFolder)), [
         "This week's daily notes, Weekly Todo, Blockers, and active projects",
-      ], ["Current week Weekly Review.md"], date, `${weeklyReviewFolder}/Weekly Review.md`, [
-        `Review week: ${weeklyReviewFolder.replace("01_Execution/", "")}`,
+      ], ["Target week Weekly Review.md"], date, `${weeklyReviewFolder}/Weekly Review.md`, [
+        `Review week: ${weeklyReviewLabel}`,
       ]);
     case "ai-weekly-digest":
       const aiWeeklyTarget = getAiWeeklyDigestTarget(cleanedArgs, date);
@@ -166,7 +167,7 @@ export function buildWorkflowSpec(
         getQuarterlyTargetNote(cleanedArgs, date),
       ]);
     case "annual-vision":
-      return simpleSpec(id, "Annual vision", withArgs("/annual-vision", getAnnualPromptArgs(cleanedArgs, date)), [
+      return simpleSpec(id, getAnnualWorkflowLabel(cleanedArgs, date), withArgs("/annual-vision", getAnnualPromptArgs(cleanedArgs, date)), [
         "Current and prior annual vision/review, quarterly reviews, active projects",
       ], ["00_Strategy/YYYY Vision.md or YYYY Annual Review.md"], date, getAnnualExpectedPath(cleanedArgs, date), [
         getAnnualTargetNote(cleanedArgs, date),
@@ -400,6 +401,12 @@ function getAnnualTargetNote(args: string, date: Date): string {
   const year = Number(args.match(/\b(20\d{2})\b/)?.[1] ?? date.getFullYear());
   const mode = args.toLowerCase().includes("review") ? "Annual review" : "Annual vision";
   return `${mode} target: ${year}`;
+}
+
+function getAnnualWorkflowLabel(args: string, date: Date): string {
+  const year = Number(args.match(/\b(20\d{2})\b/)?.[1] ?? date.getFullYear());
+  const mode = args.toLowerCase().includes("review") ? "Annual review" : "Annual vision";
+  return `${mode} ${year}`;
 }
 
 function getAnnualPromptArgs(args: string, date: Date): string {
