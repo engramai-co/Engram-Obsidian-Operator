@@ -120,7 +120,7 @@ export function buildWorkflowSpec(
       const weeklyReviewFolder = getWeeklyReviewFolder(cleanedArgs, date);
       const weeklyReviewLabel = weeklyReviewFolder.replace("01_Execution/", "");
       return simpleSpec(id, `Review ${weeklyReviewLabel}`, withArgs("/weekly-review", getWeeklyReviewPromptArgs(cleanedArgs, weeklyReviewFolder)), [
-        "This week's daily notes, Weekly Todo, Blockers, and active projects",
+        "Target week's daily notes, Weekly Todo, Blockers, and active projects",
       ], ["Target week Weekly Review.md"], date, `${weeklyReviewFolder}/Weekly Review.md`, [
         `Review week: ${weeklyReviewLabel}`,
       ]);
@@ -129,7 +129,7 @@ export function buildWorkflowSpec(
       return {
         ...simpleSpec(id, `AI weekly ${aiWeeklyTarget}`, withArgs("/ai-weekly-digest", getAiWeeklyDigestPromptArgs(cleanedArgs, aiWeeklyTarget)), [
           "Recent AI research, GitHub trending notes, RSS and web sources",
-        ], ["04_Knowledge/AI-Weekly/ and the current Weekly Review when present"], date, `04_Knowledge/AI-Weekly/${aiWeeklyTarget} - AI Weekly Digest.md`, [
+        ], ["04_Knowledge/AI-Weekly/ and the target week's Weekly Review when present"], date, `04_Knowledge/AI-Weekly/${aiWeeklyTarget} - AI Weekly Digest.md`, [
           `AI weekly target: ${aiWeeklyTarget}`,
         ]),
         search: true,
