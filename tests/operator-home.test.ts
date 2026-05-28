@@ -235,6 +235,9 @@ test("parses today note focus, actions, schedule, and capture count", () => {
 ## Schedule
 
 - 10:00 Design review
+- [ ] 11:00 Ship check
+- [x] 12:00 Completed sync
+- [-] 13:00 Cancelled hold
 
 ## Capture
 
@@ -247,7 +250,7 @@ test("parses today note focus, actions, schedule, and capture count", () => {
   ]);
   assert.deepEqual(summary.tasks.map((item) => item.text), ["Review UI against real vault"]);
   assert.deepEqual(summary.carriedForward.map((item) => item.text), ["Carry project note edits"]);
-  assert.deepEqual(summary.schedule, ["10:00 Design review"]);
+  assert.deepEqual(summary.schedule, ["10:00 Design review", "11:00 Ship check"]);
   assert.equal(summary.captureCount, 1);
 });
 

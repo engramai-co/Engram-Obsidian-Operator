@@ -154,7 +154,7 @@ export function parseDailyNote(markdown: string, exists = markdown.trim().length
   ]
     .join("\n")
     .split("\n")
-    .map(cleanMarkdownLine)
+    .map(cleanOpenScheduleLine)
     .filter(Boolean)
     .slice(0, 8);
 
@@ -327,6 +327,14 @@ function taskLineToActionItem(item: ParsedTaskLine): MarkdownActionItem {
 }
 
 function cleanOpenProjectNowLine(line: string): string {
+  const task = parseTaskLine(line);
+  if (task) {
+    return task.checked.trim() === "" ? cleanMarkdownLine(task.text) : "";
+  }
+  return cleanMarkdownLine(line);
+}
+
+function cleanOpenScheduleLine(line: string): string {
   const task = parseTaskLine(line);
   if (task) {
     return task.checked.trim() === "" ? cleanMarkdownLine(task.text) : "";
