@@ -127,7 +127,7 @@ export function buildWorkflowSpec(
     case "ai-weekly-digest":
       const aiWeeklyTarget = getAiWeeklyDigestTarget(cleanedArgs, date);
       return {
-        ...simpleSpec(id, "AI weekly digest", withArgs("/ai-weekly-digest", getAiWeeklyDigestPromptArgs(cleanedArgs, aiWeeklyTarget)), [
+        ...simpleSpec(id, `AI weekly ${aiWeeklyTarget}`, withArgs("/ai-weekly-digest", getAiWeeklyDigestPromptArgs(cleanedArgs, aiWeeklyTarget)), [
           "Recent AI research, GitHub trending notes, RSS and web sources",
         ], ["04_Knowledge/AI-Weekly/ and the current Weekly Review when present"], date, `04_Knowledge/AI-Weekly/${aiWeeklyTarget} - AI Weekly Digest.md`, [
           `AI weekly target: ${aiWeeklyTarget}`,
