@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import { formatDashboardRunContext, formatRunContext, getDailyNotePath, getExecutionWeekFolder, getIsoWeekInfo, getLocalMinuteKey, getNextLocalMinuteDelayMs, getQuarterInfo, hasLocalDateChanged, hasLocalMinuteChanged } from "../src/dates";
 import { appendQuickCapture, readOperatorHomeState, updateMarkdownTaskState } from "../src/home-state";
+import { startAlignedMinuteRefresh } from "../src/clock-refresh";
 import { buildCliHandoff } from "../src/cli-handoff";
 import { buildProjectNote, createNativeProject, normalizeProjectName } from "../src/projects";
 import { formatExpectedNoteStatus, formatRunCompletionNotice } from "../src/run-notices";
@@ -26,6 +27,43 @@ test("computes ISO week folders and daily note paths", () => {
   assert.equal(hasLocalMinuteChanged("2026-05-22T09:15", new Date("2026-05-22T09:16:00")), true);
   assert.equal(getNextLocalMinuteDelayMs(new Date("2026-05-22T09:15:00.000")), 60000);
   assert.equal(getNextLocalMinuteDelayMs(new Date("2026-05-22T09:15:45.250")), 14750);
+});
+
+test("clock refresh reschedules from the actual wake time", () => {
+  let now = new Date("2026-05-22T09:15:45.250");
+  let nextId = 1;
+  const timers = new Map<number, () => void>();
+  const delays: number[] = [];
+  const cleared: number[] = [];
+  let ticks = 0;
+
+  const stop = startAlignedMinuteRefresh(() => {
+    ticks += 1;
+  }, {
+    now: () => now,
+    setTimeout: (callback, delay) => {
+      const id = nextId++;
+      timers.set(id, callback);
+      delays.push(delay);
+      return id;
+    },
+    clearTimeout: (id) => {
+      cleared.push(id);
+      timers.delete(id);
+    },
+  });
+
+  assert.deepEqual(delays, [14750]);
+
+  now = new Date("2026-05-22T09:16:04.100");
+  timers.get(1)?.();
+
+  assert.equal(ticks, 1);
+  assert.deepEqual(delays, [14750, 55900]);
+
+  stop();
+
+  assert.deepEqual(cleared, [2]);
 });
 
 test("formats run completion notices with expected-note status", () => {

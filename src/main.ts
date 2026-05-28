@@ -15,7 +15,8 @@ import {
   WorkspaceLeaf,
   setIcon,
 } from "obsidian";
-import { formatDashboardRunContext, formatDateKey, getLocalMinuteKey, getNextLocalMinuteDelayMs, hasLocalDateChanged, hasLocalMinuteChanged } from "./dates";
+import { startAlignedMinuteRefresh } from "./clock-refresh";
+import { formatDashboardRunContext, formatDateKey, getLocalMinuteKey, hasLocalDateChanged, hasLocalMinuteChanged } from "./dates";
 import { buildCliHandoff } from "./cli-handoff";
 import { appendQuickCapture, readOperatorHomeState, updateMarkdownTaskState, type OperatorHomeState } from "./home-state";
 import { createNativeProject, normalizeProjectName, type NativeProjectInput } from "./projects";
@@ -119,11 +120,11 @@ export default class OperatorControlPlugin extends Plugin {
   }
 
   private startClockRefresh(): void {
-    const timeoutId = window.setTimeout(() => {
-      this.refreshViewsAfterClockTick();
-      this.registerInterval(window.setInterval(() => this.refreshViewsAfterClockTick(), 60_000));
-    }, getNextLocalMinuteDelayMs(new Date()));
-    this.register(() => window.clearTimeout(timeoutId));
+    this.register(startAlignedMinuteRefresh(() => this.refreshViewsAfterClockTick(), {
+      now: () => new Date(),
+      setTimeout: (callback, delayMs) => window.setTimeout(callback, delayMs),
+      clearTimeout: (handle) => window.clearTimeout(handle),
+    }));
   }
 
   async activateView(): Promise<void> {
