@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   canRunBackendWorkflows,
   formatWorkflowLockHelp,
+  formatWorkflowUnavailableHelp,
   getBackendReadiness,
   getFreshBackendReadinessForRun,
   getFreshWorkflowLaunchGate,
@@ -60,6 +61,16 @@ test("workflow lock help is backend-specific", () => {
 
   assert.match(codexHelp, /Start my day needs setup first/);
   assert.match(codexHelp, /Codex login/);
+});
+
+test("workflow unavailable help reports active runs before setup state", () => {
+  const readyStatus = createStatus({});
+
+  const help = formatWorkflowUnavailableHelp(readyStatus, "codex", "Start my day", true);
+
+  assert.match(help, /Operator is already running/);
+  assert.match(help, /Cancel run/);
+  assert.doesNotMatch(help, /can run with Codex/);
 });
 
 test("workflow run readiness always uses freshly refreshed status", async () => {

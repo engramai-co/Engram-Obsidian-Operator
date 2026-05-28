@@ -34,7 +34,7 @@ import { DEFAULT_SETTINGS, type OperatorRunRecord, type OperatorSettings } from 
 import {
   canRunBackendWorkflows,
   checkEnvironment,
-  formatWorkflowLockHelp,
+  formatWorkflowUnavailableHelp,
   getBackendReadiness,
   getFreshBackendReadinessForRun,
   getFreshWorkflowLaunchGate,
@@ -648,7 +648,9 @@ class OperatorDashboardView extends ItemView {
     });
 
     const canRun = this.canRun(status);
-    const lockHelp = canRun ? undefined : formatWorkflowLockHelp(status, this.plugin.settings.backend, "Start my day");
+    const lockHelp = canRun
+      ? undefined
+      : formatWorkflowUnavailableHelp(status, this.plugin.settings.backend, "Start my day", !!this.plugin.activeRun);
     createButton(row, "sun", "Start my day", () => {
       const resolvedHours = resolveAvailableHoursInput(hoursInput.value, this.plugin.settings.availableHours);
       void this.plugin.runDailyBriefing(resolvedHours, manualInput.value);
@@ -775,7 +777,9 @@ class OperatorDashboardView extends ItemView {
   private renderWorkflowShortcuts(root: HTMLElement, status: OperatorEnvironmentStatus, home: OperatorHomeState): void {
     const section = createDisclosureSection(root, "More workflows", "Native actions handle fixed structure; agent workflows and CLI-style prompts stay available here.");
     const canRun = this.canRun(status);
-    const lockHelp = canRun ? undefined : formatWorkflowLockHelp(status, this.plugin.settings.backend, "More workflows");
+    const lockHelp = canRun
+      ? undefined
+      : formatWorkflowUnavailableHelp(status, this.plugin.settings.backend, "More workflows", !!this.plugin.activeRun);
     if (lockHelp) {
       section.createEl("p", { cls: "operator-help", text: lockHelp });
     }

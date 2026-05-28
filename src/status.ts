@@ -188,6 +188,18 @@ export function formatWorkflowLockHelp(
   return `${actionLabel} ${verb} setup first: ${readiness.blockers.join(", ")}. Open Setup health for the exact fix.`;
 }
 
+export function formatWorkflowUnavailableHelp(
+  status: OperatorEnvironmentStatus,
+  backend: OperatorBackend,
+  actionLabel = "Agent workflows",
+  activeRun = false,
+): string {
+  if (activeRun) {
+    return "Operator is already running. Use Cancel run before starting another workflow.";
+  }
+  return formatWorkflowLockHelp(status, backend, actionLabel);
+}
+
 async function commandResponds(command: string, args: string[]): Promise<boolean> {
   return commandSucceeds({ command, args }, 5000);
 }
