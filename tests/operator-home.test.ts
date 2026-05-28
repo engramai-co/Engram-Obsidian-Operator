@@ -427,6 +427,8 @@ test("builds editable workflow prompt specs", () => {
   assert.equal(buildWorkflowSpec("weekly-init", "2026-W18", date).label, "Plan 2026-W18");
   assert.deepEqual(buildWorkflowSpec("weekly-init", "2026-W18", date).targetNotes, ["Execution week: 2026-W18"]);
   assert.match(buildWorkflowSpec("weekly-init", "2026-W18", date).prompt, /^\/weekly-init 2026-W18\n\nOperator run metadata/);
+  assert.equal(buildWorkflowSpec("weekly-init", "2026-W3", date).expectedOpenPath, "01_Execution/2026-W03/Weekly Todo.md");
+  assert.equal(buildWorkflowSpec("weekly-init", "2026-W3", date).label, "Plan 2026-W03");
   assert.equal(buildWorkflowSpec("weekly-review", "", date).expectedOpenPath, "01_Execution/2026-W21/Weekly Review.md");
   assert.equal(buildWorkflowSpec("weekly-review", "", date).label, "Review 2026-W21");
   assert.deepEqual(buildWorkflowSpec("weekly-review", "", date).targetNotes, ["Review week: 2026-W21"]);
@@ -436,6 +438,7 @@ test("builds editable workflow prompt specs", () => {
   assert.deepEqual(buildWorkflowSpec("weekly-review", "last", date).readAreas, ["Target week's daily notes, Weekly Todo, Blockers, and active projects"]);
   assert.deepEqual(buildWorkflowSpec("weekly-review", "last", date).targetNotes, ["Review week: 2026-W20"]);
   assert.equal(buildWorkflowSpec("weekly-review", "2026-W18", date).expectedOpenPath, "01_Execution/2026-W18/Weekly Review.md");
+  assert.equal(describePrompt("/weekly-review 2026-W3", date).expectedOpenPath, "01_Execution/2026-W03/Weekly Review.md");
   assert.equal(buildWorkflowSpec("weekly-review", "", new Date("2026-05-25T09:00:00")).expectedOpenPath, "01_Execution/2026-W21/Weekly Review.md");
   assert.match(buildWorkflowSpec("weekly-review", "", new Date("2026-05-25T09:00:00")).prompt, /^\/weekly-review 2026-W21\n\nOperator run metadata/);
   const mondayWeeklyReview = buildWorkflowSpec("weekly-review", "", new Date("2026-05-25T09:00:00"));
@@ -520,6 +523,7 @@ test("builds editable workflow prompt specs", () => {
   assert.deepEqual(buildWorkflowSpec("ai-weekly-digest", "last", date).writeAreas, ["04_Knowledge/AI-Weekly/ and the target week's Weekly Review when present"]);
   assert.deepEqual(buildWorkflowSpec("ai-weekly-digest", "last", date).targetNotes, ["AI weekly target: 2026-W20"]);
   assert.equal(buildWorkflowSpec("ai-weekly-digest", "2026-W18", date).expectedOpenPath, "04_Knowledge/AI-Weekly/2026-W18 - AI Weekly Digest.md");
+  assert.equal(buildWorkflowSpec("ai-weekly-digest", "2026-W3", date).expectedOpenPath, "04_Knowledge/AI-Weekly/2026-W03 - AI Weekly Digest.md");
   assert.equal(buildWorkflowSpec("ai-weekly-digest", "2026-W18", date).label, "AI weekly 2026-W18");
   assert.equal(buildWorkflowSpec("ai-weekly-digest", "", new Date("2026-05-25T09:00:00")).expectedOpenPath, "04_Knowledge/AI-Weekly/2026-W21 - AI Weekly Digest.md");
   assert.equal(buildWorkflowSpec("ai-weekly-digest", "", new Date("2026-05-25T09:00:00")).label, "AI weekly 2026-W21");

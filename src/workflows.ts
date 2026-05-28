@@ -121,9 +121,9 @@ export function resolveAnnualShortcutInput(
 }
 
 export function resolveWeeklyPeriodInput(_mode: "init" | "review", value: string, date = new Date()): string {
-  const week = value.match(/\b(20\d{2})-W(0?[1-9]|[1-4]\d|5[0-3])\b/i);
+  const week = parseExplicitIsoWeek(value);
   if (week) {
-    return `${week[1]}-W${week[2].padStart(2, "0")}`;
+    return week;
   }
 
   if (/\blast\b/i.test(value)) {
@@ -473,9 +473,9 @@ function getDailyPreviewRunNotes(
 }
 
 function getWeeklyReviewFolder(args: string, date: Date): string {
-  const explicit = args.match(/\b(\d{4}-W\d{2})\b/i)?.[1];
+  const explicit = parseExplicitIsoWeek(args);
   if (explicit) {
-    return `01_Execution/${explicit.toUpperCase()}`;
+    return `01_Execution/${explicit}`;
   }
   const target = args.toLowerCase() === "last" || date.getDay() === 1
     ? addDays(date, -7)
@@ -484,18 +484,22 @@ function getWeeklyReviewFolder(args: string, date: Date): string {
 }
 
 function getWeeklyInitTarget(args: string, date: Date): string {
-  const explicit = args.match(/\b(\d{4}-W\d{2})\b/i)?.[1];
-  return explicit ? explicit.toUpperCase() : getIsoWeekInfo(date).label;
+  const explicit = parseExplicitIsoWeek(args);
+  return explicit ?? getIsoWeekInfo(date).label;
 }
 
 function getWeeklyReviewPromptArgs(args: string, weeklyReviewFolder: string): string {
+  const explicit = parseExplicitIsoWeek(args);
+  if (explicit) {
+    return explicit;
+  }
   return args || weeklyReviewFolder.replace("01_Execution/", "");
 }
 
 function getAiWeeklyDigestTarget(args: string, date: Date): string {
-  const explicit = args.match(/\b(\d{4}-W\d{2})\b/i)?.[1];
+  const explicit = parseExplicitIsoWeek(args);
   if (explicit) {
-    return explicit.toUpperCase();
+    return explicit;
   }
   const target = args.toLowerCase() === "last" || date.getDay() === 1
     ? addDays(date, -7)
@@ -505,10 +509,15 @@ function getAiWeeklyDigestTarget(args: string, date: Date): string {
 
 function getAiWeeklyDigestPromptArgs(args: string, target: string): string {
   const trimmed = args.trim();
-  if (!trimmed || trimmed.toLowerCase() === "last" || /^\d{4}-W\d{2}$/i.test(trimmed)) {
+  if (!trimmed || trimmed.toLowerCase() === "last" || parseExplicitIsoWeek(trimmed)) {
     return target;
   }
   return args;
+}
+
+function parseExplicitIsoWeek(value: string): string | null {
+  const week = value.match(/\b(20\d{2})-W(0?[1-9]|[1-4]\d|5[0-3])\b/i);
+  return week ? `${week[1]}-W${week[2].padStart(2, "0")}` : null;
 }
 
 function getAnnualExpectedPath(args: string, date: Date): string {
