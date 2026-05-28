@@ -98,14 +98,14 @@ export function resolveAnnualYearInput(value: string, date = new Date()): string
   return String(date.getFullYear());
 }
 
-export function resolveWeeklyPeriodInput(mode: "init" | "review", value: string): string {
+export function resolveWeeklyPeriodInput(_mode: "init" | "review", value: string, date = new Date()): string {
   const week = value.match(/\b(20\d{2})-W(0?[1-9]|[1-4]\d|5[0-3])\b/i);
   if (week) {
     return `${week[1]}-W${week[2].padStart(2, "0")}`;
   }
 
-  if (mode === "review" && /\blast\b/i.test(value)) {
-    return "last";
+  if (/\blast\b/i.test(value)) {
+    return getIsoWeekInfo(addDays(date, -7)).label;
   }
 
   return "";

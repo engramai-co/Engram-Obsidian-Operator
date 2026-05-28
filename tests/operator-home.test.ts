@@ -280,10 +280,10 @@ test("builds editable workflow prompt specs", () => {
   assert.equal(resolveAvailableHoursInput("20", 6), 16);
   assert.equal(resolveAvailableHoursInput("0", 7), 7);
   assert.equal(resolveAvailableHoursInput("abc", 7), 7);
-  assert.equal(resolveWeeklyPeriodInput("init", "2026-W3"), "2026-W03");
+  assert.equal(resolveWeeklyPeriodInput("init", "2026-W3", date), "2026-W03");
   assert.equal(resolveWeeklyPeriodInput("review", "review 2025-w52"), "2025-W52");
-  assert.equal(resolveWeeklyPeriodInput("review", "last week"), "last");
-  assert.equal(resolveWeeklyPeriodInput("init", "last"), "");
+  assert.equal(resolveWeeklyPeriodInput("review", "last week", date), "2026-W20");
+  assert.equal(resolveWeeklyPeriodInput("init", "last", date), "2026-W20");
   assert.equal(resolveWeeklyPeriodInput("review", "later"), "");
   assert.equal(resolveAnnualYearInput("2025", date), "2025");
   assert.equal(resolveAnnualYearInput("review 2025", date), "2025");
