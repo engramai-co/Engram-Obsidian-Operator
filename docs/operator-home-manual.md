@@ -101,6 +101,8 @@ Open **More workflows** for less frequent or reasoning-heavy work:
 
 Every agent workflow opens a Preview showing the exact prompt and likely read/write areas before launching Codex or Claude. Built-in workflows include local date, time, timezone, ISO week, and quarter as metadata, not manual tasks, so daily scheduling, weekly planning, annual vision, quarterly planning, and research runs do not depend on hidden agent clock assumptions. **Start my day** also runs the original boundary cascade when needed: weekly review/setup, AI weekly digest, monthly pulse, and quarterly plan/review.
 
+For daily, weekly, annual, and quarterly workflows, Operator also predicts the main output note. After a successful run, it opens that note when present; **Last Run** keeps an **Open expected note** button for quick review.
+
 ## Troubleshooting
 
 - If buttons are disabled, open **Setup health**. Codex mode checks vault setup, Codex CLI, Codex login, and Codex Operator skills. Claude mode checks vault setup, Claude CLI, and Claude Operator skills.

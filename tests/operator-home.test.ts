@@ -233,6 +233,18 @@ test("builds editable workflow prompt specs", () => {
   const fractionalDay = buildStartDaySpec(4.5, "", date);
   assert.match(fractionalDay.prompt, /^\/daily-init 4\.5\n\nOperator run metadata/);
 
+  assert.equal(buildWorkflowSpec("weekly-init", "", date).expectedOpenPath, "01_Execution/2026-W21/Weekly Todo.md");
+  assert.equal(buildWorkflowSpec("weekly-review", "", date).expectedOpenPath, "01_Execution/2026-W21/Weekly Review.md");
+  assert.equal(buildWorkflowSpec("weekly-review", "last", date).expectedOpenPath, "01_Execution/2026-W20/Weekly Review.md");
+  assert.equal(buildWorkflowSpec("weekly-review", "2026-W18", date).expectedOpenPath, "01_Execution/2026-W18/Weekly Review.md");
+  assert.equal(buildWorkflowSpec("weekly-review", "", new Date("2026-05-25T09:00:00")).expectedOpenPath, "01_Execution/2026-W21/Weekly Review.md");
+  assert.equal(buildWorkflowSpec("annual-vision", "", date).expectedOpenPath, "00_Strategy/2026 Vision.md");
+  assert.equal(buildWorkflowSpec("annual-vision", "review 2026", date).expectedOpenPath, "00_Strategy/2026 Annual Review.md");
+  assert.equal(buildWorkflowSpec("quarterly-plan", "init", date).expectedOpenPath, "00_Strategy/2026-Q2/Quarterly Plan.md");
+  assert.equal(buildWorkflowSpec("quarterly-plan", "pulse", date).expectedOpenPath, "00_Strategy/2026-Q2/Monthly Pulse - 04.md");
+  assert.equal(buildWorkflowSpec("quarterly-plan", "pulse 05", date).expectedOpenPath, "00_Strategy/2026-Q2/Monthly Pulse - 05.md");
+  assert.equal(buildWorkflowSpec("quarterly-plan", "review", date).expectedOpenPath, "00_Strategy/2026-Q1/Quarterly Review.md");
+
   const projectSync = buildWorkflowSpec("project-sync", "FM-Copilot", date);
   assert.match(projectSync.prompt, /^\/project-sync FM-Copilot\n\nOperator run metadata/);
   assert.match(buildWorkflowSpec("annual-vision", "review 2026", date).prompt, /^\/annual-vision review 2026\n\nOperator run metadata/);

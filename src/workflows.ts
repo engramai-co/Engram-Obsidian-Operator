@@ -1,4 +1,4 @@
-import { formatRunContext, getDailyNotePath } from "./dates";
+import { addDays, formatRunContext, getDailyNotePath, getExecutionWeekFolder, getIsoWeekInfo, getQuarterInfo } from "./dates";
 
 export type OperatorWorkflowId =
   | "start-day"
@@ -69,11 +69,11 @@ export function buildWorkflowSpec(
     case "weekly-init":
       return simpleSpec(id, "Plan this week", "/weekly-init", [
         "Recent daily notes, last week Weekly Todo, Blockers, project deadline plans",
-      ], ["Current week Weekly Todo and Blockers"], date);
+      ], ["Current week Weekly Todo and Blockers"], date, `${getExecutionWeekFolder(date)}/Weekly Todo.md`);
     case "weekly-review":
       return simpleSpec(id, "Review this week", "/weekly-review", [
         "This week's daily notes, Weekly Todo, Blockers, and active projects",
-      ], ["Current week Weekly Review.md"], date);
+      ], ["Current week Weekly Review.md"], date, `${getWeeklyReviewFolder(cleanedArgs, date)}/Weekly Review.md`);
     case "ai-weekly-digest":
       return {
         ...simpleSpec(id, "AI weekly digest", withArgs("/ai-weekly-digest", cleanedArgs), [
@@ -110,11 +110,11 @@ export function buildWorkflowSpec(
     case "quarterly-plan":
       return simpleSpec(id, "Quarterly planning", withArgs("/quarterly-plan", cleanedArgs), [
         "Annual vision, quarterly plans/reviews, weekly reviews, active projects, horizon items",
-      ], ["00_Strategy/YYYY-QX/ planning, review, or monthly pulse notes"], date);
+      ], ["00_Strategy/YYYY-QX/ planning, review, or monthly pulse notes"], date, getQuarterlyExpectedPath(cleanedArgs, date));
     case "annual-vision":
       return simpleSpec(id, "Annual vision", withArgs("/annual-vision", cleanedArgs), [
         "Current and prior annual vision/review, quarterly reviews, active projects",
-      ], ["00_Strategy/YYYY Vision.md or YYYY Annual Review.md"], date);
+      ], ["00_Strategy/YYYY Vision.md or YYYY Annual Review.md"], date, getAnnualExpectedPath(cleanedArgs, date));
     case "add-events":
       return simpleSpec(id, "Add events", withArgs("/add-events", cleanedArgs), [
         "Pasted event descriptions and project context",
@@ -201,8 +201,9 @@ function simpleSpec(
   readAreas: string[],
   writeAreas: string[],
   date = new Date(),
+  expectedOpenPath?: string,
 ): OperatorWorkflowRunSpec {
-  return { id, label, prompt: appendRunMetadata(prompt, date), readAreas, writeAreas };
+  return { id, label, prompt: appendRunMetadata(prompt, date), readAreas, writeAreas, expectedOpenPath };
 }
 
 function withArgs(command: string, args: string): string {
@@ -242,6 +243,55 @@ function appendRunMetadata(prompt: string, date: Date): string {
     return prompt;
   }
   return `${prompt}\n\nOperator run metadata (do not treat as manual action items):\n${formatRunContext(date)}`;
+}
+
+function getWeeklyReviewFolder(args: string, date: Date): string {
+  const explicit = args.match(/\b(\d{4}-W\d{2})\b/i)?.[1];
+  if (explicit) {
+    return `01_Execution/${explicit.toUpperCase()}`;
+  }
+  const target = args.toLowerCase() === "last" || date.getDay() === 1
+    ? addDays(date, -7)
+    : date;
+  return `01_Execution/${getIsoWeekInfo(target).label}`;
+}
+
+function getAnnualExpectedPath(args: string, date: Date): string {
+  const year = Number(args.match(/\b(20\d{2})\b/)?.[1] ?? date.getFullYear());
+  const mode = args.toLowerCase().includes("review") ? "Annual Review" : "Vision";
+  return `00_Strategy/${year} ${mode}.md`;
+}
+
+function getQuarterlyExpectedPath(args: string, date: Date): string {
+  const mode = args.split(/\s+/, 1)[0].toLowerCase();
+  if (mode === "review") {
+    const quarter = parseQuarterArg(args) ?? getPreviousQuarter(date);
+    return `00_Strategy/${quarter.label}/Quarterly Review.md`;
+  }
+  if (mode === "pulse") {
+    const quarter = getQuarterInfo(date);
+    const month = args.match(/\b(0?[1-9]|1[0-2])\b/)?.[1] ?? String(date.getMonth() || 12);
+    return `00_Strategy/${quarter.label}/Monthly Pulse - ${month.padStart(2, "0")}.md`;
+  }
+  const quarter = parseQuarterArg(args) ?? getQuarterInfo(date);
+  return `00_Strategy/${quarter.label}/Quarterly Plan.md`;
+}
+
+function parseQuarterArg(args: string): { year: number; quarter: number; label: string } | null {
+  const match = args.match(/\b(20\d{2})-Q([1-4])\b/i);
+  if (!match) {
+    return null;
+  }
+  const year = Number(match[1]);
+  const quarter = Number(match[2]);
+  return { year, quarter, label: `${year}-Q${quarter}` };
+}
+
+function getPreviousQuarter(date: Date): { year: number; quarter: number; label: string } {
+  const current = getQuarterInfo(date);
+  const year = current.quarter === 1 ? current.year - 1 : current.year;
+  const quarter = current.quarter === 1 ? 4 : current.quarter - 1;
+  return { year, quarter, label: `${year}-Q${quarter}` };
 }
 
 export function normalizeDailyHours(hours: number): number {
