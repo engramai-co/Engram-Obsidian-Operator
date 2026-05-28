@@ -629,8 +629,10 @@ class OperatorDashboardView extends ItemView {
 
     const manualWrap = row.createDiv({ cls: "operator-field operator-grow" });
     manualWrap.createEl("label", { text: "Manual items" });
-    const manualInput = manualWrap.createEl("input", {
+    const manualInput = manualWrap.createEl("textarea", {
+      cls: "operator-manual-input",
       attr: {
+        rows: "2",
         placeholder: "Optional: call Alice, review deck",
       },
     });

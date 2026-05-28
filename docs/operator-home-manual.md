@@ -61,7 +61,7 @@ npm run install:plugin -- "<your vault>"
 2. If setup is incomplete, use **Setup health** to install skills for your selected backend.
 3. Click **Initialize vault** to create the Operator folder structure and agent config files.
 4. Click **New** under Active projects, then create your first project note.
-5. Enter available hours, including half-hour budgets such as `4.5`, and click **Start my day**. Review the Preview, then run it.
+5. Enter available hours, including half-hour budgets such as `4.5`, optionally add one manual item per line, and click **Start my day**. Review the Preview, then run it.
 
 ## Daily Use
 
@@ -99,7 +99,7 @@ Open **More workflows** for less frequent or reasoning-heavy work:
 - **Agent prompt / CLI command** for raw slash commands or freeform prompts.
 - **Copy CLI handoff** copies a runnable Codex or Claude command for the selected backend using the same enhanced prompt shown in Preview, so power users can continue in Terminal without retyping the prompt. If the prompt box is empty, both handoff and Preview default to `/daily-init` with the dashboard's current available-hours setting.
 
-Every agent workflow opens a Preview showing the exact prompt, target notes, expected output note when known, and likely read/write areas before launching Codex or Claude. Built-in workflows include local date, time, timezone, ISO week, and quarter as metadata, not manual tasks, so daily scheduling, weekly planning, annual vision, quarterly planning, and research runs do not depend on hidden agent clock assumptions. **Start my day** keeps the full boundary guard in the prompt, and the guard includes the concrete target week, month, and quarter for each boundary workflow while telling the agent to run each boundary command only when both its catch-up date condition and missing-artifact condition are true. Weekly, monthly, and quarterly catch-up remains eligible after the first day of the new period, so users do not miss reviews or pulses just because they skipped a day. The Preview keeps this compact on ordinary days, then expands the obvious boundary actions on week/month/quarter starts.
+Every agent workflow opens a Preview showing the exact prompt, target notes, expected output note when known, and likely read/write areas before launching Codex or Claude. Built-in workflows include local date, time, timezone, ISO week, and quarter as metadata, not manual tasks, so daily scheduling, weekly planning, annual vision, quarterly planning, and research runs do not depend on hidden agent clock assumptions. **Start my day** keeps the full boundary guard in the prompt, preserves multi-line manual items as separate lines, and includes the concrete target week, month, and quarter for each boundary workflow while telling the agent to run each boundary command only when both its catch-up date condition and missing-artifact condition are true. Weekly, monthly, and quarterly catch-up remains eligible after the first day of the new period, so users do not miss reviews or pulses just because they skipped a day. The Preview keeps this compact on ordinary days, then expands the obvious boundary actions on week/month/quarter starts.
 
 The dashboard header clock refreshes on local minute boundaries. If the app stays open across midnight, Operator refreshes the dashboard so the visible daily note, week, quarter, and shortcut defaults move to the new local date.
 

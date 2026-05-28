@@ -376,6 +376,8 @@ test("builds editable workflow prompt specs", () => {
   assert.match(start.prompt, /Manual items to consider today:\nreview deck, email Kai/);
   assert.ok(start.prompt.indexOf("Daily pre-flight guard") < start.prompt.indexOf("Manual items to consider today"));
   assert.ok(start.prompt.indexOf("Operator run metadata") < start.prompt.indexOf("Manual items to consider today"));
+  const multilineManualStart = buildStartDaySpec(6, "review deck\nemail Kai\n  prep demo  ", date);
+  assert.match(multilineManualStart.prompt, /Manual items to consider today:\nreview deck\nemail Kai\n  prep demo/);
   assert.equal(start.expectedOpenPath, "01_Execution/2026-W21/2026-05-22.md");
   assert.deepEqual(start.targetNotes, [
     "Daily note: 01_Execution/2026-W21/2026-05-22.md",

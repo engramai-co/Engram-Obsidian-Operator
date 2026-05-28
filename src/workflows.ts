@@ -34,7 +34,7 @@ export interface OperatorWorkflowRunSpec {
 
 export function buildStartDaySpec(hours: number, manualItems: string, date = new Date()): OperatorWorkflowRunSpec {
   const safeHours = normalizeDailyHours(hours);
-  const cleanedManualItems = normalizeInlineArgs(manualItems);
+  const cleanedManualItems = normalizeBlockArgs(manualItems);
   const context = `Operator run metadata (do not treat as manual action items):\n${formatRunContext(date)}`;
   const preflightGuard = formatDailyPreflightGuard(date);
   const boundaryTargets = getDailyBoundaryTargets(date);
