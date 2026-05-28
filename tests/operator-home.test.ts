@@ -514,7 +514,10 @@ test("preview copy uses the same resolved prompt as run", () => {
 
   assert.match(source, /const getResolvedPreview = \(\) => resolveEditedPreviewSpec\(this\.spec, promptInput\.value\)/);
   assert.match(source, /copyTextToClipboard\(getResolvedPreview\(\)\.prompt, "Prompt copied\."\)/);
-  assert.match(source, /this\.resolve\(getResolvedPreview\(\)\)/);
+  assert.match(source, /this\.settle\(getResolvedPreview\(\)\)/);
+  assert.match(source, /private settled = false/);
+  assert.match(source, /if \(this\.settled\) \{\s*return;\s*\}/);
+  assert.match(source, /onClose\(\): void \{\s*this\.settle\(null\);/);
   assert.doesNotMatch(source, /copyTextToClipboard\(promptInput\.value, "Prompt copied\."\)/);
 });
 

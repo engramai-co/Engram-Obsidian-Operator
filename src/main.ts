@@ -1143,6 +1143,8 @@ class RunnerConsentModal extends Modal {
 }
 
 class RunPreviewModal extends Modal {
+  private settled = false;
+
   constructor(
     app: App,
     private readonly spec: OperatorWorkflowRunSpec,
@@ -1199,20 +1201,29 @@ class RunPreviewModal extends Modal {
 
     const row = contentEl.createDiv({ cls: "operator-modal-actions" });
     createButton(row, "x", "Cancel", () => {
-      this.resolve(null);
+      this.settle(null);
       this.close();
     });
     createButton(row, "copy", "Copy prompt", () => {
       void copyTextToClipboard(getResolvedPreview().prompt, "Prompt copied.");
     });
     createButton(row, "play", "Run", () => {
-      this.resolve(getResolvedPreview());
+      this.settle(getResolvedPreview());
       this.close();
     }, "mod-cta");
   }
 
   onClose(): void {
+    this.settle(null);
     this.contentEl.empty();
+  }
+
+  private settle(spec: OperatorWorkflowRunSpec | null): void {
+    if (this.settled) {
+      return;
+    }
+    this.settled = true;
+    this.resolve(spec);
   }
 }
 
