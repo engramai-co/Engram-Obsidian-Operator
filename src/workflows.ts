@@ -35,9 +35,10 @@ export function buildStartDaySpec(hours: number, manualItems: string, date = new
   const safeHours = normalizeDailyHours(hours);
   const cleanedManualItems = normalizeInlineArgs(manualItems);
   const context = `Operator run metadata (do not treat as manual action items):\n${formatRunContext(date)}`;
+  const preflightGuard = formatDailyPreflightGuard();
   const prompt = cleanedManualItems
-    ? `/daily-init ${safeHours}\n\n${context}\n\nManual items to consider today:\n${cleanedManualItems}`
-    : `/daily-init ${safeHours}\n\n${context}`;
+    ? `/daily-init ${safeHours}\n\n${context}\n\n${preflightGuard}\n\nManual items to consider today:\n${cleanedManualItems}`
+    : `/daily-init ${safeHours}\n\n${context}\n\n${preflightGuard}`;
 
   return {
     id: "start-day",
@@ -250,6 +251,15 @@ function appendRunMetadata(prompt: string, date: Date): string {
     return prompt;
   }
   return `${prompt}\n\nOperator run metadata (do not treat as manual action items):\n${formatRunContext(date)}`;
+}
+
+function formatDailyPreflightGuard(): string {
+  return [
+    "Daily pre-flight guard:",
+    "Do not rely on CLI hooks being available in this Obsidian-launched run.",
+    "Run missing weekly, monthly, and quarterly boundary workflows before writing today's briefing, in the daily-init order: /weekly-review, /ai-weekly-digest, /quarterly-plan pulse, /quarterly-plan review, /quarterly-plan init, then /weekly-init.",
+    "Only continue past a missing boundary artifact if the sub-run fails; record that failure in today's ### Flags.",
+  ].join("\n");
 }
 
 function getWeeklyReviewFolder(args: string, date: Date): string {

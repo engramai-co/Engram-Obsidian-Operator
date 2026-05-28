@@ -225,7 +225,11 @@ test("builds editable workflow prompt specs", () => {
 
   assert.match(start.prompt, /^\/daily-init 7\n\nOperator run metadata \(do not treat as manual action items\):/);
   assert.match(start.prompt, /Local date: 2026-05-22/);
+  assert.match(start.prompt, /Daily pre-flight guard:/);
+  assert.match(start.prompt, /Do not rely on CLI hooks being available/);
+  assert.match(start.prompt, /Run missing weekly, monthly, and quarterly boundary workflows before writing today's briefing/);
   assert.match(start.prompt, /Manual items to consider today:\nreview deck, email Kai/);
+  assert.ok(start.prompt.indexOf("Daily pre-flight guard") < start.prompt.indexOf("Manual items to consider today"));
   assert.ok(start.prompt.indexOf("Operator run metadata") < start.prompt.indexOf("Manual items to consider today"));
   assert.equal(start.expectedOpenPath, "01_Execution/2026-W21/2026-05-22.md");
   assert.equal(start.search, true);
