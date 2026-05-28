@@ -92,10 +92,10 @@ Open **More workflows** for less frequent or reasoning-heavy work:
 - **Weekly setup / Weekly review** for execution planning and synthesis.
 - **Annual vision / Quarter plan / Monthly pulse / Quarter review** for the strategic layer from `00_Strategy/`.
 - **Sync / Deadline plan** for project-level agent work.
-- **Prep / Process meeting** for agendas, transcripts, decisions, and actions.
+- **Prep / Process meeting** for agendas, transcripts, decisions, and actions. Transcript input accepts pasted multi-line text or a local path.
 - **Extract ideas / Draft / Deep research** for content and research workflows.
 - **AI weekly / GitHub trends / Academic scan** for optional intelligence automations.
-- **Add events** for routing calendar and reminder commitments into the weekly system.
+- **Add events** for routing calendar and reminder commitments into the weekly system. Paste one event or deadline per line.
 - **Agent prompt / CLI command** for raw slash commands or freeform prompts.
 - **Copy CLI handoff** copies the vault `cd` command plus the prompt so power users can continue in Codex CLI without the Obsidian UI getting in the way.
 

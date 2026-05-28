@@ -64,7 +64,7 @@ export function buildWorkflowSpec(
   args = "",
   date = new Date(),
 ): OperatorWorkflowRunSpec {
-  const cleanedArgs = normalizeInlineArgs(args);
+  const cleanedArgs = normalizeWorkflowArgs(id, args);
   switch (id) {
     case "weekly-init":
       return simpleSpec(id, "Plan this week", "/weekly-init", [
@@ -206,11 +206,30 @@ function simpleSpec(
 }
 
 function withArgs(command: string, args: string): string {
-  return args ? `${command} ${args}` : command;
+  if (!args) {
+    return command;
+  }
+  return args.includes("\n") ? `${command}\n${args}` : `${command} ${args}`;
 }
 
 function normalizeInlineArgs(value: string): string {
   return value.replace(/\s+/g, " ").trim();
+}
+
+function normalizeWorkflowArgs(id: OperatorWorkflowId, value: string): string {
+  if (id === "add-events" || id === "meeting") {
+    return normalizeBlockArgs(value);
+  }
+  return normalizeInlineArgs(value);
+}
+
+function normalizeBlockArgs(value: string): string {
+  return value
+    .replace(/\r\n?/g, "\n")
+    .split("\n")
+    .map((line) => line.trimEnd())
+    .join("\n")
+    .trim();
 }
 
 function extractDailyHours(prompt: string): number {

@@ -749,7 +749,7 @@ class OperatorDashboardView extends ItemView {
     const meeting = createWorkflowCard(grid, "Process meeting", "Prep before, process transcript after.");
     const meetingProject = createInlineInput(meeting, "Project", "ProjectAlpha", home.activeProjects[0]?.name ?? "");
     const meetingDate = createInlineInput(meeting, "Date", "YYYY-MM-DD", formatDateKey(new Date()));
-    const meetingInput = createInlineInput(meeting, "Transcript path or text", "");
+    const meetingInput = createBlockInput(meeting, "Transcript path or text", "Paste transcript text, or enter a local transcript/audio path");
     createButton(meeting, "clipboard-list", "Prep", () => {
       const projectName = requireInput(meetingProject, "a project name");
       if (projectName) {
@@ -794,7 +794,7 @@ class OperatorDashboardView extends ItemView {
     }, undefined, !canRun);
 
     const events = createWorkflowCard(grid, "Calendar / events", "Batch-add commitments so weekly setup can route them into Blockers and project notes.");
-    const eventsInput = createInlineInput(events, "Events", "Paste event list or deadline notes");
+    const eventsInput = createBlockInput(events, "Events", "Paste one event or deadline per line");
     createButton(events, "calendar-plus", "Add events", () => {
       const eventsText = requireInput(eventsInput, "event details");
       if (eventsText) {
@@ -1162,6 +1162,15 @@ function createInlineInput(parent: HTMLElement, label: string, placeholder: stri
   const input = field.createEl("input", { attr: { placeholder } });
   input.value = value;
   return input;
+}
+
+function createBlockInput(parent: HTMLElement, label: string, placeholder: string): HTMLTextAreaElement {
+  const field = parent.createDiv({ cls: "operator-field" });
+  field.createEl("label", { text: label });
+  return field.createEl("textarea", {
+    cls: "operator-prompt-input",
+    attr: { rows: "4", placeholder },
+  });
 }
 
 function renderTextList(parent: HTMLElement, items: string[], emptyText: string): void {

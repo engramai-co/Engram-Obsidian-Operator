@@ -240,8 +240,17 @@ test("builds editable workflow prompt specs", () => {
   assert.match(buildWorkflowSpec("quarterly-plan", "init", date).prompt, /^\/quarterly-plan init\n\nOperator run metadata/);
   assert.match(buildWorkflowSpec("ai-weekly-digest", "last", date).prompt, /^\/ai-weekly-digest last\n\nOperator run metadata/);
 
+  const eventList = "Fri 2pm Design review\nSat 10am Research sync";
+  assert.match(buildWorkflowSpec("add-events", eventList, date).prompt, /^\/add-events\nFri 2pm Design review\nSat 10am Research sync\n\nOperator run metadata/);
+
+  const transcript = "Alice: The launch moved to Friday.\nBob: I will update the brief.";
+  assert.match(buildWorkflowSpec("meeting", transcript, date).prompt, /^\/meeting\nAlice: The launch moved to Friday\.\nBob: I will update the brief\.\n\nOperator run metadata/);
+
   const typedDaily = describePrompt("/daily-init 4.5", date);
   assert.match(typedDaily.prompt, /^\/daily-init 4\.5\n\nOperator run metadata/);
+
+  const typedEvents = describePrompt(`/add-events\n${eventList}`, date);
+  assert.match(typedEvents.prompt, /^\/add-events\nFri 2pm Design review\nSat 10am Research sync\n\nOperator run metadata/);
 
   const typedWeeklyReview = describePrompt("/weekly-review", date);
   assert.match(typedWeeklyReview.prompt, /^\/weekly-review\n\nOperator run metadata/);
