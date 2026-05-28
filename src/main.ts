@@ -46,6 +46,7 @@ import {
   describePrompt,
   normalizeDailyHours,
   resolveAdvancedPrompt,
+  resolveAnnualShortcutInput,
   resolveAnnualYearInput,
   resolveAvailableHoursInput,
   resolveEditedPreviewSpec,
@@ -763,14 +764,14 @@ class OperatorDashboardView extends ItemView {
     const annualYearInput = createInlineInput(strategy, "Year", "YYYY, last, or next");
     const strategyPeriodInput = createInlineInput(strategy, "Period", "2026-Q2 or 2026-04");
     createButton(strategy, "compass", "Annual vision", () => {
-      const year = resolveAnnualYearInput("vision", annualYearInput.value);
-      annualYearInput.value = year;
-      void this.plugin.previewAndRunWorkflow(buildWorkflowSpec("annual-vision", year));
+      const annual = resolveAnnualShortcutInput("vision", annualYearInput.value);
+      annualYearInput.value = annual.nextInputValue;
+      void this.plugin.previewAndRunWorkflow(buildWorkflowSpec("annual-vision", annual.year));
     }, undefined, !canRun);
     createButton(strategy, "book-open-check", "Annual review", () => {
-      const year = resolveAnnualYearInput("review", annualYearInput.value);
-      annualYearInput.value = year;
-      void this.plugin.previewAndRunWorkflow(buildWorkflowSpec("annual-vision", `review ${year}`));
+      const annual = resolveAnnualShortcutInput("review", annualYearInput.value);
+      annualYearInput.value = annual.nextInputValue;
+      void this.plugin.previewAndRunWorkflow(buildWorkflowSpec("annual-vision", `review ${annual.year}`));
     }, undefined, !canRun);
     createButton(strategy, "milestone", "Quarter plan", () => {
       void this.plugin.previewAndRunWorkflow(buildWorkflowSpec("quarterly-plan", resolveQuarterlyPeriodInput("init", strategyPeriodInput.value)));

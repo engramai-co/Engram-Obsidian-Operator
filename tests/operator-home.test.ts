@@ -7,7 +7,7 @@ import { buildCliHandoff } from "../src/cli-handoff";
 import { buildProjectNote, createNativeProject, normalizeProjectName } from "../src/projects";
 import { formatExpectedNoteStatus, formatRunCompletionNotice } from "../src/run-notices";
 import { parseActiveProjectNote, parseBlockers, parseDailyNote, parseWeeklyTodo } from "../src/vault-parsers";
-import { buildAdvancedPromptPlaceholder, buildDefaultDailyPrompt, buildStartDaySpec, buildWorkflowSpec, describePrompt, resolveAdvancedPrompt, resolveAnnualYearInput, resolveAvailableHoursInput, resolveEditedPreviewSpec, resolveQuarterlyPeriodInput, resolveWeeklyPeriodInput } from "../src/workflows";
+import { buildAdvancedPromptPlaceholder, buildDefaultDailyPrompt, buildStartDaySpec, buildWorkflowSpec, describePrompt, resolveAdvancedPrompt, resolveAnnualShortcutInput, resolveAnnualYearInput, resolveAvailableHoursInput, resolveEditedPreviewSpec, resolveQuarterlyPeriodInput, resolveWeeklyPeriodInput } from "../src/workflows";
 
 test("computes ISO week folders and daily note paths", () => {
   const date = new Date("2026-01-01T12:00:00");
@@ -294,6 +294,10 @@ test("builds editable workflow prompt specs", () => {
   assert.equal(resolveAnnualYearInput("review", "", new Date("2026-12-15T09:00:00")), "2026");
   assert.equal(resolveAnnualYearInput("vision", "next year", date), "2027");
   assert.equal(resolveAnnualYearInput("review", "last year", date), "2025");
+  assert.deepEqual(resolveAnnualShortcutInput("vision", "", date), { year: "2026", nextInputValue: "" });
+  assert.deepEqual(resolveAnnualShortcutInput("review", "", date), { year: "2025", nextInputValue: "" });
+  assert.deepEqual(resolveAnnualShortcutInput("vision", "next", date), { year: "2027", nextInputValue: "" });
+  assert.deepEqual(resolveAnnualShortcutInput("review", "2024", date), { year: "2024", nextInputValue: "2024" });
   assert.equal(resolveQuarterlyPeriodInput("init", "2026-Q3"), "init 2026-Q3");
   assert.equal(resolveQuarterlyPeriodInput("review", "review 2025-q4"), "review 2025-Q4");
   assert.equal(resolveQuarterlyPeriodInput("pulse", "2026-04"), "pulse 2026-04");

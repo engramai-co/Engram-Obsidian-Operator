@@ -107,6 +107,19 @@ export function resolveAnnualYearInput(mode: "vision" | "review", value: string,
   return String(date.getFullYear());
 }
 
+export function resolveAnnualShortcutInput(
+  mode: "vision" | "review",
+  value: string,
+  date = new Date(),
+): { year: string; nextInputValue: string } {
+  const year = resolveAnnualYearInput(mode, value, date);
+  const explicitYear = value.match(/\b(20\d{2})\b/)?.[1] ?? "";
+  return {
+    year,
+    nextInputValue: explicitYear,
+  };
+}
+
 export function resolveWeeklyPeriodInput(_mode: "init" | "review", value: string, date = new Date()): string {
   const week = value.match(/\b(20\d{2})-W(0?[1-9]|[1-4]\d|5[0-3])\b/i);
   if (week) {
