@@ -32,14 +32,14 @@ Run these checks **in order** before reading any other data source:
 
 ### 1. Close last week (new-week boundary)
 Determine last week's ISO week number. Check whether `01_Execution/YYYY-[W]WW/Weekly Review.md` exists for **last week's** folder.
-- If it does **not** exist and today is in a **different ISO week** from the most recent daily note → run `/weekly-review` for last week first, wait for it to complete, then continue.
+- If it does **not** exist and the current ISO week is after last week's ISO week → run `/weekly-review` for last week first, wait for it to complete, then continue.
 - If it already exists → skip.
 
 This fires on the first `/daily-init` of a new week, regardless of which day that is. The date condition is that the current ISO week is after the target week, so catch-up runs later in the week are eligible when the review artifact is still missing.
 
 ### 1b. AI Weekly Digest (new-week boundary)
 After step 1, check whether `04_Knowledge/AI-Weekly/YYYY-[W]WW - AI Weekly Digest.md` exists for **last week**.
-- If it does **not** exist and today is in a **different ISO week** from last week → run `/ai-weekly-digest`, wait for it to complete, then continue.
+- If it does **not** exist and the current ISO week is after last week's ISO week → run `/ai-weekly-digest` for last week, wait for it to complete, then continue.
 - If it already exists → skip.
 
 ### 1c. Monthly pulse (new-month boundary)

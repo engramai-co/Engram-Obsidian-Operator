@@ -405,6 +405,7 @@ function appendDailyPreflightGuard(prompt: string, date = new Date()): string {
 
 function formatDailyPreflightGuard(date = new Date()): string {
   const targets = getDailyBoundaryTargets(date);
+  const artifacts = getDailyBoundaryArtifacts(date, targets);
   return [
     "Daily pre-flight guard:",
     "Do not rely on CLI hooks being available in this Obsidian-launched run.",
@@ -421,6 +422,12 @@ function formatDailyPreflightGuard(date = new Date()): string {
     `- Last quarter review: /quarterly-plan review ${targets.lastQuarter}`,
     `- Current quarter plan: /quarterly-plan init ${targets.currentQuarter}`,
     `- Current week setup: /weekly-init ${targets.currentWeek}`,
+    "Check exact artifacts before deciding a boundary run is missing:",
+    `- Weekly review artifact: ${artifacts.weeklyReview}`,
+    `- AI weekly artifact: ${artifacts.aiWeeklyDigest}`,
+    `- Monthly pulse artifact: ${artifacts.monthlyPulse}`,
+    `- Quarterly review artifact: ${artifacts.quarterlyReview}`,
+    `- Quarterly plan artifact: ${artifacts.quarterlyPlan}`,
     "Only continue past a missing boundary artifact if the sub-run fails; record that failure in today's ### Flags.",
   ].join("\n");
 }
@@ -442,6 +449,28 @@ function getDailyBoundaryTargets(date: Date): {
     lastQuarter: getPreviousQuarter(date).label,
     currentQuarter: getQuarterInfo(date).label,
     currentWeek: getIsoWeekInfo(date).label,
+  };
+}
+
+function getDailyBoundaryArtifacts(
+  date: Date,
+  targets = getDailyBoundaryTargets(date),
+): {
+  weeklyReview: string;
+  aiWeeklyDigest: string;
+  monthlyPulse: string;
+  quarterlyReview: string;
+  quarterlyPlan: string;
+} {
+  const lastMonth = new Date(date.getFullYear(), date.getMonth() - 1, 1);
+  const lastMonthQuarter = getQuarterInfo(lastMonth).label;
+  const lastMonthNumber = String(lastMonth.getMonth() + 1).padStart(2, "0");
+  return {
+    weeklyReview: `01_Execution/${targets.lastWeek}/Weekly Review.md`,
+    aiWeeklyDigest: `04_Knowledge/AI-Weekly/${targets.lastWeek} - AI Weekly Digest.md`,
+    monthlyPulse: `00_Strategy/${lastMonthQuarter}/Monthly Pulse - ${lastMonthNumber}.md`,
+    quarterlyReview: `00_Strategy/${targets.lastQuarter}/Quarterly Review.md`,
+    quarterlyPlan: `00_Strategy/${targets.currentQuarter}/Quarterly Plan.md`,
   };
 }
 
@@ -479,7 +508,7 @@ function getWeeklyReviewFolder(args: string, date: Date): string {
   if (explicit) {
     return `01_Execution/${explicit}`;
   }
-  const target = args.toLowerCase() === "last" || date.getDay() === 1
+  const target = isLastWeekShorthand(args) || date.getDay() === 1
     ? addDays(date, -7)
     : date;
   return `01_Execution/${getIsoWeekInfo(target).label}`;
@@ -495,6 +524,9 @@ function getWeeklyReviewPromptArgs(args: string, weeklyReviewFolder: string): st
   if (explicit) {
     return explicit;
   }
+  if (isLastWeekShorthand(args)) {
+    return weeklyReviewFolder.replace("01_Execution/", "");
+  }
   return args || weeklyReviewFolder.replace("01_Execution/", "");
 }
 
@@ -503,7 +535,7 @@ function getAiWeeklyDigestTarget(args: string, date: Date): string {
   if (explicit) {
     return explicit;
   }
-  const target = args.toLowerCase() === "last" || date.getDay() === 1
+  const target = isLastWeekShorthand(args) || date.getDay() === 1
     ? addDays(date, -7)
     : date;
   return getIsoWeekInfo(target).label;
@@ -511,14 +543,32 @@ function getAiWeeklyDigestTarget(args: string, date: Date): string {
 
 function getAiWeeklyDigestPromptArgs(args: string, target: string): string {
   const trimmed = args.trim();
-  if (!trimmed || trimmed.toLowerCase() === "last" || parseExplicitIsoWeek(trimmed)) {
+  if (!trimmed || isLastWeekShorthand(trimmed) || parseExplicitIsoWeek(trimmed)) {
     return target;
   }
   return args;
 }
 
 function normalizeKnownPromptForRun(command: OperatorWorkflowId, prompt: string, commandArgs: string, date: Date): string {
-  if (["weekly-init", "weekly-review", "ai-weekly-digest"].includes(command)) {
+  if (command === "weekly-review") {
+    if (!commandArgs.trim() || isBareLastShorthand(commandArgs)) {
+      return prompt;
+    }
+    const reviewFolder = getWeeklyReviewFolder(commandArgs, date);
+    const normalizedArgs = getWeeklyReviewPromptArgs(commandArgs, reviewFolder);
+    return normalizedArgs === commandArgs ? prompt : withArgs(`/${command}`, normalizedArgs);
+  }
+
+  if (command === "ai-weekly-digest") {
+    if (!commandArgs.trim() || isBareLastShorthand(commandArgs)) {
+      return prompt;
+    }
+    const target = getAiWeeklyDigestTarget(commandArgs, date);
+    const normalizedArgs = getAiWeeklyDigestPromptArgs(commandArgs, target);
+    return normalizedArgs === commandArgs ? prompt : withArgs(`/${command}`, normalizedArgs);
+  }
+
+  if (command === "weekly-init") {
     const normalizedArgs = normalizeIsoWeekReferences(commandArgs);
     return normalizedArgs === commandArgs ? prompt : withArgs(`/${command}`, normalizedArgs);
   }
@@ -544,6 +594,14 @@ function normalizeIsoWeekReferences(value: string): string {
   return value.replace(/\b(20\d{2})-W(0?[1-9]|[1-4]\d|5[0-3])\b/gi, (_match, year: string, week: string) => {
     return `${year}-W${week.padStart(2, "0")}`;
   });
+}
+
+function isLastWeekShorthand(value: string): boolean {
+  return /^\s*last(?:\s+week)?\s*$/i.test(value);
+}
+
+function isBareLastShorthand(value: string): boolean {
+  return /^\s*last\s*$/i.test(value);
 }
 
 function normalizeAnnualTargetArgs(args: string, date: Date): string {

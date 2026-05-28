@@ -131,6 +131,7 @@ test("daily-init skill documents catch-up boundary triggers", () => {
 
   assert.match(skill, /catch-up runs later in the week are eligible/);
   assert.match(skill, /catch-up runs after the first day are eligible/);
+  assert.doesNotMatch(skill, /different ISO week[\s\S]*most recent daily note/);
 });
 
 test("parses active project notes from frontmatter and ## Now", () => {
@@ -504,6 +505,12 @@ test("builds editable workflow prompt specs", () => {
   assert.match(start.prompt, /Monthly pulse date condition: current month is after the target month, so catch-up runs after the first day are eligible/);
   assert.match(start.prompt, /Quarter review\/plan date condition: current quarter is after the review target and the current quarter has begun, so catch-up runs after the first day are eligible/);
   assert.match(start.prompt, /Execution order for eligible missing artifacts: \/weekly-review 2026-W20, \/ai-weekly-digest 2026-W20, \/quarterly-plan pulse 2026-04, \/quarterly-plan review 2026-Q1, \/quarterly-plan init 2026-Q2, then always run \/weekly-init 2026-W21\./);
+  assert.match(start.prompt, /Check exact artifacts before deciding a boundary run is missing:/);
+  assert.match(start.prompt, /Weekly review artifact: 01_Execution\/2026-W20\/Weekly Review\.md/);
+  assert.match(start.prompt, /AI weekly artifact: 04_Knowledge\/AI-Weekly\/2026-W20 - AI Weekly Digest\.md/);
+  assert.match(start.prompt, /Monthly pulse artifact: 00_Strategy\/2026-Q2\/Monthly Pulse - 04\.md/);
+  assert.match(start.prompt, /Quarterly review artifact: 00_Strategy\/2026-Q1\/Quarterly Review\.md/);
+  assert.match(start.prompt, /Quarterly plan artifact: 00_Strategy\/2026-Q2\/Quarterly Plan\.md/);
   assert.doesNotMatch(start.prompt, /Run missing weekly, monthly, and quarterly boundary workflows/);
   assert.match(start.prompt, /\/weekly-review 2026-W20/);
   assert.match(start.prompt, /\/ai-weekly-digest 2026-W20/);
@@ -577,6 +584,8 @@ test("builds editable workflow prompt specs", () => {
   assert.equal(buildWorkflowSpec("weekly-review", "2026-W18", date).expectedOpenPath, "01_Execution/2026-W18/Weekly Review.md");
   assert.equal(describePrompt("/weekly-review 2026-W3", date).expectedOpenPath, "01_Execution/2026-W03/Weekly Review.md");
   assert.match(describePrompt("/weekly-review 2026-W3", date).prompt, /^\/weekly-review 2026-W03\n\nOperator run metadata/);
+  assert.equal(describePrompt("/weekly-review last week", date).expectedOpenPath, "01_Execution/2026-W20/Weekly Review.md");
+  assert.match(describePrompt("/weekly-review last week", date).prompt, /^\/weekly-review 2026-W20\n\nOperator run metadata/);
   assert.equal(buildWorkflowSpec("weekly-review", "", new Date("2026-05-25T09:00:00")).expectedOpenPath, "01_Execution/2026-W21/Weekly Review.md");
   assert.match(buildWorkflowSpec("weekly-review", "", new Date("2026-05-25T09:00:00")).prompt, /^\/weekly-review 2026-W21\n\nOperator run metadata/);
   const mondayWeeklyReview = buildWorkflowSpec("weekly-review", "", new Date("2026-05-25T09:00:00"));
@@ -672,6 +681,8 @@ test("builds editable workflow prompt specs", () => {
   assert.equal(buildWorkflowSpec("ai-weekly-digest", "2026-W18", date).expectedOpenPath, "04_Knowledge/AI-Weekly/2026-W18 - AI Weekly Digest.md");
   assert.equal(buildWorkflowSpec("ai-weekly-digest", "2026-W3", date).expectedOpenPath, "04_Knowledge/AI-Weekly/2026-W03 - AI Weekly Digest.md");
   assert.match(describePrompt("/ai-weekly-digest 2026-W3", date).prompt, /^\/ai-weekly-digest 2026-W03\n\nOperator run metadata/);
+  assert.equal(describePrompt("/ai-weekly-digest last week", date).expectedOpenPath, "04_Knowledge/AI-Weekly/2026-W20 - AI Weekly Digest.md");
+  assert.match(describePrompt("/ai-weekly-digest last week", date).prompt, /^\/ai-weekly-digest 2026-W20\n\nOperator run metadata/);
   assert.equal(buildWorkflowSpec("ai-weekly-digest", "2026-W18", date).label, "AI weekly 2026-W18");
   assert.equal(buildWorkflowSpec("ai-weekly-digest", "", new Date("2026-05-25T09:00:00")).expectedOpenPath, "04_Knowledge/AI-Weekly/2026-W21 - AI Weekly Digest.md");
   assert.equal(buildWorkflowSpec("ai-weekly-digest", "", new Date("2026-05-25T09:00:00")).label, "AI weekly 2026-W21");
