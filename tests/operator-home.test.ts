@@ -438,6 +438,16 @@ test("preview copy uses the same resolved prompt as run", () => {
   assert.doesNotMatch(source, /copyTextToClipboard\(promptInput\.value, "Prompt copied\."\)/);
 });
 
+test("dashboard open refreshes status without rendering twice", () => {
+  const source = readFileSync("src/main.ts", "utf8");
+
+  assert.match(source, /async refreshStatus\(options: \{ render: boolean \} = \{ render: true \}\): Promise<OperatorEnvironmentStatus>/);
+  assert.match(source, /if \(options\.render\) \{\s*this\.renderViews\(\);\s*\}/);
+  assert.match(source, /async onOpen\(\): Promise<void> \{\s*await this\.plugin\.refreshStatus\(\{ render: false \}\);\s*await this\.render\(\);\s*\}/);
+  assert.doesNotMatch(source, /async onOpen\(\): Promise<void> \{\s*await this\.plugin\.refreshStatus\(\);\s*await this\.render\(\);/);
+  assert.doesNotMatch(source, /await this\.refreshStatus\(\);\s*this\.renderViews\(\);/);
+});
+
 test("does not update ambiguous duplicate markdown task lines", async () => {
   const app = createFakeApp();
   await app.vault.create("01_Execution/2026-W21/Weekly Todo.md", [

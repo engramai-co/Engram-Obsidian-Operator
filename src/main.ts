@@ -138,9 +138,11 @@ export default class OperatorControlPlugin extends Plugin {
     this.app.workspace.revealLeaf(leaf);
   }
 
-  async refreshStatus(): Promise<OperatorEnvironmentStatus> {
+  async refreshStatus(options: { render: boolean } = { render: true }): Promise<OperatorEnvironmentStatus> {
     this.status = await checkEnvironment(this.app, this.settings);
-    this.renderViews();
+    if (options.render) {
+      this.renderViews();
+    }
     return this.status;
   }
 
@@ -232,7 +234,6 @@ export default class OperatorControlPlugin extends Plugin {
       new Notice(`Project created at ${result.notePath}.`);
       await this.openVaultPath(result.notePath);
       await this.refreshStatus();
-      this.renderViews();
     } catch (error) {
       new Notice(`Project setup failed: ${formatError(error)}`);
     }
@@ -480,7 +481,7 @@ class OperatorDashboardView extends ItemView {
   }
 
   async onOpen(): Promise<void> {
-    await this.plugin.refreshStatus();
+    await this.plugin.refreshStatus({ render: false });
     await this.render();
   }
 
