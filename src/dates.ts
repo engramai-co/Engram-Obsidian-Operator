@@ -79,6 +79,11 @@ export function hasLocalMinuteChanged(previousMinuteKey: string, date = new Date
   return previousMinuteKey !== getLocalMinuteKey(date);
 }
 
+export function getNextLocalMinuteDelayMs(date = new Date()): number {
+  const elapsedMs = date.getSeconds() * 1000 + date.getMilliseconds();
+  return elapsedMs === 0 ? 60_000 : 60_000 - elapsedMs;
+}
+
 export function formatDashboardRunContext(date = new Date()): string {
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "local";
   return `${formatDateKey(date)} ${formatLocalClock(date)} ${timezone} · ${getIsoWeekInfo(date).label} · ${getQuarterInfo(date).label}`;

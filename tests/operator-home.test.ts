@@ -1,7 +1,7 @@
 import { strict as assert } from "node:assert";
 import { readFileSync } from "node:fs";
 import test from "node:test";
-import { formatDashboardRunContext, formatRunContext, getDailyNotePath, getExecutionWeekFolder, getIsoWeekInfo, getLocalMinuteKey, getQuarterInfo, hasLocalDateChanged, hasLocalMinuteChanged } from "../src/dates";
+import { formatDashboardRunContext, formatRunContext, getDailyNotePath, getExecutionWeekFolder, getIsoWeekInfo, getLocalMinuteKey, getNextLocalMinuteDelayMs, getQuarterInfo, hasLocalDateChanged, hasLocalMinuteChanged } from "../src/dates";
 import { appendQuickCapture, readOperatorHomeState, updateMarkdownTaskState } from "../src/home-state";
 import { buildCliHandoff } from "../src/cli-handoff";
 import { buildProjectNote, createNativeProject, normalizeProjectName } from "../src/projects";
@@ -24,6 +24,8 @@ test("computes ISO week folders and daily note paths", () => {
   assert.equal(getLocalMinuteKey(new Date("2026-05-22T09:15:30")), "2026-05-22T09:15");
   assert.equal(hasLocalMinuteChanged("2026-05-22T09:15", new Date("2026-05-22T09:15:59")), false);
   assert.equal(hasLocalMinuteChanged("2026-05-22T09:15", new Date("2026-05-22T09:16:00")), true);
+  assert.equal(getNextLocalMinuteDelayMs(new Date("2026-05-22T09:15:00.000")), 60000);
+  assert.equal(getNextLocalMinuteDelayMs(new Date("2026-05-22T09:15:45.250")), 14750);
 });
 
 test("formats run completion notices with expected-note status", () => {
