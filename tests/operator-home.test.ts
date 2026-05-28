@@ -486,6 +486,11 @@ test("builds editable workflow prompt specs", () => {
     buildWorkflowSpec("quarterly-plan", resolveQuarterlyPeriodInput("pulse", "2026-Q2", date), date).expectedOpenPath,
     "00_Strategy/2026-Q2/Monthly Pulse - 06.md",
   );
+  assert.equal(
+    describePrompt("/quarterly-plan pulse 2026-Q2", date).expectedOpenPath,
+    "00_Strategy/2026-Q2/Monthly Pulse - 06.md",
+  );
+  assert.match(describePrompt("/quarterly-plan pulse 2026-Q2", date).prompt, /^\/quarterly-plan pulse 2026-06\n\nOperator run metadata/);
   assert.equal(buildWorkflowSpec("quarterly-plan", "pulse 05", date).expectedOpenPath, "00_Strategy/2026-Q2/Monthly Pulse - 05.md");
   assert.equal(buildWorkflowSpec("quarterly-plan", "pulse 05", date).label, "Monthly pulse 2026-05");
   assert.equal(buildWorkflowSpec("quarterly-plan", "pulse 2025-12", new Date("2026-01-01T09:00:00")).expectedOpenPath, "00_Strategy/2025-Q4/Monthly Pulse - 12.md");

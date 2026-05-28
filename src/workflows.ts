@@ -299,7 +299,7 @@ export function describePrompt(prompt: string, date = new Date()): OperatorWorkf
 
   if (known.has(command)) {
     const commandArgs = stripRunMetadata(trimmed.slice(command.length + 1).trim());
-    const runnablePrompt = normalizeKnownPromptForRun(command, trimmed, commandArgs);
+    const runnablePrompt = normalizeKnownPromptForRun(command, trimmed, commandArgs, effectiveDate);
     return {
       ...buildWorkflowSpec(command, commandArgs, effectiveDate),
       prompt: appendRunMetadata(runnablePrompt, effectiveDate),
@@ -516,12 +516,21 @@ function getAiWeeklyDigestPromptArgs(args: string, target: string): string {
   return args;
 }
 
-function normalizeKnownPromptForRun(command: OperatorWorkflowId, prompt: string, commandArgs: string): string {
-  if (!["weekly-init", "weekly-review", "ai-weekly-digest"].includes(command)) {
+function normalizeKnownPromptForRun(command: OperatorWorkflowId, prompt: string, commandArgs: string, date: Date): string {
+  if (["weekly-init", "weekly-review", "ai-weekly-digest"].includes(command)) {
+    const normalizedArgs = normalizeIsoWeekReferences(commandArgs);
+    return normalizedArgs === commandArgs ? prompt : withArgs(`/${command}`, normalizedArgs);
+  }
+
+  if (command !== "quarterly-plan") {
     return prompt;
   }
 
-  const normalizedArgs = normalizeIsoWeekReferences(commandArgs);
+  if (commandArgs.split(/\s+/, 1)[0].toLowerCase() !== "pulse") {
+    return prompt;
+  }
+
+  const normalizedArgs = getQuarterlyPromptArgs(commandArgs, date);
   return normalizedArgs === commandArgs ? prompt : withArgs(`/${command}`, normalizedArgs);
 }
 
@@ -614,6 +623,10 @@ function getQuarterlyPromptArgs(args: string, date: Date): string {
   if (mode === "init" && !parseQuarterArg(args)) {
     return `init ${getQuarterInfo(date).label}`;
   }
+  if (mode === "pulse" && parseQuarterArg(args)) {
+    const target = parsePulseMonth(args, date);
+    return `pulse ${target.year}-${String(target.month).padStart(2, "0")}`;
+  }
   if (mode === "pulse" && !args.match(/\b(20\d{2})-(0?[1-9]|1[0-2])\b/) && !args.match(/\b(0?[1-9]|1[0-2])\b/)) {
     const target = parsePulseMonth(args, date);
     return `pulse ${target.year}-${String(target.month).padStart(2, "0")}`;
@@ -632,6 +645,11 @@ function parseQuarterArg(args: string): { year: number; quarter: number; label: 
 }
 
 function parsePulseMonth(args: string, date: Date): { year: number; month: number } {
+  const quarter = parseQuarterArg(args);
+  if (quarter) {
+    return { year: quarter.year, month: quarter.quarter * 3 };
+  }
+
   const explicit = args.match(/\b(20\d{2})-(0?[1-9]|1[0-2])\b/);
   if (explicit) {
     return { year: Number(explicit[1]), month: Number(explicit[2]) };
