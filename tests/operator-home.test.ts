@@ -2,6 +2,7 @@ import { strict as assert } from "node:assert";
 import test from "node:test";
 import { formatRunContext, getDailyNotePath, getExecutionWeekFolder, getIsoWeekInfo, getQuarterInfo } from "../src/dates";
 import { appendQuickCapture, readOperatorHomeState, updateMarkdownTaskState } from "../src/home-state";
+import { buildCliHandoff } from "../src/cli-handoff";
 import { buildProjectNote, createNativeProject, normalizeProjectName } from "../src/projects";
 import { parseActiveProjectNote, parseBlockers, parseDailyNote, parseWeeklyTodo } from "../src/vault-parsers";
 import { buildStartDaySpec, buildWorkflowSpec, describePrompt } from "../src/workflows";
@@ -288,6 +289,16 @@ test("builds editable workflow prompt specs", () => {
 
   const custom = describePrompt("review the current note", date);
   assert.equal(custom.prompt, "review the current note");
+});
+
+test("builds CLI handoff with the same enhanced daily prompt safely commented", () => {
+  const handoff = buildCliHandoff("/tmp/My Vault", "/daily-init 4.5", new Date("2026-05-22T09:00:00"));
+
+  assert.match(handoff, /^cd '\/tmp\/My Vault'\ncodex\n# Paste this prompt into Codex:/);
+  assert.match(handoff, /# \/daily-init 4\.5/);
+  assert.match(handoff, /# Daily pre-flight guard:/);
+  assert.match(handoff, /# Local date: 2026-05-22/);
+  assert.equal(handoff.split("\n").filter((line) => line.includes("Daily pre-flight guard")).every((line) => line.startsWith("# ")), true);
 });
 
 function createFakeApp(): {

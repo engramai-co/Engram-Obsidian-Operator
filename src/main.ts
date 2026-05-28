@@ -16,6 +16,7 @@ import {
   setIcon,
 } from "obsidian";
 import { formatDateKey, getIsoWeekInfo, getQuarterInfo } from "./dates";
+import { buildCliHandoff } from "./cli-handoff";
 import { appendQuickCapture, readOperatorHomeState, updateMarkdownTaskState, type OperatorHomeState } from "./home-state";
 import { createNativeProject, normalizeProjectName, type NativeProjectInput } from "./projects";
 import {
@@ -1197,15 +1198,6 @@ function requireInput(input: HTMLInputElement | HTMLTextAreaElement, label: stri
   input.focus();
   new Notice(`Enter ${label} first.`);
   return null;
-}
-
-function buildCliHandoff(vaultPath: string | null, prompt: string): string {
-  const cdLine = vaultPath ? `cd ${shellQuote(vaultPath)}` : "cd <your-vault-path>";
-  return `${cdLine}\ncodex\n# paste into Codex: ${prompt}`;
-}
-
-function shellQuote(value: string): string {
-  return `'${value.replace(/'/g, "'\\''")}'`;
 }
 
 function formatHeaderRunContext(date: Date): string {
