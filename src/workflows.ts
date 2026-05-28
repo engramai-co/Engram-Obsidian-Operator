@@ -730,7 +730,7 @@ function getQuarterlyPromptArgs(args: string, date: Date): string {
     const target = parsePulseMonth(args, date);
     return `pulse ${target.year}-${String(target.month).padStart(2, "0")}`;
   }
-  if (mode === "pulse" && !args.match(/\b(20\d{2})-(0?[1-9]|1[0-2])\b/) && !args.match(/\b(0?[1-9]|1[0-2])\b/)) {
+  if (mode === "pulse" && !args.match(/\b(20\d{2})-(0?[1-9]|1[0-2])\b/)) {
     const target = parsePulseMonth(args, date);
     return `pulse ${target.year}-${String(target.month).padStart(2, "0")}`;
   }

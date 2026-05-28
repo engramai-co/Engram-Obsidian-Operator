@@ -178,6 +178,7 @@ test("advanced strategy prompts run with explicit resolved targets", () => {
   assert.match(describePrompt("/annual-vision review", date).prompt, /^\/annual-vision review 2025\n\nOperator run metadata/);
   assert.match(describePrompt("/quarterly-plan init", date).prompt, /^\/quarterly-plan init 2026-Q2\n\nOperator run metadata/);
   assert.match(describePrompt("/quarterly-plan review", date).prompt, /^\/quarterly-plan review 2026-Q1\n\nOperator run metadata/);
+  assert.match(describePrompt("/quarterly-plan pulse 05", date).prompt, /^\/quarterly-plan pulse 2026-05\n\nOperator run metadata/);
 });
 
 test("quarterly-plan skill documents explicit UI targets", () => {
@@ -769,7 +770,7 @@ test("builds editable workflow prompt specs", () => {
   assert.equal(buildWorkflowSpec("content-draft", "", date).label, "Draft content");
   assert.equal(buildWorkflowSpec("deep-research", "operator onboarding UX", date).label, "Deep research operator onboarding UX");
   assert.match(describePrompt("/annual-vision review", date).prompt, /^\/annual-vision review 2025\n\nOperator run metadata/);
-  assert.match(buildWorkflowSpec("quarterly-plan", "pulse 05", date).prompt, /^\/quarterly-plan pulse 05\n\nOperator run metadata/);
+  assert.match(buildWorkflowSpec("quarterly-plan", "pulse 05", date).prompt, /^\/quarterly-plan pulse 2026-05\n\nOperator run metadata/);
   assert.match(describePrompt("/quarterly-plan init", date).prompt, /^\/quarterly-plan init 2026-Q2\n\nOperator run metadata/);
   assert.match(describePrompt("/weekly-review", date).prompt, /^\/weekly-review 2026-W21\n\nOperator run metadata/);
   assert.match(buildWorkflowSpec("ai-weekly-digest", "last", date).prompt, /^\/ai-weekly-digest 2026-W20\n\nOperator run metadata/);
