@@ -523,7 +523,7 @@ class OperatorDashboardView extends ItemView {
 
     this.renderToday(root, status, home);
     this.renderQuickCapture(root, home);
-    this.renderHomePanels(root, home);
+    this.renderHomePanels(root, status, home);
     this.renderWorkflowShortcuts(root, status, home);
     this.renderSetup(root, status, true);
     this.renderRunLog(root);
@@ -717,7 +717,11 @@ class OperatorDashboardView extends ItemView {
     }
   }
 
-  private renderHomePanels(root: HTMLElement, home: OperatorHomeState): void {
+  private renderHomePanels(root: HTMLElement, status: OperatorEnvironmentStatus, home: OperatorHomeState): void {
+    const canRun = this.canRun(status);
+    const lockHelp = canRun
+      ? undefined
+      : formatWorkflowUnavailableHelp(status, this.plugin.settings.backend, "Current Work", !!this.plugin.activeRun);
     const section = createSection(root, "Current Work", `${home.weekFolder} supplies project context, blockers, and meeting prep.`);
     const grid = section.createDiv({ cls: "operator-home-grid" });
 
@@ -737,7 +741,7 @@ class OperatorDashboardView extends ItemView {
         createButton(actions, "file-text", "Open", () => void this.plugin.openVaultPath(project.notePath));
         createButton(actions, "refresh-cw", "Sync", () => {
           void this.plugin.previewAndRunWorkflow(buildWorkflowSpec("project-sync", project.name));
-        });
+        }, undefined, !canRun, lockHelp);
       }
     }
 
@@ -760,7 +764,7 @@ class OperatorDashboardView extends ItemView {
           const args = [meeting.project, meeting.dateIso].filter(Boolean).join(" ");
           createButton(actions, "clipboard-list", "Prep", () => {
             void this.plugin.previewAndRunWorkflow(buildWorkflowSpec("meeting-prep", args));
-          });
+          }, undefined, !canRun, lockHelp);
         }
       }
     }

@@ -417,6 +417,17 @@ test("today next actions exclude carried-forward daily items", () => {
   assert.doesNotMatch(source, /\.\.\.home\.daily\.carriedForward/);
 });
 
+test("current work agent shortcuts use workflow disabled state", () => {
+  const source = readFileSync("src/main.ts", "utf8");
+
+  assert.match(source, /this\.renderHomePanels\(root, status, home\)/);
+  assert.match(source, /private renderHomePanels\(root: HTMLElement, status: OperatorEnvironmentStatus, home: OperatorHomeState\)/);
+  assert.match(source, /const canRun = this\.canRun\(status\)/);
+  assert.match(source, /const lockHelp = canRun[\s\S]*formatWorkflowUnavailableHelp\(status, this\.plugin\.settings\.backend, "Current Work", !!this\.plugin\.activeRun\)/);
+  assert.match(source, /"Sync"[\s\S]*!canRun, lockHelp/);
+  assert.match(source, /"Prep"[\s\S]*!canRun, lockHelp/);
+});
+
 test("does not update ambiguous duplicate markdown task lines", async () => {
   const app = createFakeApp();
   await app.vault.create("01_Execution/2026-W21/Weekly Todo.md", [
