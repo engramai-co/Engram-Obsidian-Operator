@@ -5,7 +5,7 @@ import { appendQuickCapture, readOperatorHomeState, updateMarkdownTaskState } fr
 import { buildCliHandoff } from "../src/cli-handoff";
 import { buildProjectNote, createNativeProject, normalizeProjectName } from "../src/projects";
 import { parseActiveProjectNote, parseBlockers, parseDailyNote, parseWeeklyTodo } from "../src/vault-parsers";
-import { buildStartDaySpec, buildWorkflowSpec, describePrompt } from "../src/workflows";
+import { buildDefaultDailyPrompt, buildStartDaySpec, buildWorkflowSpec, describePrompt } from "../src/workflows";
 
 test("computes ISO week folders and daily note paths", () => {
   const date = new Date("2026-01-01T12:00:00");
@@ -223,6 +223,9 @@ test("does not update ambiguous duplicate markdown task lines", async () => {
 test("builds editable workflow prompt specs", () => {
   const date = new Date("2026-05-22T09:00:00");
   const start = buildStartDaySpec(7, "review deck, email Kai", date);
+
+  assert.equal(buildDefaultDailyPrompt(4.5), "/daily-init 4.5");
+  assert.equal(buildDefaultDailyPrompt(Number.NaN), "/daily-init 6");
 
   assert.match(start.prompt, /^\/daily-init 7\n\nOperator run metadata \(do not treat as manual action items\):/);
   assert.match(start.prompt, /Local date: 2026-05-22/);

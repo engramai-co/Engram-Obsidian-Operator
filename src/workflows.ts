@@ -75,6 +75,10 @@ export function buildStartDaySpec(hours: number, manualItems: string, date = new
   };
 }
 
+export function buildDefaultDailyPrompt(hours: number): string {
+  return `/daily-init ${normalizeDailyHours(hours)}`;
+}
+
 export function buildWorkflowSpec(
   id: OperatorWorkflowId,
   args = "",

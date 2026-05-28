@@ -38,6 +38,7 @@ import {
 import type { MarkdownActionItem } from "./vault-parsers";
 import { initializeVault, type VaultInitializationResult } from "./vault-init";
 import {
+  buildDefaultDailyPrompt,
   buildStartDaySpec,
   buildWorkflowSpec,
   describePrompt,
@@ -812,7 +813,7 @@ class OperatorDashboardView extends ItemView {
       attr: { rows: "3", placeholder: "/daily-init 6, /project-init MyProject, or review a note" },
     });
     createButton(advanced, "copy", "Copy CLI handoff", () => {
-      const prompt = custom.value.trim() || "/daily-init 6";
+      const prompt = custom.value.trim() || buildDefaultDailyPrompt(this.plugin.settings.availableHours);
       void copyTextToClipboard(buildCliHandoff(this.plugin.getVaultPath(), prompt, new Date(), this.plugin.settings.backend), "CLI handoff copied.");
     });
     createButton(advanced, "terminal", "Preview and run", () => {
