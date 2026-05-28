@@ -39,6 +39,7 @@ import {
   buildStartDaySpec,
   buildWorkflowSpec,
   describePrompt,
+  normalizeDailyHours,
   type OperatorWorkflowRunSpec,
 } from "./workflows";
 
@@ -173,7 +174,7 @@ export default class OperatorControlPlugin extends Plugin {
   }
 
   async runDailyBriefing(hours: number, manualItems = ""): Promise<void> {
-    const safeHours = Math.max(1, Math.min(16, Math.round(hours || this.settings.availableHours)));
+    const safeHours = normalizeDailyHours(hours || this.settings.availableHours);
     this.settings.availableHours = safeHours;
     await this.saveSettings();
     await this.previewAndRunWorkflow(buildStartDaySpec(safeHours, manualItems));
@@ -544,12 +545,12 @@ class OperatorDashboardView extends ItemView {
         type: "number",
         min: "1",
         max: "16",
-        step: "1",
+        step: "0.5",
         value: String(this.plugin.settings.availableHours),
       },
     });
     hoursInput.addEventListener("change", () => {
-      this.plugin.settings.availableHours = Number(hoursInput.value) || 6;
+      this.plugin.settings.availableHours = normalizeDailyHours(Number(hoursInput.value));
       void this.plugin.saveSettings();
     });
 
@@ -679,21 +680,17 @@ class OperatorDashboardView extends ItemView {
     }, undefined, !canRun);
 
     const strategy = createWorkflowCard(grid, "Strategy review", "Annual vision, quarterly plans, monthly pulses, and quarter reviews stay one click away.");
-    const strategyInput = createInlineInput(strategy, "Year / quarter / month", "2026, 2026-Q2, or 05");
     createButton(strategy, "compass", "Annual vision", () => {
-      void this.plugin.previewAndRunWorkflow(buildWorkflowSpec("annual-vision", strategyInput.value));
+      void this.plugin.previewAndRunWorkflow(buildWorkflowSpec("annual-vision"));
     }, undefined, !canRun);
     createButton(strategy, "milestone", "Quarter plan", () => {
-      const args = strategyInput.value.trim() ? `init ${strategyInput.value}` : "init";
-      void this.plugin.previewAndRunWorkflow(buildWorkflowSpec("quarterly-plan", args));
+      void this.plugin.previewAndRunWorkflow(buildWorkflowSpec("quarterly-plan", "init"));
     }, undefined, !canRun);
     createButton(strategy, "activity", "Monthly pulse", () => {
-      const args = strategyInput.value.trim() ? `pulse ${strategyInput.value}` : "pulse";
-      void this.plugin.previewAndRunWorkflow(buildWorkflowSpec("quarterly-plan", args));
+      void this.plugin.previewAndRunWorkflow(buildWorkflowSpec("quarterly-plan", "pulse"));
     }, undefined, !canRun);
     createButton(strategy, "history", "Quarter review", () => {
-      const args = strategyInput.value.trim() ? `review ${strategyInput.value}` : "review";
-      void this.plugin.previewAndRunWorkflow(buildWorkflowSpec("quarterly-plan", args));
+      void this.plugin.previewAndRunWorkflow(buildWorkflowSpec("quarterly-plan", "review"));
     }, undefined, !canRun);
 
     const project = createWorkflowCard(grid, "Work on project", "Create structure natively, or run agent workflows when context needs synthesis.");

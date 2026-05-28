@@ -191,11 +191,15 @@ test("builds editable workflow prompt specs", () => {
   assert.equal(start.expectedOpenPath, "01_Execution/2026-W21/2026-05-22.md");
   assert.equal(start.search, true);
 
+  const fractionalDay = buildStartDaySpec(4.5, "", date);
+  assert.match(fractionalDay.prompt, /^\/daily-init 4\.5\n\nOperator run metadata/);
+
   const projectSync = buildWorkflowSpec("project-sync", "FM-Copilot");
   assert.equal(projectSync.prompt, "/project-sync FM-Copilot");
 
   assert.equal(buildWorkflowSpec("annual-vision", "review 2026").prompt, "/annual-vision review 2026");
   assert.equal(buildWorkflowSpec("quarterly-plan", "pulse 05").prompt, "/quarterly-plan pulse 05");
+  assert.equal(buildWorkflowSpec("quarterly-plan", "init").prompt, "/quarterly-plan init");
   assert.equal(buildWorkflowSpec("ai-weekly-digest", "last").prompt, "/ai-weekly-digest last");
 
   const described = describePrompt("/deep-research AI evals", date);

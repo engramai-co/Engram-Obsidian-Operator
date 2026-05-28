@@ -61,7 +61,7 @@ npm run install:plugin -- "<your vault>"
 2. If setup is incomplete, use **Setup health** to install skills for your selected backend.
 3. Click **Initialize vault** to create the Operator folder structure and agent config files.
 4. Click **New** under Active projects, then create your first project note.
-5. Enter available hours and click **Start my day**. Review the Preview, then run it.
+5. Enter available hours, including half-hour budgets such as `4.5`, and click **Start my day**. Review the Preview, then run it.
 
 ## Daily Use
 
