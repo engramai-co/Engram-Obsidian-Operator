@@ -135,6 +135,9 @@ export function resolveWeeklyPeriodInput(_mode: "init" | "review", value: string
 
 export function resolveQuarterlyPeriodInput(mode: "init" | "review" | "pulse", value: string, date = new Date()): string {
   const quarter = value.match(/\b(20\d{2})-Q([1-4])\b/i);
+  if (mode === "pulse" && quarter) {
+    return `${mode} ${quarter[1]}-${String(Number(quarter[2]) * 3).padStart(2, "0")}`;
+  }
   if (mode !== "pulse" && quarter) {
     return `${mode} ${quarter[1]}-Q${quarter[2]}`;
   }

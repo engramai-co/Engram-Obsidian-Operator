@@ -7,7 +7,7 @@ Strategic quarterly planning: init, review, and monthly pulse checkpoint.
 
 ## Arguments
 
-- `pulse [YYYY-MM|MM]` — Run monthly pulse for the target month (default: last month). Auto-triggered by `/daily-init` on 1st of each month.
+- `pulse [YYYY-QX|YYYY-MM|MM]` — Run monthly pulse for the target month (default: last month). If a quarter is supplied, target that quarter's final month. Auto-triggered by `/daily-init` on 1st of each month.
 - `init [YYYY-QX]` — Initialize a new quarter's plan. Auto-triggered by `/daily-init` on first Monday of quarter.
 - `review [YYYY-QX]` — Review a completed quarter. Auto-triggered by `/daily-init` on first Monday of new quarter.
 
@@ -19,7 +19,7 @@ If no argument given, auto-detect mode:
 ## Pulse Mode (Monthly Checkpoint)
 
 ### Step 1: Determine context
-If the prompt includes `pulse YYYY-MM`, use that exact month and derive its quarter. If it includes `pulse MM`, resolve that month relative to the current year, using the previous year when the month would otherwise be in the future. If no month is specified, default to last month. Compute the target quarter string `YYYY-QX` from the target month.
+If the prompt includes `pulse YYYY-MM`, use that exact month and derive its quarter. If it includes `pulse YYYY-QX`, target that quarter's final month. If it includes `pulse MM`, resolve that month relative to the current year, using the previous year when the month would otherwise be in the future. If no month is specified, default to last month. Compute the target quarter string `YYYY-QX` from the target month.
 
 ### Step 2: Read sources
 - All Weekly Reviews from the target month in `01_Execution/YYYY-WXX/Weekly Review.md` — especially `### Horizon Items` (under `## AI Synthesis`) and `## Reflection` sections (surface reflection themes in qualitative assessment)
