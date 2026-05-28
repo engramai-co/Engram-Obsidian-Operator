@@ -229,6 +229,11 @@ test("builds editable workflow prompt specs", () => {
   assert.match(start.prompt, /Daily pre-flight guard:/);
   assert.match(start.prompt, /Do not rely on CLI hooks being available/);
   assert.match(start.prompt, /Run missing weekly, monthly, and quarterly boundary workflows before writing today's briefing/);
+  assert.match(start.prompt, /\/weekly-review 2026-W20/);
+  assert.match(start.prompt, /\/ai-weekly-digest 2026-W20/);
+  assert.match(start.prompt, /\/quarterly-plan pulse 2026-04/);
+  assert.match(start.prompt, /\/quarterly-plan review 2026-Q1/);
+  assert.match(start.prompt, /\/quarterly-plan init 2026-Q2/);
   assert.match(start.prompt, /Manual items to consider today:\nreview deck, email Kai/);
   assert.ok(start.prompt.indexOf("Daily pre-flight guard") < start.prompt.indexOf("Manual items to consider today"));
   assert.ok(start.prompt.indexOf("Operator run metadata") < start.prompt.indexOf("Manual items to consider today"));
@@ -240,11 +245,18 @@ test("builds editable workflow prompt specs", () => {
   ]);
   assert.equal(start.search, true);
   assert.deepEqual(start.runNotes, [
-    "Pre-flight may close last week: /weekly-review, then /ai-weekly-digest.",
-    "Pre-flight may close last month: /quarterly-plan pulse for the target month.",
-    "Pre-flight may close/open quarter boundaries: /quarterly-plan review, then /quarterly-plan init.",
+    "Pre-flight may close last week: /weekly-review 2026-W20, then /ai-weekly-digest 2026-W20.",
+    "Pre-flight may close last month: /quarterly-plan pulse 2026-04.",
+    "Pre-flight may close/open quarter boundaries: /quarterly-plan review 2026-Q1, then /quarterly-plan init 2026-Q2.",
     "Always opens this week with /weekly-init before writing today's briefing.",
   ]);
+
+  const newYearDay = buildStartDaySpec(6, "", new Date("2026-01-01T09:00:00"));
+  assert.match(newYearDay.prompt, /\/weekly-review 2025-W52/);
+  assert.match(newYearDay.prompt, /\/ai-weekly-digest 2025-W52/);
+  assert.match(newYearDay.prompt, /\/quarterly-plan pulse 2025-12/);
+  assert.match(newYearDay.prompt, /\/quarterly-plan review 2025-Q4/);
+  assert.match(newYearDay.prompt, /\/quarterly-plan init 2026-Q1/);
 
   const fractionalDay = buildStartDaySpec(4.5, "", date);
   assert.match(fractionalDay.prompt, /^\/daily-init 4\.5\n\nOperator run metadata/);

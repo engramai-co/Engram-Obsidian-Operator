@@ -36,7 +36,8 @@ export function buildStartDaySpec(hours: number, manualItems: string, date = new
   const safeHours = normalizeDailyHours(hours);
   const cleanedManualItems = normalizeInlineArgs(manualItems);
   const context = `Operator run metadata (do not treat as manual action items):\n${formatRunContext(date)}`;
-  const preflightGuard = formatDailyPreflightGuard();
+  const preflightGuard = formatDailyPreflightGuard(date);
+  const boundaryTargets = getDailyBoundaryTargets(date);
   const dailyNotePath = getDailyNotePath(date);
   const prompt = cleanedManualItems
     ? `/daily-init ${safeHours}\n\n${context}\n\n${preflightGuard}\n\nManual items to consider today:\n${cleanedManualItems}`
@@ -65,9 +66,9 @@ export function buildStartDaySpec(hours: number, manualItems: string, date = new
       `Planning quarter: ${getQuarterInfo(date).label}`,
     ],
     runNotes: [
-      "Pre-flight may close last week: /weekly-review, then /ai-weekly-digest.",
-      "Pre-flight may close last month: /quarterly-plan pulse for the target month.",
-      "Pre-flight may close/open quarter boundaries: /quarterly-plan review, then /quarterly-plan init.",
+      `Pre-flight may close last week: /weekly-review ${boundaryTargets.lastWeek}, then /ai-weekly-digest ${boundaryTargets.lastWeek}.`,
+      `Pre-flight may close last month: /quarterly-plan pulse ${boundaryTargets.lastMonth}.`,
+      `Pre-flight may close/open quarter boundaries: /quarterly-plan review ${boundaryTargets.lastQuarter}, then /quarterly-plan init ${boundaryTargets.currentQuarter}.`,
       "Always opens this week with /weekly-init before writing today's briefing.",
     ],
     search: true,
@@ -179,7 +180,7 @@ export function describePrompt(prompt: string, date = new Date()): OperatorWorkf
   if (trimmed.startsWith("/daily-init")) {
     return {
       ...buildStartDaySpec(extractDailyHours(trimmed), "", effectiveDate),
-      prompt: appendDailyPreflightGuard(appendRunMetadata(trimmed, effectiveDate)),
+      prompt: appendDailyPreflightGuard(appendRunMetadata(trimmed, effectiveDate), effectiveDate),
     };
   }
 
@@ -280,20 +281,46 @@ function extractRunMetadataDate(prompt: string): Date | null {
   return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]), 12);
 }
 
-function appendDailyPreflightGuard(prompt: string): string {
+function appendDailyPreflightGuard(prompt: string, date = new Date()): string {
   if (prompt.includes("Daily pre-flight guard:")) {
     return prompt;
   }
-  return `${prompt}\n\n${formatDailyPreflightGuard()}`;
+  return `${prompt}\n\n${formatDailyPreflightGuard(date)}`;
 }
 
-function formatDailyPreflightGuard(): string {
+function formatDailyPreflightGuard(date = new Date()): string {
+  const targets = getDailyBoundaryTargets(date);
   return [
     "Daily pre-flight guard:",
     "Do not rely on CLI hooks being available in this Obsidian-launched run.",
     "Run missing weekly, monthly, and quarterly boundary workflows before writing today's briefing, in the daily-init order: /weekly-review, /ai-weekly-digest, /quarterly-plan pulse, /quarterly-plan review, /quarterly-plan init, then /weekly-init.",
+    "Use these concrete targets when a boundary check fires:",
+    `- Last week review: /weekly-review ${targets.lastWeek}`,
+    `- Last week AI digest: /ai-weekly-digest ${targets.lastWeek}`,
+    `- Last month pulse: /quarterly-plan pulse ${targets.lastMonth}`,
+    `- Last quarter review: /quarterly-plan review ${targets.lastQuarter}`,
+    `- Current quarter plan: /quarterly-plan init ${targets.currentQuarter}`,
+    "- Current week setup: /weekly-init",
     "Only continue past a missing boundary artifact if the sub-run fails; record that failure in today's ### Flags.",
   ].join("\n");
+}
+
+function getDailyBoundaryTargets(date: Date): {
+  lastWeek: string;
+  lastMonth: string;
+  lastQuarter: string;
+  currentQuarter: string;
+} {
+  const lastMonth = new Date(date.getFullYear(), date.getMonth() - 1, 1);
+  return {
+    lastWeek: getIsoWeekInfo(addDays(date, -7)).label,
+    lastMonth: [
+      lastMonth.getFullYear(),
+      String(lastMonth.getMonth() + 1).padStart(2, "0"),
+    ].join("-"),
+    lastQuarter: getPreviousQuarter(date).label,
+    currentQuarter: getQuarterInfo(date).label,
+  };
 }
 
 function getWeeklyReviewFolder(args: string, date: Date): string {
