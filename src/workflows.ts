@@ -79,6 +79,10 @@ export function buildDefaultDailyPrompt(hours: number): string {
   return `/daily-init ${normalizeDailyHours(hours)}`;
 }
 
+export function resolveAdvancedPrompt(prompt: string, availableHours: number): string {
+  return prompt.trim() || buildDefaultDailyPrompt(availableHours);
+}
+
 export function buildWorkflowSpec(
   id: OperatorWorkflowId,
   args = "",

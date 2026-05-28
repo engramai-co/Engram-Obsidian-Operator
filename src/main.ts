@@ -43,6 +43,7 @@ import {
   buildWorkflowSpec,
   describePrompt,
   normalizeDailyHours,
+  resolveAdvancedPrompt,
   type OperatorWorkflowRunSpec,
 } from "./workflows";
 
@@ -813,14 +814,12 @@ class OperatorDashboardView extends ItemView {
       attr: { rows: "3", placeholder: "/daily-init 6, /project-init MyProject, or review a note" },
     });
     createButton(advanced, "copy", "Copy CLI handoff", () => {
-      const prompt = custom.value.trim() || buildDefaultDailyPrompt(this.plugin.settings.availableHours);
+      const prompt = resolveAdvancedPrompt(custom.value, this.plugin.settings.availableHours);
       void copyTextToClipboard(buildCliHandoff(this.plugin.getVaultPath(), prompt, new Date(), this.plugin.settings.backend), "CLI handoff copied.");
     });
     createButton(advanced, "terminal", "Preview and run", () => {
-      const prompt = requireInput(custom, "a prompt");
-      if (prompt) {
-        void this.plugin.previewAndRunWorkflow(describePrompt(prompt));
-      }
+      const prompt = resolveAdvancedPrompt(custom.value, this.plugin.settings.availableHours);
+      void this.plugin.previewAndRunWorkflow(describePrompt(prompt));
     }, "mod-cta", !canRun);
   }
 
