@@ -269,9 +269,9 @@ function getQuarterlyExpectedPath(args: string, date: Date): string {
     return `00_Strategy/${quarter.label}/Quarterly Review.md`;
   }
   if (mode === "pulse") {
-    const quarter = getQuarterInfo(date);
-    const month = args.match(/\b(0?[1-9]|1[0-2])\b/)?.[1] ?? String(date.getMonth() || 12);
-    return `00_Strategy/${quarter.label}/Monthly Pulse - ${month.padStart(2, "0")}.md`;
+    const target = parsePulseMonth(args, date);
+    const quarter = getQuarterInfo(new Date(target.year, target.month - 1, 1));
+    return `00_Strategy/${quarter.label}/Monthly Pulse - ${String(target.month).padStart(2, "0")}.md`;
   }
   const quarter = parseQuarterArg(args) ?? getQuarterInfo(date);
   return `00_Strategy/${quarter.label}/Quarterly Plan.md`;
@@ -285,6 +285,23 @@ function parseQuarterArg(args: string): { year: number; quarter: number; label: 
   const year = Number(match[1]);
   const quarter = Number(match[2]);
   return { year, quarter, label: `${year}-Q${quarter}` };
+}
+
+function parsePulseMonth(args: string, date: Date): { year: number; month: number } {
+  const explicit = args.match(/\b(20\d{2})-(0?[1-9]|1[0-2])\b/);
+  if (explicit) {
+    return { year: Number(explicit[1]), month: Number(explicit[2]) };
+  }
+
+  const monthOnly = args.match(/\b(0?[1-9]|1[0-2])\b/);
+  if (monthOnly) {
+    const month = Number(monthOnly[1]);
+    const year = month > date.getMonth() + 1 ? date.getFullYear() - 1 : date.getFullYear();
+    return { year, month };
+  }
+
+  const previousMonth = new Date(date.getFullYear(), date.getMonth() - 1, 1);
+  return { year: previousMonth.getFullYear(), month: previousMonth.getMonth() + 1 };
 }
 
 function getPreviousQuarter(date: Date): { year: number; quarter: number; label: string } {
