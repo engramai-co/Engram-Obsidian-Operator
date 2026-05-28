@@ -205,8 +205,9 @@ export function describePrompt(prompt: string, date = new Date()): OperatorWorkf
   ]);
 
   if (known.has(command)) {
+    const commandArgs = stripRunMetadata(trimmed.slice(command.length + 1).trim());
     return {
-      ...buildWorkflowSpec(command, trimmed.slice(command.length + 1).trim(), effectiveDate),
+      ...buildWorkflowSpec(command, commandArgs, effectiveDate),
       prompt: appendRunMetadata(trimmed, effectiveDate),
     };
   }
@@ -270,6 +271,11 @@ function appendRunMetadata(prompt: string, date: Date): string {
     return prompt;
   }
   return `${prompt}\n\nOperator run metadata (do not treat as manual action items):\n${formatRunContext(date)}`;
+}
+
+function stripRunMetadata(value: string): string {
+  const index = value.search(/(^|\n\s*\n)Operator run metadata\b/);
+  return index >= 0 ? value.slice(0, index).trim() : value.trim();
 }
 
 function extractRunMetadataDate(prompt: string): Date | null {
