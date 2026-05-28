@@ -438,6 +438,7 @@ function getDailyPreviewRunNotes(
   },
 ): string[] {
   const notes: string[] = [];
+  notes.push("Pre-flight checks missing weekly, monthly, and quarterly boundary artifacts using the concrete targets in the prompt.");
   if (date.getDay() === 1) {
     notes.push(`Pre-flight may close last week: /weekly-review ${targets.lastWeek}, then /ai-weekly-digest ${targets.lastWeek}.`);
   }
