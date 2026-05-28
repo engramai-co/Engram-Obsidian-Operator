@@ -132,13 +132,13 @@ export function buildWorkflowSpec(
         "Project note, existing deadline plan, calendar/reminder context when available",
       ], ["Project Deadline Plan.md and related reminders"], date);
     case "quarterly-plan":
-      return simpleSpec(id, "Quarterly planning", withArgs("/quarterly-plan", cleanedArgs), [
+      return simpleSpec(id, "Quarterly planning", withArgs("/quarterly-plan", getQuarterlyPromptArgs(cleanedArgs, date)), [
         "Annual vision, quarterly plans/reviews, weekly reviews, active projects, horizon items",
       ], ["00_Strategy/YYYY-QX/ planning, review, or monthly pulse notes"], date, getQuarterlyExpectedPath(cleanedArgs, date), [
         getQuarterlyTargetNote(cleanedArgs, date),
       ]);
     case "annual-vision":
-      return simpleSpec(id, "Annual vision", withArgs("/annual-vision", cleanedArgs), [
+      return simpleSpec(id, "Annual vision", withArgs("/annual-vision", getAnnualPromptArgs(cleanedArgs, date)), [
         "Current and prior annual vision/review, quarterly reviews, active projects",
       ], ["00_Strategy/YYYY Vision.md or YYYY Annual Review.md"], date, getAnnualExpectedPath(cleanedArgs, date), [
         getAnnualTargetNote(cleanedArgs, date),
@@ -366,6 +366,14 @@ function getAnnualTargetNote(args: string, date: Date): string {
   return `${mode} target: ${year}`;
 }
 
+function getAnnualPromptArgs(args: string, date: Date): string {
+  if (args.match(/\b20\d{2}\b/)) {
+    return args;
+  }
+  const year = String(date.getFullYear());
+  return args.toLowerCase().includes("review") ? `review ${year}` : year;
+}
+
 function getQuarterlyExpectedPath(args: string, date: Date): string {
   const mode = args.split(/\s+/, 1)[0].toLowerCase();
   if (mode === "review") {
@@ -393,6 +401,21 @@ function getQuarterlyTargetNote(args: string, date: Date): string {
   }
   const quarter = parseQuarterArg(args) ?? getQuarterInfo(date);
   return `Quarterly plan target: ${quarter.label}`;
+}
+
+function getQuarterlyPromptArgs(args: string, date: Date): string {
+  const mode = args.split(/\s+/, 1)[0].toLowerCase();
+  if (mode === "review" && !parseQuarterArg(args)) {
+    return `review ${getPreviousQuarter(date).label}`;
+  }
+  if (mode === "init" && !parseQuarterArg(args)) {
+    return `init ${getQuarterInfo(date).label}`;
+  }
+  if (mode === "pulse" && !args.match(/\b(20\d{2})-(0?[1-9]|1[0-2])\b/) && !args.match(/\b(0?[1-9]|1[0-2])\b/)) {
+    const target = parsePulseMonth(args, date);
+    return `pulse ${target.year}-${String(target.month).padStart(2, "0")}`;
+  }
+  return args;
 }
 
 function parseQuarterArg(args: string): { year: number; quarter: number; label: string } | null {
