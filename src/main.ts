@@ -1421,7 +1421,8 @@ function renderStatusTile(
   const tile = parent.createDiv({ cls: `operator-status-tile is-${state}` });
   const header = tile.createDiv({ cls: "operator-status-title" });
   header.createSpan({ text: label });
-  header.createSpan({ cls: "operator-chip", text: optional && state === "missing" ? "optional" : state });
+  const chipText = optional && state !== "ready" ? "optional" : state;
+  header.createSpan({ cls: "operator-chip", text: chipText });
   tile.createEl("p", { text: detail });
 }
 

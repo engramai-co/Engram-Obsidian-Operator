@@ -535,6 +535,7 @@ test("setup controls explain disabled setup actions", () => {
   const source = readFileSync("src/main.ts", "utf8");
 
   assert.match(source, /createDisclosureSection\(root, "Setup health", "Selected backend readiness first; optional integrations are labeled optional\."\)/);
+  assert.match(source, /const chipText = optional && state !== "ready" \? "optional" : state/);
   assert.match(source, /const setupLockHelp = this\.plugin\.activeRun[\s\S]*Use Cancel run before changing setup\./);
   assert.match(source, /const codexSkillsHelp = status\.codexCli !== "ready"[\s\S]*Set a working Codex executable before installing Codex skills\./);
   assert.match(source, /codexSkillsDisabled, codexSkillsHelp/);
