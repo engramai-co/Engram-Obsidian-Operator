@@ -32,6 +32,7 @@ import { DEFAULT_SETTINGS, type OperatorRunRecord, type OperatorSettings } from 
 import {
   canRunBackendWorkflows,
   checkEnvironment,
+  formatWorkflowLockHelp,
   getBackendReadiness,
   type OperatorEnvironmentStatus,
   type StatusState,
@@ -630,10 +631,11 @@ class OperatorDashboardView extends ItemView {
     });
 
     const canRun = this.canRun(status);
+    const lockHelp = canRun ? undefined : formatWorkflowLockHelp(status, this.plugin.settings.backend, "Start my day");
     createButton(row, "sun", "Start my day", () => {
       const resolvedHours = resolveAvailableHoursInput(hoursInput.value, this.plugin.settings.availableHours);
       void this.plugin.runDailyBriefing(resolvedHours, manualInput.value);
-    }, "mod-cta", !canRun);
+    }, "mod-cta", !canRun, lockHelp);
     createButton(row, "file-text", "Open today", () => void this.plugin.openVaultPath(home.dailyNotePath), undefined, !home.daily.exists);
     createButton(row, "list-checks", "Open week", () => void this.plugin.openVaultPath(home.weeklyTodoPath), undefined, !home.weeklyTodo.exists);
 
@@ -643,10 +645,9 @@ class OperatorDashboardView extends ItemView {
     });
 
     if (!canRun) {
-      const readiness = getBackendReadiness(status, this.plugin.settings.backend);
       section.createEl("p", {
         cls: "operator-help",
-        text: `Daily briefing unlocks when setup is ready. ${readiness.helpText}`,
+        text: lockHelp,
       });
     }
 
@@ -757,117 +758,128 @@ class OperatorDashboardView extends ItemView {
   private renderWorkflowShortcuts(root: HTMLElement, status: OperatorEnvironmentStatus, home: OperatorHomeState): void {
     const section = createDisclosureSection(root, "More workflows", "Native actions handle fixed structure; agent workflows and CLI-style prompts stay available here.");
     const canRun = this.canRun(status);
+    const lockHelp = canRun ? undefined : formatWorkflowLockHelp(status, this.plugin.settings.backend, "More workflows");
+    if (lockHelp) {
+      section.createEl("p", { cls: "operator-help", text: lockHelp });
+    }
+    const createAgentWorkflowButton = (
+      parent: HTMLElement,
+      icon: string,
+      label: string,
+      onClick: () => void,
+      extraClass?: string,
+    ) => createButton(parent, icon, label, onClick, extraClass, !canRun, lockHelp);
     const grid = section.createDiv({ cls: "operator-workflow-grid" });
 
     const planWeek = createWorkflowCard(grid, "Plan week", "Open or review the current execution layer.");
     const weekInput = createInlineInput(planWeek, "Week", "2026-W21 or last");
-    createButton(planWeek, "calendar-plus", "Weekly setup", () => {
+    createAgentWorkflowButton(planWeek, "calendar-plus", "Weekly setup", () => {
       void this.plugin.previewAndRunWorkflow(buildWorkflowSpec("weekly-init", resolveWeeklyPeriodInput("init", weekInput.value)));
-    }, undefined, !canRun);
-    createButton(planWeek, "list-checks", "Weekly review", () => {
+    });
+    createAgentWorkflowButton(planWeek, "list-checks", "Weekly review", () => {
       void this.plugin.previewAndRunWorkflow(buildWorkflowSpec("weekly-review", resolveWeeklyPeriodInput("review", weekInput.value)));
-    }, undefined, !canRun);
+    });
 
     const strategy = createWorkflowCard(grid, "Strategy review", "Annual vision/review, quarterly plans, monthly pulses, and quarter reviews stay one click away.");
     const annualYearInput = createInlineInput(strategy, "Year", "YYYY, last, or next");
     const strategyPeriodInput = createInlineInput(strategy, "Period", "2026-Q2 or 2026-04");
-    createButton(strategy, "compass", "Annual vision", () => {
+    createAgentWorkflowButton(strategy, "compass", "Annual vision", () => {
       const annual = resolveAnnualShortcutInput("vision", annualYearInput.value);
       annualYearInput.value = annual.nextInputValue;
       void this.plugin.previewAndRunWorkflow(buildWorkflowSpec("annual-vision", annual.year));
-    }, undefined, !canRun);
-    createButton(strategy, "book-open-check", "Annual review", () => {
+    });
+    createAgentWorkflowButton(strategy, "book-open-check", "Annual review", () => {
       const annual = resolveAnnualShortcutInput("review", annualYearInput.value);
       annualYearInput.value = annual.nextInputValue;
       void this.plugin.previewAndRunWorkflow(buildWorkflowSpec("annual-vision", `review ${annual.year}`));
-    }, undefined, !canRun);
-    createButton(strategy, "milestone", "Quarter plan", () => {
+    });
+    createAgentWorkflowButton(strategy, "milestone", "Quarter plan", () => {
       void this.plugin.previewAndRunWorkflow(buildWorkflowSpec("quarterly-plan", resolveQuarterlyPeriodInput("init", strategyPeriodInput.value)));
-    }, undefined, !canRun);
-    createButton(strategy, "activity", "Monthly pulse", () => {
+    });
+    createAgentWorkflowButton(strategy, "activity", "Monthly pulse", () => {
       void this.plugin.previewAndRunWorkflow(buildWorkflowSpec("quarterly-plan", resolveQuarterlyPeriodInput("pulse", strategyPeriodInput.value)));
-    }, undefined, !canRun);
-    createButton(strategy, "history", "Quarter review", () => {
+    });
+    createAgentWorkflowButton(strategy, "history", "Quarter review", () => {
       void this.plugin.previewAndRunWorkflow(buildWorkflowSpec("quarterly-plan", resolveQuarterlyPeriodInput("review", strategyPeriodInput.value)));
-    }, undefined, !canRun);
+    });
 
     const project = createWorkflowCard(grid, "Work on project", "Create structure natively, or run agent workflows when context needs synthesis.");
     const projectInput = createInlineInput(project, "Project name", "Customer Discovery", home.activeProjects[0]?.name ?? "");
     createButton(project, "folder-plus", "New project", () => void this.plugin.openProjectCreation(projectInput.value));
-    createButton(project, "terminal", "Run /project-init", () => {
+    createAgentWorkflowButton(project, "terminal", "Run /project-init", () => {
       const projectName = requireInput(projectInput, "a project name");
       if (projectName) {
         void this.plugin.previewAndRunWorkflow(buildWorkflowSpec("project-init", projectName));
       }
-    }, undefined, !canRun);
-    createButton(project, "refresh-cw", "Sync", () => {
+    });
+    createAgentWorkflowButton(project, "refresh-cw", "Sync", () => {
       const projectName = requireInput(projectInput, "a project name");
       if (projectName) {
         void this.plugin.previewAndRunWorkflow(buildWorkflowSpec("project-sync", projectName));
       }
-    }, undefined, !canRun);
-    createButton(project, "target", "Deadline plan", () => {
+    });
+    createAgentWorkflowButton(project, "target", "Deadline plan", () => {
       const projectName = requireInput(projectInput, "a project name");
       if (projectName) {
         void this.plugin.previewAndRunWorkflow(buildWorkflowSpec("deadline-plan", projectName));
       }
-    }, undefined, !canRun);
+    });
 
     const meeting = createWorkflowCard(grid, "Process meeting", "Prep before, process transcript after.");
     const meetingProject = createInlineInput(meeting, "Project", "ProjectAlpha", home.activeProjects[0]?.name ?? "");
     const meetingDate = createInlineInput(meeting, "Date", "YYYY-MM-DD", formatDateKey(new Date()));
     const meetingInput = createBlockInput(meeting, "Transcript path or text", "Paste transcript text, or enter a local transcript/audio path");
-    createButton(meeting, "clipboard-list", "Prep", () => {
+    createAgentWorkflowButton(meeting, "clipboard-list", "Prep", () => {
       const projectName = requireInput(meetingProject, "a project name");
       if (projectName) {
         void this.plugin.previewAndRunWorkflow(buildWorkflowSpec("meeting-prep", `${projectName} ${meetingDate.value}`));
       }
-    }, undefined, !canRun);
-    createButton(meeting, "mic", "Process", () => {
+    });
+    createAgentWorkflowButton(meeting, "mic", "Process", () => {
       const meetingSource = requireInput(meetingInput, "a transcript path or pasted transcript");
       if (meetingSource) {
         void this.plugin.previewAndRunWorkflow(buildWorkflowSpec("meeting", meetingSource));
       }
-    }, undefined, !canRun);
+    });
 
     const content = createWorkflowCard(grid, "Content / research", "Mine notes, draft, or run a deeper research brief.");
     const topicInput = createInlineInput(content, "Topic or backlog item", "");
-    createButton(content, "sparkles", "Extract ideas", () => {
+    createAgentWorkflowButton(content, "sparkles", "Extract ideas", () => {
       void this.plugin.previewAndRunWorkflow(buildWorkflowSpec("content-extract"));
-    }, undefined, !canRun);
-    createButton(content, "pen-line", "Draft", () => {
+    });
+    createAgentWorkflowButton(content, "pen-line", "Draft", () => {
       const topic = requireInput(topicInput, "a topic or backlog item");
       if (topic) {
         void this.plugin.previewAndRunWorkflow(buildWorkflowSpec("content-draft", topic));
       }
-    }, undefined, !canRun);
-    createButton(content, "search", "Deep research", () => {
+    });
+    createAgentWorkflowButton(content, "search", "Deep research", () => {
       const topic = requireInput(topicInput, "a research topic");
       if (topic) {
         void this.plugin.previewAndRunWorkflow(buildWorkflowSpec("deep-research", topic));
       }
-    }, undefined, !canRun);
+    });
 
     const intelligence = createWorkflowCard(grid, "Intelligence", "Run the optional research automations behind the daily and weekly system.");
     const intelligenceInput = createInlineInput(intelligence, "Filter", "last, rust weekly 15, or robotics");
-    createButton(intelligence, "newspaper", "AI weekly", () => {
+    createAgentWorkflowButton(intelligence, "newspaper", "AI weekly", () => {
       void this.plugin.previewAndRunWorkflow(buildWorkflowSpec("ai-weekly-digest", intelligenceInput.value));
-    }, undefined, !canRun);
-    createButton(intelligence, "github", "GitHub trends", () => {
+    });
+    createAgentWorkflowButton(intelligence, "github", "GitHub trends", () => {
       void this.plugin.previewAndRunWorkflow(buildWorkflowSpec("daily-github", intelligenceInput.value));
-    }, undefined, !canRun);
-    createButton(intelligence, "graduation-cap", "Academic scan", () => {
+    });
+    createAgentWorkflowButton(intelligence, "graduation-cap", "Academic scan", () => {
       void this.plugin.previewAndRunWorkflow(buildWorkflowSpec("daily-academic", intelligenceInput.value));
-    }, undefined, !canRun);
+    });
 
     const events = createWorkflowCard(grid, "Calendar / events", "Batch-add commitments so weekly setup can route them into Blockers and project notes.");
     const eventsInput = createBlockInput(events, "Events", "Paste one event or deadline per line");
-    createButton(events, "calendar-plus", "Add events", () => {
+    createAgentWorkflowButton(events, "calendar-plus", "Add events", () => {
       const eventsText = requireInput(eventsInput, "event details");
       if (eventsText) {
         void this.plugin.previewAndRunWorkflow(buildWorkflowSpec("add-events", eventsText));
       }
-    }, undefined, !canRun);
+    });
 
     const advanced = createWorkflowCard(grid, "Agent prompt / CLI command", "Run any slash command or freeform agent prompt without leaving Obsidian.");
     const custom = advanced.createEl("textarea", {
@@ -878,10 +890,10 @@ class OperatorDashboardView extends ItemView {
       const prompt = resolveAdvancedPrompt(custom.value, this.plugin.settings.availableHours);
       void copyTextToClipboard(buildCliHandoff(this.plugin.getVaultPath(), prompt, new Date(), this.plugin.settings.backend), "CLI handoff copied.");
     });
-    createButton(advanced, "terminal", "Preview and run", () => {
+    createAgentWorkflowButton(advanced, "terminal", "Preview and run", () => {
       const prompt = resolveAdvancedPrompt(custom.value, this.plugin.settings.availableHours);
       void this.plugin.previewAndRunWorkflow(describePrompt(prompt));
-    }, "mod-cta", !canRun);
+    }, "mod-cta");
   }
 
   private updateAdvancedPromptPlaceholders(hours: number): void {
@@ -1301,6 +1313,7 @@ function createButton(
   onClick: () => void,
   extraClass?: string,
   disabled = false,
+  title = label,
 ): HTMLButtonElement {
   const button = parent.createEl("button", { cls: "operator-button" });
   if (extraClass) {
@@ -1310,6 +1323,8 @@ function createButton(
   setIcon(iconEl, icon);
   button.createSpan({ text: label });
   button.disabled = disabled;
+  button.setAttr("title", title);
+  button.setAttr("aria-label", disabled && title !== label ? `${label}: ${title}` : label);
   button.addEventListener("click", onClick);
   return button;
 }

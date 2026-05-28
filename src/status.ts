@@ -146,6 +146,20 @@ export function getBackendReadiness(status: OperatorEnvironmentStatus, backend: 
   );
 }
 
+export function formatWorkflowLockHelp(
+  status: OperatorEnvironmentStatus,
+  backend: OperatorBackend,
+  actionLabel = "Agent workflows",
+): string {
+  const readiness = getBackendReadiness(status, backend);
+  const backendLabel = backend === "codex" ? "Codex" : "Claude";
+  if (readiness.ready) {
+    return `${actionLabel} can run with ${backendLabel}.`;
+  }
+  const verb = /\b(workflows|actions|buttons)\b/i.test(actionLabel) ? "need" : "needs";
+  return `${actionLabel} ${verb} setup first: ${readiness.blockers.join(", ")}. Open Setup health for the exact fix.`;
+}
+
 async function commandResponds(command: string, args: string[]): Promise<boolean> {
   return commandSucceeds({ command, args }, 5000);
 }

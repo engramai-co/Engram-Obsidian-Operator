@@ -109,7 +109,7 @@ For daily, weekly, AI weekly digest, annual, and quarterly workflows, Operator a
 
 ## Troubleshooting
 
-- If buttons are disabled, open **Setup health**. Codex mode checks vault setup, Codex CLI, Codex login, and Codex Operator skills. Claude mode checks vault setup, Claude CLI, and Claude Operator skills.
+- If buttons are disabled, Operator shows the backend-specific missing pieces next to **Start my day** and inside **More workflows**. Open **Setup health** for the exact fix. Codex mode checks vault setup, Codex CLI, Codex login, and Codex Operator skills. Claude mode checks vault setup, Claude CLI, and Claude Operator skills.
 - If `codex --version` works in Terminal but Operator says Codex is missing, refresh the dashboard. Operator searches common Homebrew and nvm locations and runs absolute command paths with the command's own folder added to `PATH`.
 - Gmail, Gemini, Calendar, and multi-agent support are optional. Missing optional integrations should not block basic daily workflows.
 - If an agent run fails, open **Last Run -> Raw log** and rerun after fixing the setup issue.

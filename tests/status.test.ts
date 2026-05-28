@@ -2,6 +2,7 @@ import { strict as assert } from "node:assert";
 import test from "node:test";
 import {
   canRunBackendWorkflows,
+  formatWorkflowLockHelp,
   getBackendReadiness,
   type OperatorEnvironmentStatus,
 } from "../src/status";
@@ -34,6 +35,29 @@ test("Claude backend reports missing Claude Operator skills", () => {
   assert.equal(readiness.ready, false);
   assert.deepEqual(readiness.blockers, ["Claude Operator skills"]);
   assert.match(readiness.helpText, /Claude Operator skills/);
+});
+
+test("workflow lock help is backend-specific", () => {
+  const claudeStatus = createStatus({
+    codexLogin: "missing",
+    operatorSkills: "missing",
+    claudeCli: "ready",
+    claudeSkills: "missing",
+  });
+
+  const claudeHelp = formatWorkflowLockHelp(claudeStatus, "claude", "More workflows");
+
+  assert.match(claudeHelp, /More workflows need setup first/);
+  assert.match(claudeHelp, /Claude Operator skills/);
+  assert.doesNotMatch(claudeHelp, /Codex login/);
+
+  const codexHelp = formatWorkflowLockHelp(createStatus({
+    codexLogin: "missing",
+    operatorSkills: "ready",
+  }), "codex", "Start my day");
+
+  assert.match(codexHelp, /Start my day needs setup first/);
+  assert.match(codexHelp, /Codex login/);
 });
 
 function createStatus(overrides: Partial<OperatorEnvironmentStatus>): OperatorEnvironmentStatus {
