@@ -263,14 +263,14 @@ export default class OperatorControlPlugin extends Plugin {
       return;
     }
 
-    if (!(await this.ensureRunnerConsent())) {
-      return;
-    }
-
     const status = this.status ?? (await this.refreshStatus());
     const readiness = getBackendReadiness(status, this.settings.backend);
     if (!readiness.ready) {
       new Notice(`Finish setup first: ${readiness.helpText}`);
+      return;
+    }
+
+    if (!(await this.ensureRunnerConsent())) {
       return;
     }
 
