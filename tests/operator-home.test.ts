@@ -144,6 +144,8 @@ project: FM-Copilot
 ## Now
 
 - [ ] Ship Operator Home
+- [x] Completed launch checklist
+- [-] Dropped old direction
 - Validate against a real vault
 
 ## Risks

@@ -88,7 +88,7 @@ export function parseActiveProjectNote(path: string, markdown: string): ActivePr
   const name = frontmatter.project || projectNameFromPath(path);
   const now = extractHeadingSection(markdown, "Now")
     .split("\n")
-    .map(cleanMarkdownLine)
+    .map(cleanOpenProjectNowLine)
     .filter(Boolean)
     .slice(0, 3);
 
@@ -324,6 +324,14 @@ function taskLineToActionItem(item: ParsedTaskLine): MarkdownActionItem {
     raw: item.raw,
     text: cleanMarkdownLine(item.text),
   };
+}
+
+function cleanOpenProjectNowLine(line: string): string {
+  const task = parseTaskLine(line);
+  if (task) {
+    return task.checked.trim() === "" ? cleanMarkdownLine(task.text) : "";
+  }
+  return cleanMarkdownLine(line);
 }
 
 function parseMeetingDate(text: string, today: Date): { dateIso?: string; timing: MeetingTiming } {
