@@ -103,9 +103,11 @@ Open **Optional modules** inside **More workflows** for personal-interest workfl
 - **Content** extracts ideas, drafts from a topic or backlog item, or launches the preserved deep-research workflow.
 - **Calendar / events** routes pasted commitments into the weekly system. Paste one event or deadline per line.
 
+Optional modules are off for **Start my day** by default. In Settings, enable only the modules you want the daily concierge to orchestrate; the Preview will list the enabled modules before you run. The buttons inside **Optional modules** and raw CLI slash commands remain available even when the daily setting is off.
+
 Every agent workflow checks setup before opening Preview, then shows the exact prompt, target notes, expected output note when known, and likely read/write areas before launching Codex or Claude. Built-in workflows include local date, time, timezone, ISO week, and quarter as metadata, not manual tasks, so daily scheduling, weekly planning, annual vision, and quarterly planning do not depend on hidden agent clock assumptions.
 
-**Start my day** is the core concierge. It preserves multi-line manual items, keeps weekly/monthly/quarterly planning current when needed, and lists concrete target notes before execution. Optional intelligence, academic, content, and calendar/event modules do not run as invisible side effects; run them deliberately from **Optional modules** or ask for them in the prompt.
+**Start my day** is the core concierge. It preserves multi-line manual items, keeps weekly/monthly/quarterly planning current when needed, and lists concrete target notes before execution. Optional intelligence, academic, content, and calendar/event modules do not run as invisible side effects; run them deliberately from **Optional modules**, enable them in Settings for daily orchestration, or ask for them in the prompt.
 
 The dashboard header clock refreshes on local minute boundaries. If the app stays open across midnight, Operator refreshes the dashboard so the visible daily note, week, quarter, and shortcut defaults move to the new local date.
 

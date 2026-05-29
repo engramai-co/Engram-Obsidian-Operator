@@ -87,6 +87,7 @@ The dashboard will show:
 - Native project creation that writes `02_Projects/<Project>/<Project>.md` and `04_Knowledge/<Project>/` directly
 - Collapsed advanced workflows for weekly planning/review, strategy, project sync, deadline plans, meetings, custom prompts, CLI handoff, and legacy slash commands such as `/project-init`
 - A separate optional modules group for intelligence, academic scans, content workflows, and calendar/event ingestion
+- Optional module settings that keep **Start my day** focused by default, while allowing explicit daily orchestration for enabled intelligence, academic, content, or calendar/event modules
 - Collapsed setup health for Codex, skills, optional integrations, and vault initialization state
 - Backend-specific setup checks before every agent Preview, plus disabled-state help beside **Start my day** and inside **More workflows**, so locked agent actions say whether Codex or Claude is missing CLI, login, skills, or vault setup
 - Last-run review with status, summary, raw log, and an expected-note opener for workflow outputs when available
@@ -201,6 +202,8 @@ Operator ships the original skill library, but the product surface is layered. C
 | Calendar/events | `add-events` | macOS Apple Calendar and Reminders ingestion. |
 
 Optional modules can be run from **More workflows -> Optional modules** or from the CLI. They are not required for **Start my day** to produce a complete daily operating flow.
+
+In Settings, enable an optional module only if you want **Start my day** to orchestrate it automatically. Leaving all optional modules off keeps the daily concierge focused on daily notes, weekly execution, projects, blockers, and strategy boundaries.
 
 ## System Notes
 

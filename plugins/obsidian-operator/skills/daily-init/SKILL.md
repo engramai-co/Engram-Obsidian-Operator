@@ -24,6 +24,16 @@ Examples:
 
 Parsing rule: if the first argument is a bare number (integer or decimal), treat it as the daily budget. Everything else is parsed as comma-separated manual action items, tagged with "manual:" in Action Items.
 
+Operator Preview may pass manual items as a separate block:
+
+```text
+Manual items to consider today:
+review deck
+email Kai
+```
+
+Treat each non-empty line in that block as a manual action item, preserving the user's wording. If both CLI-style manual arguments and a Preview block are present, merge them and deduplicate normally.
+
 ## Pre-Flight Check
 
 Run these checks **in order** before reading any other data source:
@@ -257,7 +267,7 @@ After the briefing is written, open the daily note in Obsidian: `obsidian open p
 
 ## Optional Modules
 
-Do not run these modules unless the user explicitly enabled or requested them in the prompt, Operator Preview, or current conversation:
+Do not run these modules unless the user explicitly enabled or requested them in the prompt, Operator Preview, or current conversation. Operator Preview may include an `Enabled optional modules for this daily run:` block; only modules listed in that block are enabled for this run.
 
 - `/ai-weekly-digest` — optional Intelligence module for weekly AI landscape synthesis.
 - `/daily-github` — optional Intelligence module for GitHub trending scans.

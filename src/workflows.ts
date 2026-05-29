@@ -1,4 +1,5 @@
 import { addDays, formatRunContext, getDailyNotePath, getExecutionWeekFolder, getIsoWeekInfo, getQuarterInfo } from "./dates";
+import { DEFAULT_SETTINGS, type OptionalModuleSettings } from "./settings";
 
 export type OperatorWorkflowId =
   | "start-day"
@@ -32,22 +33,32 @@ export interface OperatorWorkflowRunSpec {
   search?: boolean;
 }
 
-export function buildStartDaySpec(hours: number, manualItems: string, date = new Date()): OperatorWorkflowRunSpec {
+export function buildStartDaySpec(
+  hours: number,
+  manualItems: string,
+  date = new Date(),
+  optionalModules: OptionalModuleSettings = DEFAULT_SETTINGS.optionalModules,
+): OperatorWorkflowRunSpec {
   const safeHours = normalizeDailyHours(hours);
   const cleanedManualItems = normalizeBlockArgs(manualItems);
   const context = `Operator run metadata (do not treat as manual action items):\n${formatRunContext(date)}`;
   const preflightGuard = formatDailyPreflightGuard(date);
+  const optionalModuleBlock = formatOptionalModuleBlock(optionalModules);
   const boundaryTargets = getDailyBoundaryTargets(date);
   const dailyNotePath = getDailyNotePath(date);
   const weekFolder = getExecutionWeekFolder(date);
-  const prompt = cleanedManualItems
-    ? `/daily-init ${safeHours}\n\n${context}\n\n${preflightGuard}\n\nManual items to consider today:\n${cleanedManualItems}`
-    : `/daily-init ${safeHours}\n\n${context}\n\n${preflightGuard}`;
+  const promptParts = [`/daily-init ${safeHours}`, context, preflightGuard];
+  if (optionalModuleBlock) {
+    promptParts.push(optionalModuleBlock);
+  }
+  if (cleanedManualItems) {
+    promptParts.push(`Manual items to consider today:\n${cleanedManualItems}`);
+  }
 
   return {
     id: "start-day",
     label: "Start my day",
-    prompt,
+    prompt: promptParts.join("\n\n"),
     readAreas: [
       "01_Execution/ current and recent daily/weekly notes",
       "02_Projects/ active project notes and deadline plans",
@@ -58,7 +69,7 @@ export function buildStartDaySpec(hours: number, manualItems: string, date = new
       `Daily note: ${dailyNotePath}`,
       `Weekly Todo: ${weekFolder}/Weekly Todo.md`,
       `Blockers: ${weekFolder}/Blockers.md`,
-      "Optional module outputs only when explicitly enabled or run from More workflows",
+      formatOptionalModuleWriteArea(optionalModules),
     ],
     expectedOpenPath: dailyNotePath,
     targetNotes: [
@@ -69,6 +80,55 @@ export function buildStartDaySpec(hours: number, manualItems: string, date = new
     runNotes: getDailyPreviewRunNotes(date, boundaryTargets),
     search: true,
   };
+}
+
+function formatOptionalModuleBlock(optionalModules: OptionalModuleSettings): string {
+  const lines = getEnabledOptionalModuleLines(optionalModules);
+  if (lines.length === 0) {
+    return "";
+  }
+
+  return [
+    "Enabled optional modules for this daily run:",
+    ...lines,
+    "If an optional module is not listed here, do not run it unless the user explicitly asks in the current prompt.",
+  ].join("\n");
+}
+
+function getEnabledOptionalModuleLines(optionalModules: OptionalModuleSettings): string[] {
+  const lines: string[] = [];
+  if (optionalModules.intelligence) {
+    lines.push("- Intelligence: run /ai-weekly-digest on eligible weekly boundaries and /daily-github after the core briefing.");
+  }
+  if (optionalModules.academic) {
+    lines.push("- Academic: run /daily-academic after the core briefing.");
+  }
+  if (optionalModules.content) {
+    lines.push("- Content: run /content-extract after enabled intelligence/academic modules finish, or after the core briefing if no source module ran.");
+  }
+  if (optionalModules.calendarEvents) {
+    lines.push("- Calendar/events: run /add-events only when manual items include event or deadline text to ingest.");
+  }
+  return lines;
+}
+
+function formatOptionalModuleWriteArea(optionalModules: OptionalModuleSettings): string {
+  const labels: string[] = [];
+  if (optionalModules.intelligence) {
+    labels.push("Intelligence");
+  }
+  if (optionalModules.academic) {
+    labels.push("Academic");
+  }
+  if (optionalModules.content) {
+    labels.push("Content");
+  }
+  if (optionalModules.calendarEvents) {
+    labels.push("Calendar/events");
+  }
+  return labels.length > 0
+    ? `Enabled optional modules: ${labels.join(", ")}`
+    : "Optional module outputs only when explicitly enabled or run from More workflows";
 }
 
 export function buildDefaultDailyPrompt(hours: number): string {

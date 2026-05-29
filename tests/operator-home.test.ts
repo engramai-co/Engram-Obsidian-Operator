@@ -10,6 +10,7 @@ import { formatExpectedNoteStatus, formatRunCompletionNotice } from "../src/run-
 import { buildTodayScheduleLines } from "../src/today-surface";
 import { parseActiveProjectNote, parseBlockers, parseDailyNote, parseWeeklyTodo } from "../src/vault-parsers";
 import { buildAdvancedPromptPlaceholder, buildDefaultDailyPrompt, buildStrategyPeriodPlaceholder, buildStartDaySpec, buildWeeklyPeriodPlaceholder, buildWorkflowSpec, describePrompt, resolveAdvancedPrompt, resolveAnnualShortcutInput, resolveAnnualYearInput, resolveAvailableHoursInput, resolveEditedPreviewSpec, resolveQuarterlyPeriodInput, resolveWeeklyPeriodInput } from "../src/workflows";
+import { DEFAULT_SETTINGS } from "../src/settings";
 
 test("computes ISO week folders and daily note paths", () => {
   const date = new Date("2026-01-01T12:00:00");
@@ -219,6 +220,8 @@ test("daily-init keeps optional intelligence and content modules opt-in", () => 
   const hook = readFileSync("plugins/obsidian-operator/hooks/preflight-enforce.sh", "utf8");
 
   assert.match(skill, /Optional Modules/);
+  assert.match(skill, /Manual items to consider today/);
+  assert.match(skill, /Operator Preview may pass manual items as a separate block/);
   assert.match(skill, /Do not run these modules unless the user explicitly enabled or requested them/);
   assert.doesNotMatch(skill, /Then automatically run `\/daily-github`/);
   assert.doesNotMatch(skill, /After `\/daily-github` has run, automatically run `\/daily-academic`/);
@@ -247,6 +250,21 @@ test("operator home keeps optional modules behind an explicit workflow group", (
   assert.match(source, /createWorkflowCard\(optionalModules, "Intelligence"/);
   assert.match(source, /createWorkflowCard\(optionalModules, "Content"/);
   assert.match(source, /createWorkflowCard\(optionalModules, "Calendar \/ events"/);
+});
+
+test("optional modules are persisted settings and default off for Start my day", () => {
+  const source = readFileSync("src/main.ts", "utf8");
+
+  assert.deepEqual(DEFAULT_SETTINGS.optionalModules, {
+    intelligence: false,
+    academic: false,
+    content: false,
+    calendarEvents: false,
+  });
+  assert.match(source, /setName\("Optional modules"\)/);
+  assert.match(source, /Daily start only runs these modules when you enable them here/);
+  assert.match(source, /plugin\.settings\.optionalModules/);
+  assert.match(source, /buildStartDaySpec\(safeHours, manualItems, new Date\(\), this\.settings\.optionalModules\)/);
 });
 
 test("parses active project notes from frontmatter and ## Now", () => {
@@ -673,6 +691,24 @@ test("builds editable workflow prompt specs", () => {
   assert.ok(start.prompt.indexOf("Operator run metadata") < start.prompt.indexOf("Manual items to consider today"));
   const multilineManualStart = buildStartDaySpec(6, "review deck\nemail Kai\n  prep demo  ", date);
   assert.match(multilineManualStart.prompt, /Manual items to consider today:\nreview deck\nemail Kai\n  prep demo/);
+  assert.doesNotMatch(start.prompt, /Enabled optional modules for this daily run/);
+  const optionalStart = buildStartDaySpec(6, "", date, {
+    intelligence: true,
+    academic: true,
+    content: false,
+    calendarEvents: true,
+  });
+  assert.match(optionalStart.prompt, /Enabled optional modules for this daily run:/);
+  assert.match(optionalStart.prompt, /- Intelligence: run \/ai-weekly-digest on eligible weekly boundaries and \/daily-github after the core briefing\./);
+  assert.match(optionalStart.prompt, /- Academic: run \/daily-academic after the core briefing\./);
+  assert.match(optionalStart.prompt, /- Calendar\/events: run \/add-events only when manual items include event or deadline text to ingest\./);
+  assert.doesNotMatch(optionalStart.prompt, /\/content-extract/);
+  assert.deepEqual(optionalStart.writeAreas, [
+    "Daily note: 01_Execution/2026-W21/2026-05-22.md",
+    "Weekly Todo: 01_Execution/2026-W21/Weekly Todo.md",
+    "Blockers: 01_Execution/2026-W21/Blockers.md",
+    "Enabled optional modules: Intelligence, Academic, Calendar/events",
+  ]);
   assert.equal(start.expectedOpenPath, "01_Execution/2026-W21/2026-05-22.md");
   assert.deepEqual(start.targetNotes, [
     "Daily note: 01_Execution/2026-W21/2026-05-22.md",

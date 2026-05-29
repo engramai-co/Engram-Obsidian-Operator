@@ -22,13 +22,14 @@ Implementation status after the current cleanup pass:
 - README and manual now separate product-facing guidance from advanced target-resolution details.
 - Today copy no longer exposes internal scheduling terminology.
 - More workflows keeps core workflows visible first and places intelligence/content/calendar workflows behind **Optional modules**.
+- Settings persist optional-module enablement for Intelligence, Academic, Content, and Calendar/events; **Start my day** stays focused by default and only orchestrates enabled modules.
 - Claude skill readiness no longer treats a marketplace-only or stale config mention as ready.
 - `daily-init` and its hook keep weekly/monthly/quarterly concierge checks, while GitHub/arXiv/AI weekly/content modules are explicit opt-in.
 - Setup health optional integrations now use neutral optional visual state instead of missing/warning styling.
 - Shipped skill/hook wording no longer includes internal regression anecdotes or hard-edged maintainer-only phrasing.
 - Release packaging keeps `operator-control.zip` and also creates a versioned zip asset.
 
-The next development goal should focus on true optional-module settings and clean-vault smoke testing rather than repeating the Phase 0 cleanup.
+The next development goal should focus on clean-vault smoke testing and release polish rather than repeating the Phase 0/optional-module cleanup.
 
 ## Findings Addressed In Current Cleanup
 
@@ -400,7 +401,7 @@ But clarify:
 
 Recommended changes:
 
-- Rename release asset to include the plugin id and version, for example `operator-control-0.3.1.zip`.
+- Rename release asset to include the plugin id and version, for example `operator-control-0.4.0.zip`.
 - Keep the folder inside the zip as `operator-control/`.
 - Release notes should include exactly three install steps and one troubleshooting note.
 - README should not require users to understand `manifest.json`, `main.js`, or `styles.css` unless they are debugging.
@@ -478,7 +479,7 @@ Acceptance criteria:
 
 Goal: make default UI show core workflows first and optional modules only when deliberately enabled.
 
-Status: partially implemented. The UI now has an **Optional modules** group, but there are not yet persisted user settings for enabling modules inside **Start my day**.
+Status: implemented for v0.4 readiness. The UI has an **Optional modules** group, and Settings persist which optional modules **Start my day** may orchestrate.
 
 Likely files:
 
@@ -510,7 +511,7 @@ Acceptance criteria:
 
 Goal: preserve **Start my day** as the core concierge while making non-core personal modules explicit opt-in.
 
-Status: partially implemented. Default auto-runs for intelligence/content modules were removed from `daily-init` and the preflight hook; persisted module settings remain future work.
+Status: implemented for v0.4 readiness. Default auto-runs for intelligence/content modules were removed from `daily-init` and the preflight hook; optional-module settings now make daily orchestration explicit.
 
 Tasks:
 
@@ -619,7 +620,7 @@ Do not do these during the next cleanup pass:
 Use this prompt for the next goal-mode session:
 
 ```text
-Goal: Continue from docs/2026-05-29-productization-goal-brief.md after the Phase 0 cleanup. Add persisted optional-module settings for Intelligence, Academic, Content, and Calendar/events; use those settings to decide whether Start my day may orchestrate optional modules; keep the core daily/weekly/project/strategy concierge flow strong. Preserve raw CLI access to every skill. Add tests for default-off modules and enabled-module preview behavior. Run npm run test and npm run check.
+Goal: Continue from docs/2026-05-29-productization-goal-brief.md after optional-module settings landed. Perform clean-vault Obsidian smoke testing from the release zip, verify Codex and Claude setup health in the actual desktop app, polish release notes/install guidance, and fix any friction that is worse than main before merging to main. Run npm run test, npm run check, npm run package:plugin, and a manual zip install smoke.
 ```
 
 Do not revisit `deep-research` in that goal unless the user explicitly asks for a separate research-workflow review.

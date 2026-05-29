@@ -118,7 +118,15 @@ export default class OperatorControlPlugin extends Plugin {
   }
 
   async loadSettings(): Promise<void> {
-    this.settings = { ...DEFAULT_SETTINGS, ...(await this.loadData()) };
+    const loaded = (await this.loadData()) as Partial<OperatorSettings> | null;
+    this.settings = {
+      ...DEFAULT_SETTINGS,
+      ...loaded,
+      optionalModules: {
+        ...DEFAULT_SETTINGS.optionalModules,
+        ...(loaded?.optionalModules ?? {}),
+      },
+    };
   }
 
   async saveSettings(): Promise<void> {
@@ -210,7 +218,7 @@ export default class OperatorControlPlugin extends Plugin {
     const safeHours = normalizeDailyHours(hours || this.settings.availableHours);
     this.settings.availableHours = safeHours;
     await this.saveSettings();
-    await this.previewAndRunWorkflow(buildStartDaySpec(safeHours, manualItems));
+    await this.previewAndRunWorkflow(buildStartDaySpec(safeHours, manualItems, new Date(), this.settings.optionalModules));
   }
 
   async runProjectInit(projectName: string): Promise<void> {
@@ -1098,6 +1106,15 @@ class OperatorSettingTab extends PluginSettingTab {
     });
 
     new Setting(containerEl)
+      .setName("Optional modules")
+      .setDesc("Daily start only runs these modules when you enable them here. The modules remain available from More workflows and raw CLI either way.");
+
+    addOptionalModuleToggle(containerEl, "Intelligence", "Allow Start my day to run AI weekly and GitHub scans after the core briefing.", this.plugin, "intelligence");
+    addOptionalModuleToggle(containerEl, "Academic", "Allow Start my day to run the arXiv scan after the core briefing.", this.plugin, "academic");
+    addOptionalModuleToggle(containerEl, "Content", "Allow Start my day to extract content ideas after enabled source modules or the core briefing.", this.plugin, "content");
+    addOptionalModuleToggle(containerEl, "Calendar/events", "Allow Start my day to ingest pasted event/deadline text from manual items.", this.plugin, "calendarEvents");
+
+    new Setting(containerEl)
       .setName("Runner authorization")
       .setDesc("Reset this if you want Operator to ask before launching Codex or Claude again.")
       .addButton((button: ButtonComponent) => {
@@ -1470,6 +1487,24 @@ function addTextSetting(
     .addText((text: TextComponent) => {
       text.setValue(value).onChange((nextValue) => {
         void onChange(nextValue.trim());
+      });
+    });
+}
+
+function addOptionalModuleToggle(
+  parent: HTMLElement,
+  name: string,
+  description: string,
+  plugin: OperatorControlPlugin,
+  key: keyof OperatorSettings["optionalModules"],
+): void {
+  new Setting(parent)
+    .setName(name)
+    .setDesc(description)
+    .addToggle((toggle) => {
+      toggle.setValue(plugin.settings.optionalModules[key]).onChange(async (value) => {
+        plugin.settings.optionalModules[key] = value;
+        await plugin.saveSettings();
       });
     });
 }
