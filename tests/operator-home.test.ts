@@ -247,6 +247,22 @@ test("product docs keep first-run overview out of implementation internals", () 
   assert.match(readme, /Do not use GitHub's source code zip for this path/);
   assert.match(manual, /Release zip users do not need npm commands/);
   assert.match(manual, /Do not use GitHub's source code zip for this path/);
+  const readmeFirstFlow = readme.slice(
+    readme.indexOf("### 4. Run the first five-minute flow"),
+    readme.indexOf("## Power User CLI Path"),
+  );
+  const manualFirstRun = manual.slice(
+    manual.indexOf("## First Run"),
+    manual.indexOf("## Daily Use"),
+  );
+  assert.ok(
+    readmeFirstFlow.indexOf("Click **Initialize vault**") < readmeFirstFlow.indexOf("Install Codex skills"),
+    "README first-run flow should initialize the vault before backend skill installation",
+  );
+  assert.ok(
+    manualFirstRun.indexOf("Click **Initialize vault**") < manualFirstRun.indexOf("install skills"),
+    "manual first-run flow should initialize the vault before backend skill installation",
+  );
   assert.doesNotMatch(readme, /Operator launches Codex in the current vault/);
   assert.match(readme, /Operator launches the selected backend in the current vault/);
   assert.doesNotMatch(readme, /manifest\.json\s+main\.js\s+styles\.css/);
@@ -466,6 +482,10 @@ test("onboarding shows one next step before detailed setup checklist", () => {
   assert.ok(
     nextStepSource.indexOf("if (!status.vault.ready)") < nextStepSource.indexOf("if (!backendSkillsReady)"),
     "vault initialization should be the first onboarding next-step gate",
+  );
+  assert.ok(
+    onboardingSource.indexOf('"Initialize vault"') < onboardingSource.indexOf("`Install ${backendLabel} skills`"),
+    "vault initialization should also lead the expanded onboarding checklist",
   );
   assert.doesNotMatch(source, /Setup health below shows the exact missing piece/);
   assert.doesNotMatch(source, /section\.createDiv\(\{ cls: "operator-onboarding-grid" \}\)/);
