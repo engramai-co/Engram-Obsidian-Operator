@@ -106,7 +106,7 @@ Next evidence needed: Inspect normal-width and narrow-width Obsidian panes with 
 
 ### Onboarding And Setup
 
-Current state: First-run onboarding now shows one current next step before the detailed setup checklist, without a second setup-helper paragraph or duplicated setup control row. The next-step card shows a single actionable next-step button when the current step can be acted on directly. Setup health is collapsed in normal dashboard use, shows selected-backend readiness first when expanded, exposes actionable buttons, keeps group-level helper descriptions in metadata instead of visible paragraph copy, and gives needed/locked/limited/optional chips distinct subdued states.
+Current state: First-run onboarding now shows one current next step before the detailed setup checklist, prioritizes native vault initialization before agent skill setup, and avoids a second setup-helper paragraph or duplicated setup control row. The next-step card shows a single actionable next-step button when the current step can be acted on directly. Setup health is collapsed in normal dashboard use, shows selected-backend readiness first when expanded, exposes actionable buttons, keeps group-level helper descriptions in metadata instead of visible paragraph copy, and gives needed/locked/limited/optional chips distinct subdued states.
 
 Risk: Optional and alternate checks are now advanced, but rendered smoke testing still needs to confirm the advanced disclosure does not look required or scary.
 

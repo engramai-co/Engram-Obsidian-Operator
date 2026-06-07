@@ -16,6 +16,7 @@ Use this checklist before making frontend or workflow-surface changes. The first
 - More workflows is collapsed by default.
 - Optional modules do not dominate core workflows.
 - Last Run appears only when there is useful run history.
+- First-run onboarding prioritizes native vault initialization before agent skill setup.
 - First-run onboarding shows one current action, not a duplicated setup control row.
 - First-run runner consent uses calm vault-scoped language.
 

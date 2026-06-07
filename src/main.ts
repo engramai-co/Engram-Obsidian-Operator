@@ -1652,6 +1652,15 @@ function getOnboardingNextStep(
   const backendSkillsReady = backend === "codex" ? status.operatorSkills === "ready" : status.claudeSkills === "ready";
   const readiness = getBackendReadiness(status, backend);
 
+  if (!status.vault.ready) {
+    return {
+      title: "Initialize vault",
+      detail: "Create the core folders and agent config once.",
+      state: "needed",
+      action: "initialize-vault",
+    };
+  }
+
   if (!backendSkillsReady) {
     return {
       title: `Finish ${backendLabel} skills`,
@@ -1662,15 +1671,6 @@ function getOnboardingNextStep(
         : backend === "claude"
           ? "copy-claude-install"
           : "none",
-    };
-  }
-
-  if (!status.vault.ready) {
-    return {
-      title: "Initialize vault",
-      detail: "Create the core folders and agent config once.",
-      state: "needed",
-      action: "initialize-vault",
     };
   }
 

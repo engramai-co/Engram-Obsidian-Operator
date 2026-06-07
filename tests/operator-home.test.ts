@@ -442,6 +442,10 @@ test("onboarding shows one next step before detailed setup checklist", () => {
     source.indexOf("private renderOnboarding"),
     source.indexOf("private renderSetup"),
   );
+  const nextStepSource = source.slice(
+    source.indexOf("function getOnboardingNextStep"),
+    source.indexOf("function renderChecklistItem"),
+  );
 
   assert.match(source, /createSection\(root, "Get started", "One step at a time\."\)/);
   assert.match(source, /const nextStep = getOnboardingNextStep\(status, backend\)/);
@@ -452,9 +456,15 @@ test("onboarding shows one next step before detailed setup checklist", () => {
   assert.match(source, /checklist\.createEl\("summary", \{ text: "Setup checklist" \}\)/);
   assert.match(source, /function getOnboardingNextStep/);
   assert.match(memory, /Onboarding should not repeat setup-helper copy after the current next step/);
+  assert.match(memory, /First-run onboarding should prioritize native vault initialization before backend skill installation/);
   assert.match(memory, /First-run next-step cards should show at most one current action/);
   assert.match(checklist, /First-run onboarding shows one current action, not a duplicated setup control row/);
+  assert.match(checklist, /First-run onboarding prioritizes native vault initialization before agent skill setup/);
   assert.match(review, /single actionable next-step button/i);
+  assert.ok(
+    nextStepSource.indexOf("if (!status.vault.ready)") < nextStepSource.indexOf("if (!backendSkillsReady)"),
+    "vault initialization should be the first onboarding next-step gate",
+  );
   assert.doesNotMatch(source, /Setup health below shows the exact missing piece/);
   assert.doesNotMatch(source, /section\.createDiv\(\{ cls: "operator-onboarding-grid" \}\)/);
   assert.match(css, /\.operator-next-step/);

@@ -75,6 +75,7 @@ When an optional module is enabled, Preview should make that explicit before the
 
 - First screen should stay calm: Today, Quick Capture, Current Work, collapsed More workflows, collapsed Setup health, and Last Run only when useful.
 - First-run onboarding should show one current next step first, with the full setup checklist collapsed.
+- First-run onboarding should prioritize native vault initialization before backend skill installation.
 - First-run next-step cards should show at most one current action rather than duplicating the full Setup health control row.
 - Onboarding should not repeat setup-helper copy after the current next step; the next-step card and collapsed Setup health already cover the missing setup detail.
 - Avoid first-screen exposure of GitHub trends, arXiv scans, content engine, deep research, and calendar/event ingestion.
