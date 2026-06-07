@@ -16,6 +16,7 @@ Ignored scratch locations remain:
 - `docs/superpowers/plans/`
 - `docs/superpowers/specs/`
 - `.workspaces/`
+- `.playwright-cli/`
 
 Use `.workspaces/ux-review/` for local UX screenshots, smoke notes, layout experiments, and comparison artifacts. Do not reference files from that folder in committed docs or code.
 

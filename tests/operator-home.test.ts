@@ -335,6 +335,8 @@ test("development memory docs preserve UX direction without tracking scratch", (
   assert.match(review, /Resolved P1 - More workflows is grouped by tier/);
   assert.match(review, /Resolved P1 - Setup health is selected-backend first/);
   assert.match(review, /Outstanding Evidence Gap - Rendered Obsidian Smoke/);
+  assert.match(review, /static Playwright harness smoke/);
+  assert.match(review, /narrow-pane flex-basis issues/);
   assert.doesNotMatch(review, /P1 - More workflows still reads like a workflow console when expanded/);
   assert.doesNotMatch(review, /P1 - Setup health still exposes too many backend and optional statuses at once/);
   assert.match(review, /Product Positioning Review/);
@@ -351,6 +353,8 @@ test("development memory docs preserve UX direction without tracking scratch", (
   assert.match(gitignore, /docs\/superpowers\/plans\//);
   assert.match(gitignore, /docs\/superpowers\/specs\//);
   assert.match(gitignore, /\.workspaces\//);
+  assert.match(gitignore, /\.playwright-cli\//);
+  assert.match(memory, /\.playwright-cli\//);
   assert.doesNotMatch(gitignore, /docs\/development-memory\.md/);
   assert.doesNotMatch(gitignore, /docs\/ux-review-checklist\.md/);
 });
@@ -544,6 +548,9 @@ test("responsive CSS protects narrow Obsidian panes from overflowing text", () =
   assert.match(css, /\.operator-hero-copy \{[^}]*flex: 1 1 220px[^}]*min-width: 0/);
   assert.match(css, /\.operator-hero-copy h2,\s*\.operator-clock-meta \{[^}]*overflow-wrap: anywhere/);
   assert.match(css, /\.operator-hero-actions \{[^}]*flex: 0 1 auto[^}]*min-width: 0/);
+  assert.match(css, /@media \(max-width: 520px\)[\s\S]*\.operator-hero-copy \{[\s\S]*flex: 0 1 auto[\s\S]*width: 100%/);
+  assert.match(css, /@media \(max-width: 520px\)[\s\S]*\.operator-hero-actions \{[\s\S]*width: 100%/);
+  assert.match(css, /@media \(max-width: 520px\)[\s\S]*\.operator-grow \{[\s\S]*flex: 0 1 auto[\s\S]*width: 100%/);
   assert.match(css, /\.operator-advanced-list \{[^}]*grid-template-columns: repeat\(auto-fit, minmax\(min\(180px, 100%\), 1fr\)\)/);
   assert.match(css, /\.operator-button \{[\s\S]*max-width: 100%[\s\S]*min-width: 0[\s\S]*white-space: normal/);
   assert.match(css, /\.operator-button span:not\(\.operator-button-icon\) \{[\s\S]*min-width: 0[\s\S]*overflow-wrap: anywhere/);
