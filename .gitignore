@@ -34,5 +34,6 @@ logs/
 
 # Skill scratch & eval artifacts
 .workspaces/
+.playwright-cli/
 **/skills/*/evals/
 SKILL-IMPROVEMENT-STATUS.md

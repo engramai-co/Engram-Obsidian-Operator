@@ -602,9 +602,23 @@
     flex-direction: column;
   }
 
+  .operator-hero-copy {
+    flex: 0 1 auto;
+    width: 100%;
+  }
+
+  .operator-hero-actions {
+    width: 100%;
+  }
+
   .operator-field,
   .operator-grow {
     min-width: 0;
+    width: 100%;
+  }
+
+  .operator-grow {
+    flex: 0 1 auto;
     width: 100%;
   }
 
