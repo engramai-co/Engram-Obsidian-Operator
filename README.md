@@ -14,7 +14,7 @@ Operator has three interaction layers:
 - **Previewed agent workflows** for reasoning-heavy work: daily briefings, weekly reviews, project sync, meeting synthesis, content drafting, and deep research.
 - **CLI power path** for open-ended work: Codex CLI and Claude Code remain available for multi-turn conversations, ad hoc prompts, and raw slash commands.
 
-For a compact end-user guide, see [Operator Home Manual](docs/operator-home-manual.md). For the current beta release gate, see the [v0.4.0 release notes and smoke checklist](docs/release-v0.4.0.md).
+For a compact end-user guide, see [Operator Home Manual](docs/operator-home-manual.md). For the current beta release gate, see the [v0.4.1 release notes and smoke checklist](docs/release-v0.4.1.md).
 
 ## Start with the Obsidian UI
 

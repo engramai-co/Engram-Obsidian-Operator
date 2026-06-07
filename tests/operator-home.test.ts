@@ -235,14 +235,14 @@ test("daily-init keeps optional intelligence and content modules opt-in", () => 
 test("product docs keep first-run overview out of implementation internals", () => {
   const readme = readFileSync("README.md", "utf8");
   const manual = readFileSync("docs/operator-home-manual.md", "utf8");
-  const releaseNotes = readFileSync("docs/release-v0.4.0.md", "utf8");
+  const releaseNotes = readFileSync("docs/release-v0.4.1.md", "utf8");
 
   assert.match(readme, /Obsidian-native daily home and AI concierge/);
   assert.doesNotMatch(readme, /^An AI-native personal operating system built on Obsidian/m);
   assert.doesNotMatch(readme, /\| \[Codex CLI\]\([^)]+\) \| Yes \|/);
   assert.match(readme, /\| \[Codex CLI\]\([^)]+\) \| Codex backend \|/);
   assert.match(readme, /For the default Codex backend, log in once:/);
-  assert.match(readme, /\[v0\.4\.0 release notes and smoke checklist\]\(docs\/release-v0\.4\.0\.md\)/);
+  assert.match(readme, /\[v0\.4\.1 release notes and smoke checklist\]\(docs\/release-v0\.4\.1\.md\)/);
   assert.match(readme, /Release zip users do not need `npm install`, `npm run build`, or `npm run install:plugin`/);
   assert.match(readme, /Do not use GitHub's source code zip for this path/);
   assert.match(manual, /Release zip users do not need npm commands/);
@@ -253,8 +253,10 @@ test("product docs keep first-run overview out of implementation internals", () 
   assert.doesNotMatch(manual, /manifest\.json\s+main\.js\s+styles\.css/);
   assert.doesNotMatch(manual, /Operator launches Codex with `workspace-write` permissions/);
   assert.match(manual, /Operator launches the selected backend with vault-scoped write permissions/);
-  assert.match(releaseNotes, /Download `operator-control-0\.4\.0\.zip`/);
+  assert.match(releaseNotes, /Download `operator-control-0\.4\.1\.zip`/);
   assert.match(releaseNotes, /Clean-vault smoke checklist/);
+  assert.match(releaseNotes, /release zip users do not need npm commands/i);
+  assert.match(releaseNotes, /Start my day Preview stays compact by default/);
   assert.match(releaseNotes, /Start my day unlocks with the selected backend/);
   assert.doesNotMatch(readme, /boundary cascade/i);
   assert.doesNotMatch(readme, /minute-aligned local clock context/i);
