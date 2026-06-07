@@ -1,5 +1,7 @@
 # Operator Productization Goal Brief
 
+> Historical context: this brief records the v0.4 productization push. For current durable product and UX memory, read `docs/development-memory.md` first.
+>
 > Purpose: use this document as the source brief for future goal-mode development on the `codex/may28` PR and the next productization branch.
 >
 > Current product risk: Operator started as a powerful personal Obsidian operating system. The product version should preserve that power while making the default experience feel like a calm, Obsidian-native AI concierge, not a hard-coded copy of one user's automation bundle.
