@@ -2,11 +2,17 @@
   padding: 0;
 }
 
-.operator-control {
+.operator-control,
+.operator-preview-modal,
+.operator-project-modal,
+.operator-consent-modal {
   --operator-border: var(--background-modifier-border);
   --operator-ok: var(--color-green);
   --operator-warn: var(--color-yellow);
   --operator-bad: var(--color-red);
+}
+
+.operator-control {
   display: flex;
   flex-direction: column;
   gap: 16px;

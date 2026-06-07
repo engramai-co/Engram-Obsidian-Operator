@@ -984,6 +984,7 @@ test("preview copy uses the same resolved prompt as run", () => {
   assert.match(checklist, /Compact Preview expected note labels stay short while full paths remain inspectable/);
   assert.match(checklist, /Preview helper copy does not add visible intro paragraphs/);
   assert.match(checklist, /Preview modals stay within the viewport and scroll internally/);
+  assert.match(css, /\.operator-control,\s*\.operator-preview-modal,\s*\.operator-project-modal,\s*\.operator-consent-modal \{[\s\S]*--operator-border: var\(--background-modifier-border\)[\s\S]*--operator-ok: var\(--color-green\)[\s\S]*--operator-warn: var\(--color-yellow\)[\s\S]*--operator-bad: var\(--color-red\)/);
   assert.match(css, /\.operator-preview-modal,\s*\.operator-project-modal,\s*\.operator-consent-modal \{[\s\S]*max-height: min\(82vh, 720px\)[\s\S]*overflow: auto/);
   assert.match(css, /\.operator-preview-modal,[\s\S]*\.operator-consent-modal \{[\s\S]*overflow-wrap: anywhere/);
   assert.match(css, /\.operator-preview-meta span \{[\s\S]*max-width: 100%[\s\S]*overflow-wrap: anywhere[\s\S]*white-space: normal/);

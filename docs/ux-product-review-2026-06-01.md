@@ -287,3 +287,9 @@ Acceptance:
 - Start my day Preview remains compact but visibly editable.
 - Narrow pane text does not overflow or create unreadable button rows.
 - All existing workflows remain reachable.
+
+## 2026-06-07 Product Design Audit Addendum
+
+- P0: none found in the current first-run, dashboard, and compact Preview smoke pass.
+- P1: Operator modal roots need the same shared status and border variables as the dashboard root so Preview, Create project, and consent modals do not lose internal panel and chip styling.
+- P2: Expanded More workflows is still visually dense, but it remains behind a collapsed disclosure; defer larger workflow-card polish until the core first screen is stable.
