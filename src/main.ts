@@ -606,15 +606,15 @@ class OperatorDashboardView extends ItemView {
     const steps = checklist.createEl("ol", { cls: "operator-list operator-plain-list" });
     renderChecklistItem(
       steps,
-      `Install ${backendLabel} skills`,
-      backendSkillsReady ? `${backendLabel} Operator skills are installed.` : `Install the Operator skills for ${backendLabel}.`,
-      backendSkillsReady ? "ready" : "needed",
-    );
-    renderChecklistItem(
-      steps,
       "Initialize vault",
       status.vault.ready ? "Core folders and agent config are present." : "Create the folders, AGENTS.md, CLAUDE.md, and starter content files.",
       status.vault.ready ? "ready" : "needed",
+    );
+    renderChecklistItem(
+      steps,
+      `Install ${backendLabel} skills`,
+      backendSkillsReady ? `${backendLabel} Operator skills are installed.` : `Install the Operator skills for ${backendLabel}.`,
+      backendSkillsReady ? "ready" : "needed",
     );
     renderChecklistItem(
       steps,

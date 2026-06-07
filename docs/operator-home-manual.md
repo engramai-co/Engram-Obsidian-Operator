@@ -57,11 +57,10 @@ npm run install:plugin -- "<your vault>"
 ## First Run
 
 1. Open **Operator** from the left ribbon or command palette.
-2. Follow the single current next step in **Get started**. Open **Setup checklist** only if you want to inspect the full path.
-3. If setup is incomplete, use **Setup health** to install skills for your selected backend.
-4. Click **Initialize vault** to create the Operator folder structure and agent config files.
-5. Click **New** under Active projects, then create your first project note.
-6. Enter available hours, including half-hour budgets such as `4.5`, optionally add one manual item per line, and click **Start my day**. Review the Preview, then run it.
+2. Click **Initialize vault** when **Get started** asks for it. This creates the Operator folder structure and agent config files before any agent workflow is required.
+3. If setup is incomplete after vault initialization, use **Setup health** to install skills for your selected backend.
+4. Click **New** under Active projects, then create your first project note.
+5. Enter available hours, including half-hour budgets such as `4.5`, optionally add one manual item per line, and click **Start my day**. Review the Preview, then run it.
 
 ## Daily Use
 

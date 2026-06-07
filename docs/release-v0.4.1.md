@@ -6,7 +6,7 @@ This beta tightens the Operator Home install path and reduces first-run UI noise
 
 1. Download `operator-control-0.4.1.zip` from the GitHub release.
 2. Unzip it and move the resulting `operator-control/` folder into `<your vault>/.obsidian/plugins/`.
-3. Enable **Operator** in Obsidian Community plugins, then use **Setup health** to install Codex or Claude skills.
+3. Enable **Operator** in Obsidian Community plugins, initialize the vault from **Get started**, then use **Setup health** to install Codex or Claude skills.
 
 Release zip users do not need npm commands. `npm install`, `npm run build`, and `npm run install:plugin -- "<vault>"` are only for source development or cloned repos.
 
