@@ -104,7 +104,7 @@ Core workflows live in **More workflows** because they are still agent runs, but
 
 ## Optional Modules
 
-Open **Optional modules** for personal-interest workflows:
+Open **Optional modules** inside **More workflows** for personal-interest workflows:
 
 - **Intelligence** runs AI weekly, GitHub trends, or academic scans when those feeds are useful to you.
 - **Content** extracts ideas, drafts from a topic or backlog item, or launches the preserved deep-research workflow.
@@ -113,6 +113,8 @@ Open **Optional modules** for personal-interest workflows:
 Optional modules are off for **Start my day** by default. In Settings, enable only the modules you want the daily concierge to orchestrate; the Preview will list the enabled modules before you run. The buttons inside **Optional modules** and raw CLI slash commands remain available even when the daily setting is off.
 
 ## Power User Workflows
+
+Inside **More workflows**, expand **Power user** for:
 
 - **Agent prompt / CLI command** for raw slash commands or freeform prompts.
 - **Copy CLI handoff** copies a runnable Codex or Claude command for the selected backend using the same enhanced prompt and resolved CLI path shown by Setup health, so power users can continue in Terminal without retyping the prompt. If the prompt box is empty, both handoff and Preview default to `/daily-init` with the dashboard's current available-hours setting.
@@ -143,4 +145,4 @@ For daily, weekly, AI weekly digest, annual, and quarterly workflows, Operator p
 
 ## Safety
 
-Operator launches the selected backend with vault-scoped write permissions in the current vault and does not request access outside this vault by default. Native actions write only the specific Markdown files and folders needed for the selected action.
+Operator launches the selected backend with vault-scoped write permissions in the current vault: agent writes are limited to this vault, though the agent can read other files on this computer and may search the web during a run. Native actions write only the specific Markdown files and folders needed for the selected action.

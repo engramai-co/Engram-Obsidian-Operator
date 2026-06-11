@@ -18,14 +18,14 @@ Use this checklist before making frontend or workflow-surface changes. The first
 - Last Run appears only when there is useful run history.
 - First-run onboarding prioritizes native vault initialization before agent skill setup.
 - First-run onboarding shows one current action, not a duplicated setup control row.
-- First-run runner consent uses calm vault-scoped language.
+- First-run runner consent uses calm language and accurately states write limits and outside-vault read access.
 
 ## Setup Health
 
 - Setup health does not look scary.
 - Selected backend blockers are visually and textually primary.
 - Optional integrations are labeled optional and do not look required.
-- Setup and onboarding chips visually distinguish needed, locked, limited, and optional states.
+- Setup and onboarding chips visually distinguish needed, locked, and optional states.
 - Healthy state details do not create a wall of explanatory text.
 - Disabled workflow buttons explain the exact selected-backend blocker.
 

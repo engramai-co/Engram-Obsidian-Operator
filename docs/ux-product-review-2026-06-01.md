@@ -1,6 +1,6 @@
 # Operator UX, UI, Product, And Feature Review - 2026-06-01
 
-This review uses the current worktree as source of truth. It reviews the Obsidian dashboard implementation, CSS, product docs, and development memory against `docs/ux-review-checklist.md`.
+Initial static review on 2026-06-01, with a cleanup pass and product design audit addendum on 2026-06-07. It reviews the Obsidian dashboard implementation, CSS, product docs, and development memory against `docs/ux-review-checklist.md` at those dates; rendered Obsidian smoke testing is tracked separately as an open evidence gap.
 
 ## Executive Summary
 
@@ -291,5 +291,5 @@ Acceptance:
 ## 2026-06-07 Product Design Audit Addendum
 
 - P0: none found in the current first-run, dashboard, and compact Preview smoke pass.
-- P1: Operator modal roots need the same shared status and border variables as the dashboard root so Preview, Create project, and consent modals do not lose internal panel and chip styling.
+- Resolved P1 - Operator modal roots share the dashboard status and border variables. Status: addressed in the 2026-06-07 modal styling fix; `styles.css` now includes `.operator-preview-modal`, `.operator-project-modal`, and `.operator-consent-modal` in the shared variable block, so Preview, Create project, and consent modals keep internal panel and chip styling.
 - P2: Expanded More workflows is still visually dense, but it remains behind a collapsed disclosure; defer larger workflow-card polish until the core first screen is stable.

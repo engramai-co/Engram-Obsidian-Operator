@@ -1,4 +1,5 @@
 .operator-control-view {
+  container-type: inline-size;
   padding: 0;
 }
 
@@ -63,10 +64,8 @@
 }
 
 .operator-muted,
-.operator-section-header p,
 .operator-help,
-.operator-status-tile p,
-.operator-advanced-item p {
+.operator-status-tile p {
   color: var(--text-muted);
 }
 
@@ -93,10 +92,6 @@
 
 .operator-section-header {
   margin-bottom: 12px;
-}
-
-.operator-section-header p {
-  margin: 4px 0 0;
 }
 
 .operator-status-grid {
@@ -232,12 +227,6 @@
   color: var(--operator-bad);
 }
 
-.operator-status-tile.is-limited .operator-chip,
-.operator-chip.is-limited {
-  border-color: color-mix(in srgb, var(--text-muted) 55%, transparent);
-  color: var(--text-muted);
-}
-
 .operator-status-tile.is-optional .operator-chip,
 .operator-chip.is-optional {
   border-color: var(--operator-border);
@@ -314,10 +303,6 @@
 
 .operator-subsection-header h4 {
   margin: 0;
-}
-
-.operator-subsection-header p {
-  margin: 3px 0 0;
 }
 
 .operator-workflow-disclosure {
@@ -399,10 +384,6 @@
   gap: 8px;
 }
 
-.operator-workflow-card p {
-  margin: 0;
-}
-
 .operator-list {
   margin: 8px 0;
   padding-inline-start: 18px;
@@ -453,26 +434,6 @@
   width: 100%;
 }
 
-.operator-advanced-list {
-  display: grid;
-  gap: 8px;
-  grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr));
-}
-
-.operator-advanced-item {
-  background: var(--background-secondary);
-  border: 1px solid var(--operator-border);
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 10px;
-}
-
-.operator-advanced-item p {
-  margin: 0;
-}
-
 .operator-run-meta {
   align-items: center;
   display: flex;
@@ -518,6 +479,7 @@
 .operator-run-prompt-details summary,
 .operator-log-details summary,
 .operator-workflow-disclosure summary,
+.operator-preview-advanced summary,
 .operator-disclosure summary {
   cursor: pointer;
 }
@@ -593,7 +555,10 @@
   margin-bottom: 6px;
 }
 
-@media (max-width: 520px) {
+/* The dashboard lives in a sidebar pane, so in-view responsive rules key off the
+   view's container width, not the window viewport. Modals are window-relative and
+   keep a media query below. */
+@container (max-width: 520px) {
   .operator-control {
     padding: 12px;
   }
@@ -602,8 +567,7 @@
   .operator-hero-actions,
   .operator-controls-row,
   .operator-form-row,
-  .operator-command-strip,
-  .operator-modal-actions {
+  .operator-command-strip {
     align-items: stretch;
     flex-direction: column;
   }
@@ -630,6 +594,18 @@
 
   .operator-button,
   .operator-command-strip > .operator-button {
+    justify-content: center;
+    width: 100%;
+  }
+}
+
+@media (max-width: 520px) {
+  .operator-modal-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .operator-modal-actions > .operator-button {
     justify-content: center;
     width: 100%;
   }

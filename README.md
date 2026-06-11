@@ -98,7 +98,7 @@ The dashboard will show:
 3. In **Active projects**, click **New** and create a native Markdown project note.
 4. Enter your available hours, optionally add one manual item per line, and click **Start my day**. Review the Preview, then run it.
 
-The first background run asks for authorization. Operator launches the selected backend in the current vault with vault-scoped write permissions and does not request access outside this vault by default. Fixed structural tasks such as vault initialization, quick capture, and new project scaffolding run through the Obsidian API; reasoning-heavy work such as daily briefings, project sync, meeting synthesis, content drafting, and deep research still runs through editable agent previews.
+The first background run asks for authorization. Operator launches the selected backend in the current vault with vault-scoped write permissions: agent writes are limited to this vault, though the agent can read other files on this computer and may search the web during a run. Fixed structural tasks such as vault initialization, quick capture, and new project scaffolding run through the Obsidian API; reasoning-heavy work such as daily briefings, project sync, meeting synthesis, content drafting, and deep research still runs through editable agent previews.
 
 ## Power User CLI Path
 

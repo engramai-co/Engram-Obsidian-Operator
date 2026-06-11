@@ -30,7 +30,13 @@ import {
   truncateOutput,
   type RunningProcess,
 } from "./runner";
-import { formatRunCompletionNotice } from "./run-notices";
+import { getOnboardingNextStep, type OnboardingNextAction } from "./onboarding";
+import {
+  formatDashboardExpectedNoteStatus,
+  formatExpectedNoteOpenHelp,
+  formatPreviewExpectedNote,
+  formatRunCompletionNotice,
+} from "./run-notices";
 import { DEFAULT_SETTINGS, type OperatorRunRecord, type OperatorSettings } from "./settings";
 import {
   canRunBackendWorkflows,
@@ -70,18 +76,6 @@ const CLAUDE_INSTALL_COMMANDS = [
   "/plugin install obsidian-operator",
 ].join("\n");
 
-type OnboardingNextAction = "install-codex-skills" | "copy-claude-install" | "initialize-vault" | "start-day" | "none";
-
-function formatPreviewExpectedNote(expectedOpenPath: string | undefined, compact: boolean): string {
-  if (!expectedOpenPath) {
-    return "Expected note: not predicted";
-  }
-  if (!compact) {
-    return `Expected note: ${expectedOpenPath}`;
-  }
-  return `Expected note: ${expectedOpenPath.split("/").pop() || expectedOpenPath}`;
-}
-
 function formatProjectPathPreview(projectSlug: string): string {
   if (!projectSlug) {
     return "Enter a project name to preview the note path.";
@@ -92,22 +86,6 @@ function formatProjectPathPreview(projectSlug: string): string {
 function formatHiddenProjectActionCount(totalActions: number, visibleActions: number): string {
   const hiddenActions = Math.max(0, totalActions - visibleActions);
   return hiddenActions === 1 ? "+1 more action" : `+${hiddenActions} more actions`;
-}
-
-function formatDashboardExpectedNoteStatus(exists: boolean, status: OperatorRunRecord["status"]): string {
-  if (exists) {
-    return "Expected note: ready";
-  }
-  return status === "running" ? "Expected note: pending" : "Expected note: missing";
-}
-
-function formatExpectedNoteOpenHelp(exists: boolean, status: OperatorRunRecord["status"]): string {
-  if (exists) {
-    return "Open expected note";
-  }
-  return status === "running"
-    ? "Expected note is not available yet; the run may still be writing it."
-    : "Expected note was not found in this vault yet.";
 }
 
 function formatNativeOpenHelp(exists: boolean, label: string, missingText: string): string {
@@ -515,6 +493,8 @@ export default class OperatorControlPlugin extends Plugin {
 }
 
 class OperatorDashboardView extends ItemView {
+  private renderSeq = 0;
+
   constructor(
     leaf: WorkspaceLeaf,
     private readonly plugin: OperatorControlPlugin,
@@ -540,13 +520,19 @@ class OperatorDashboardView extends ItemView {
   }
 
   async render(): Promise<void> {
+    const token = ++this.renderSeq;
     const container = this.contentEl;
-    container.empty();
     container.addClass("operator-control-view");
 
     const renderDate = new Date();
-    const status = this.plugin.status ?? (await this.plugin.refreshStatus());
+    const status = this.plugin.status ?? (await this.plugin.refreshStatus({ render: false }));
     const home = await readOperatorHomeState(this.app, renderDate);
+    if (token !== this.renderSeq) {
+      return;
+    }
+
+    const openDisclosures = captureOpenDisclosures(container);
+    container.empty();
 
     const root = container.createDiv({ cls: "operator-control" });
     const header = root.createDiv({ cls: "operator-hero" });
@@ -571,19 +557,25 @@ class OperatorDashboardView extends ItemView {
       createButton(headerActions, "square", "Cancel run", () => this.plugin.cancelActiveRun(), "operator-danger");
     }
 
+    const readiness = getBackendReadiness(status, this.plugin.settings.backend);
     if (!status.vault.ready) {
       this.renderOnboarding(root, status);
       this.renderSetup(root, status, true);
       this.renderRunLog(root);
+      restoreOpenDisclosures(container, openDisclosures);
       return;
     }
 
+    if (!readiness.ready) {
+      this.renderOnboarding(root, status);
+    }
     this.renderToday(root, status, home);
     this.renderQuickCapture(root, home);
     this.renderHomePanels(root, status, home);
     this.renderWorkflowShortcuts(root, status, home, renderDate);
     this.renderSetup(root, status, true);
     this.renderRunLog(root);
+    restoreOpenDisclosures(container, openDisclosures);
   }
 
   private renderOnboarding(root: HTMLElement, status: OperatorEnvironmentStatus): void {
@@ -599,7 +591,7 @@ class OperatorDashboardView extends ItemView {
     nextHeader.createEl("span", { cls: `operator-chip is-${nextStep.state}`, text: nextStep.state });
     nextHeader.createEl("strong", { text: nextStep.title });
     next.createEl("p", { text: nextStep.detail });
-    this.renderOnboardingNextAction(next, nextStep.action, status, backend);
+    this.renderOnboardingNextAction(next, nextStep.action, status);
 
     const checklist = section.createEl("details", { cls: "operator-onboarding-checklist" });
     checklist.createEl("summary", { text: "Setup checklist" });
@@ -629,7 +621,6 @@ class OperatorDashboardView extends ItemView {
     parent: HTMLElement,
     action: OnboardingNextAction,
     status: OperatorEnvironmentStatus,
-    backend: OperatorSettings["backend"],
   ): void {
     if (action === "none") {
       return;
@@ -658,13 +649,6 @@ class OperatorDashboardView extends ItemView {
       createButton(actions, "folder-check", status.vault.ready ? "Refresh vault setup" : "Initialize vault", () => {
         void this.plugin.initializeVaultFromUi();
       }, "mod-cta", !!this.plugin.activeRun, setupLockHelp);
-      return;
-    }
-
-    if (action === "start-day") {
-      createButton(actions, "sun", "Start my day", () => {
-        void this.plugin.runDailyBriefing(this.plugin.settings.availableHours, "");
-      }, "mod-cta", !getBackendReadiness(status, backend).ready, formatWorkflowUnavailableHelp(status, backend, "Start my day", !!this.plugin.activeRun));
     }
   }
 
@@ -675,7 +659,7 @@ class OperatorDashboardView extends ItemView {
       ? createDisclosureSection(root, "Setup health", "Selected backend first; optional checks stay advanced.")
       : createSection(root, "Setup", "Selected backend first; optional checks stay advanced.");
     const primary = createSetupStatusGroup(section, `${backendLabel} readiness`, "Fix these first when Start my day is locked.");
-    const primaryGrid = primary.createDiv({ cls: "operator-status-grid operator-status-grid-primary" });
+    const primaryGrid = primary.createDiv({ cls: "operator-status-grid" });
 
     renderStatusTile(primaryGrid, "Vault", status.vault.ready ? "ready" : "missing", status.vault.ready
       ? "Core folders and agent config are present."
@@ -690,8 +674,8 @@ class OperatorDashboardView extends ItemView {
     }
 
     const advanced = section.createEl("details", { cls: "operator-setup-advanced" });
-    advanced.setAttr("title", "Useful when switching backends or enabling optional modules; these do not block the selected daily flow.");
     const setupAdvancedSummary = advanced.createEl("summary", { text: "Optional and alternate checks" });
+    setupAdvancedSummary.setAttr("title", "Useful when switching backends or enabling optional modules; these do not block the selected daily flow.");
     setupAdvancedSummary.setAttr("aria-label", "Optional and alternate checks: useful when switching backends or enabling optional modules");
     const alternate = createSetupStatusGroup(advanced, "Alternate backend", "Only needed if you switch backend settings.");
     const alternateGrid = alternate.createDiv({ cls: "operator-status-grid" });
@@ -738,7 +722,7 @@ class OperatorDashboardView extends ItemView {
 
   private renderToday(root: HTMLElement, status: OperatorEnvironmentStatus, home: OperatorHomeState): void {
     const section = createSection(root, "Today", "");
-    section.setAttr("title", home.daily.exists ? "Current daily note state." : "No daily note yet.");
+    section.querySelector("h3")?.setAttr("title", home.daily.exists ? "Current daily note state." : "No daily note yet.");
     section.addClass("operator-today-section");
 
     const row = section.createDiv({ cls: "operator-command-strip" });
@@ -1267,7 +1251,7 @@ class RunnerConsentModal extends Modal {
       text: "Operator will launch Codex or Claude in the background for previewed workflows. The agent can read and update files inside this vault while the run is active.",
     });
     contentEl.createEl("p", {
-      text: "Operator does not request access outside this vault by default. Native actions still write only the specific Markdown files needed for the action.",
+      text: "Agent writes are limited to this vault, but the agent can read other files on this computer and may search the web during a run. Native actions still write only the specific Markdown files needed for the action.",
     });
     const row = contentEl.createDiv({ cls: "operator-modal-actions" });
     createButton(row, "x", "Cancel", () => {
@@ -1307,7 +1291,6 @@ class RunPreviewModal extends Modal {
     const previewHelp = compactStartDay
       ? "Confirm the target, then run. Prompt details are collapsed below."
       : "Review and edit the exact prompt before Operator launches the agent.";
-    contentEl.setAttr("title", previewHelp);
     title.setAttr("title", previewHelp);
 
     const meta = contentEl.createDiv({ cls: "operator-preview-meta" });
@@ -1352,7 +1335,6 @@ class RunPreviewModal extends Modal {
     const renderResolvedPreview = () => {
       const resolved = getResolvedPreview();
       title.setText(`Preview: ${resolved.label}`);
-      contentEl.setAttr("aria-label", `Preview: ${resolved.label}: ${previewHelp}`);
       if (resolved.expectedOpenPath) {
         expectedNote.setAttr("data-expected-note-path", resolved.expectedOpenPath);
         expectedNote.setAttr("title", resolved.expectedOpenPath);
@@ -1419,7 +1401,6 @@ class NativeProjectModal extends Modal {
     const { contentEl } = this;
     contentEl.empty();
     contentEl.addClass("operator-project-modal");
-    contentEl.setAttr("aria-label", "Create project: native Markdown project setup");
     const title = contentEl.createEl("h2", { text: "Create project" });
     title.setAttr("title", "Native project setup; Run /project-init remains in More workflows.");
 
@@ -1487,10 +1468,9 @@ class NativeProjectModal extends Modal {
 function createSection(parent: HTMLElement, title: string, description: string): HTMLElement {
   const section = parent.createDiv({ cls: "operator-section" });
   const header = section.createDiv({ cls: "operator-section-header" });
-  header.createEl("h3", { text: title });
+  const heading = header.createEl("h3", { text: title });
   if (description) {
-    section.setAttr("title", description);
-    section.setAttr("aria-label", `${title}: ${description}`);
+    heading.setAttr("title", description);
     header.setAttr("title", description);
   }
   return section;
@@ -1508,24 +1488,21 @@ function createDisclosureSection(parent: HTMLElement, title: string, description
 
 function createWorkflowCard(parent: HTMLElement, title: string, description: string): HTMLElement {
   const card = parent.createDiv({ cls: "operator-workflow-card" });
-  card.setAttr("title", description);
-  card.setAttr("aria-label", `${title}: ${description}`);
-  card.createEl("h4", { text: title });
+  const heading = card.createEl("h4", { text: title });
+  heading.setAttr("title", description);
   return card;
 }
 
 function createWorkflowGroup(parent: HTMLElement, title: string, description: string): HTMLElement {
   const group = parent.createDiv({ cls: "operator-workflow-group" });
-  group.setAttr("title", description);
-  group.setAttr("aria-label", `${title}: ${description}`);
   const header = group.createDiv({ cls: "operator-subsection-header" });
+  header.setAttr("title", description);
   header.createEl("h4", { text: title });
   return group;
 }
 
 function createWorkflowDisclosureGroup(parent: HTMLElement, title: string, description: string): HTMLElement {
   const group = parent.createEl("details", { cls: "operator-workflow-group operator-workflow-disclosure" });
-  group.setAttr("title", description);
   const summary = group.createEl("summary");
   summary.setAttr("aria-label", `${title}: ${description}`);
   const header = summary.createDiv({ cls: "operator-subsection-header" });
@@ -1536,8 +1513,6 @@ function createWorkflowDisclosureGroup(parent: HTMLElement, title: string, descr
 
 function createSetupStatusGroup(parent: HTMLElement, title: string, description: string): HTMLElement {
   const group = parent.createDiv({ cls: "operator-status-group" });
-  group.setAttr("title", description);
-  group.setAttr("aria-label", `${title}: ${description}`);
   const header = group.createDiv({ cls: "operator-subsection-header" });
   header.setAttr("title", description);
   header.createEl("h4", { text: title });
@@ -1644,53 +1619,6 @@ function renderStatusTile(
   }
 }
 
-function getOnboardingNextStep(
-  status: OperatorEnvironmentStatus,
-  backend: OperatorSettings["backend"],
-): { title: string; detail: string; state: "ready" | "needed" | "locked"; action: OnboardingNextAction } {
-  const backendLabel = backend === "codex" ? "Codex" : "Claude";
-  const backendSkillsReady = backend === "codex" ? status.operatorSkills === "ready" : status.claudeSkills === "ready";
-  const readiness = getBackendReadiness(status, backend);
-
-  if (!status.vault.ready) {
-    return {
-      title: "Initialize vault",
-      detail: "Create the core folders and agent config once.",
-      state: "needed",
-      action: "initialize-vault",
-    };
-  }
-
-  if (!backendSkillsReady) {
-    return {
-      title: `Finish ${backendLabel} skills`,
-      detail: readiness.ready ? `Install the Operator skills for ${backendLabel}.` : readiness.helpText,
-      state: "needed",
-      action: backend === "codex" && status.codexCli === "ready"
-        ? "install-codex-skills"
-        : backend === "claude"
-          ? "copy-claude-install"
-          : "none",
-    };
-  }
-
-  if (!readiness.ready) {
-    return {
-      title: `Finish ${backendLabel} readiness`,
-      detail: readiness.helpText,
-      state: "locked",
-      action: "none",
-    };
-  }
-
-  return {
-    title: "Start my day",
-    detail: "Daily briefing is ready to run.",
-    state: "ready",
-    action: "start-day",
-  };
-}
-
 function renderChecklistItem(
   parent: HTMLElement,
   title: string,
@@ -1702,20 +1630,6 @@ function renderChecklistItem(
   header.createSpan({ cls: `operator-chip is-${state}`, text: state });
   header.createEl("strong", { text: title });
   item.createEl("p", { text: detail });
-}
-
-function renderAdvancedItem(
-  parent: HTMLElement,
-  title: string,
-  command: string,
-  detail: string,
-  state: StatusState,
-): void {
-  const item = parent.createDiv({ cls: "operator-advanced-item" });
-  item.createEl("strong", { text: title });
-  item.createEl("code", { text: command });
-  item.createEl("p", { text: detail });
-  item.createSpan({ cls: `operator-chip is-${state}`, text: state === "ready" ? "ready" : "limited" });
 }
 
 function addTextSetting(
@@ -1751,6 +1665,30 @@ function addOptionalModuleToggle(
         await plugin.saveSettings();
       });
     });
+}
+
+function disclosureStateKey(details: HTMLDetailsElement): string {
+  const summary = details.querySelector("summary");
+  return `${details.className}::${summary?.textContent ?? ""}`;
+}
+
+function captureOpenDisclosures(container: HTMLElement): Set<string> {
+  const open = new Set<string>();
+  for (const details of Array.from(container.querySelectorAll<HTMLDetailsElement>("details[open]"))) {
+    open.add(disclosureStateKey(details));
+  }
+  return open;
+}
+
+function restoreOpenDisclosures(container: HTMLElement, open: Set<string>): void {
+  if (open.size === 0) {
+    return;
+  }
+  for (const details of Array.from(container.querySelectorAll<HTMLDetailsElement>("details"))) {
+    if (open.has(disclosureStateKey(details))) {
+      details.open = true;
+    }
+  }
 }
 
 function summarizeInitialization(result: VaultInitializationResult): string {

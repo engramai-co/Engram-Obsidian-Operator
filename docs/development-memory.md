@@ -2,23 +2,7 @@
 
 This is the durable product and UX memory for Operator Home. Use it before changing dashboard structure, setup health, release install docs, workflow placement, or Preview behavior.
 
-## Memory Model
-
-Use a two-layer memory model:
-
-- Stable product and UX decisions are tracked in git under `docs/`.
-- Temporary agent plans, specs, screenshots, smoke notes, and exploratory artifacts stay ignored.
-
-Ignored scratch locations remain:
-
-- `docs/plans/`
-- `docs/specs/`
-- `docs/superpowers/plans/`
-- `docs/superpowers/specs/`
-- `.workspaces/`
-- `.playwright-cli/`
-
-Use `.workspaces/ux-review/` for local UX screenshots, smoke notes, layout experiments, and comparison artifacts. Do not reference files from that folder in committed docs or code.
+This file records product decisions, not contributor workflow. Agent scratch locations and the two-layer memory model live in `CLAUDE.md` under "Rules for content & data".
 
 ## Product Promise
 
@@ -96,7 +80,7 @@ When an optional module is enabled, Preview should make that explicit before the
 - Form controls should shrink within workflow cards and modals instead of widening the pane.
 - Panel title rows should wrap when titles and actions compete for narrow pane width.
 - Status tile titles should wrap labels and chips instead of forcing horizontal overflow.
-- Needed, locked, limited, and optional chips should have distinct subdued styles instead of inheriting plain neutral chip styling.
+- Needed, locked, and optional chips should have distinct subdued styles instead of inheriting plain neutral chip styling.
 - Dashboard header copy and actions should wrap before they make the first screen feel cramped.
 - Workflow helper descriptions should live in title or aria metadata when the visible label and controls are already clear; avoid turning expanded workflow panels into a written manual.
 - Nested workflow disclosures should use workflow group styling, not full section/card styling, so expanded surfaces do not create card-in-card visual nesting.
@@ -104,7 +88,7 @@ When an optional module is enabled, Preview should make that explicit before the
 - Dashboard header should show date, time, week, and quarter without full note paths; keep the current daily note path in title/data metadata and in explicit Open actions.
 - Modal helper descriptions should live in title or aria metadata when the form labels and controls already make the workflow clear. Native project creation should open as a form, not as an explanation of native versus agent-guided paths.
 - Native project modal path previews should show a short note label while keeping the full project path in title or data metadata.
-- Runner consent should explain vault-scoped agent access without scary implementation terms such as `workspace-write`, full-disk access, or sandbox bypass language.
+- Runner consent should explain agent access in calm plain language while staying accurate: say that agent writes are limited to this vault and that the agent can read other files on this computer and may search the web. Avoid raw implementation terms such as `workspace-write` in the consent modal, but never trade accuracy for calmness.
 
 ### Start My Day Preview
 
@@ -133,7 +117,7 @@ Selected-backend readiness should be primary. Alternate backend checks and optio
 
 Setup health group descriptions should live in title or aria metadata when the status labels and tiles are already clear. Expanded setup should show actionable missing/warning detail, not a second layer of explanatory paragraphs.
 
-Setup and onboarding status chips should visually distinguish ready, needed, locked, limited, and optional states without making optional integrations look like blockers.
+Setup and onboarding status chips should visually distinguish ready, needed, locked, and optional states without making optional integrations look like blockers.
 
 ### Install Flow
 

@@ -12,11 +12,12 @@ Release zip users do not need npm commands. `npm install`, `npm run build`, and 
 
 ## Product Notes
 
-- **Get started** prioritizes native vault initialization before backend skill installation, then keeps the full setup checklist collapsed.
+- **Get started** prioritizes native vault initialization before backend skill installation, then keeps the full setup checklist collapsed. After the vault is initialized, the next-step card stays visible above the dashboard until the selected backend is ready to run.
+- The first-run authorization dialog states agent access accurately: writes are limited to the vault, while reads outside the vault and web search remain possible during a run.
 - Start my day Preview stays compact by default: target, expected note, backend, edit/copy/run controls first; full prompt and read/write details stay inspectable behind advanced details.
 - **Setup health** shows selected-backend readiness first. Optional integrations and alternate backend checks stay advanced and non-blocking.
 - Dashboard helper copy, full vault paths, raw logs, and implementation-source labels are moved out of the visible first screen where possible.
-- Development memory and UX review docs now define the durable product direction, while scratch plans and screenshots remain ignored.
+- Narrow-layout rules now respond to the dashboard pane's own width (container queries), so the sidebar layout adapts even in a wide window, and expanded disclosures stay open while a run streams output.
 - The release includes both `operator-control-0.4.1.zip` and the compatibility `operator-control.zip`.
 
 ## Clean-vault smoke checklist
@@ -36,3 +37,8 @@ Use a clean local vault before merging or publishing the release:
 - Switch to Claude mode and confirm Claude CLI and Claude Operator skills appear first, while Codex login is optional.
 - Expand **More workflows** and confirm GitHub, arXiv, AI weekly, content, and calendar/event workflows are inside **Optional modules**, not first-screen defaults.
 - Capture narrow and normal Obsidian pane screenshots before treating rendered UI smoke as complete.
+
+## Publish checklist
+
+- Confirm `manifest.json`, `package.json`, and `versions.json` all carry 0.4.1 (`versions.json` maps each released version to its `minAppVersion`).
+- Push the release tag — `0.4.1` or `v0.4.1` — to trigger `.github/workflows/release-obsidian-plugin.yml`, which builds, tests, packages, and uploads the zips.
