@@ -1,8 +1,8 @@
 # Operator
 
-An AI-native personal operating system built on Obsidian, Codex CLI, and Claude Code.
+An Obsidian-native daily home and AI concierge built on Markdown, Codex CLI, and Claude Code.
 
-Operator turns an Obsidian vault into a structured execution engine for daily briefings, projects, meetings, research, planning, and content. This productized build adds a native **Operator Home** that keeps Markdown as the primary interface: today's note, weekly queue, projects, blockers, quick capture, and agent runs are surfaced without forcing users to memorize CLI commands.
+Operator keeps an Obsidian vault as the primary workspace for today's note, weekly queue, projects, blockers, quick capture, and previewed agent runs. It can grow into a broader personal operating system, but the productized **Operator Home** starts with a calmer promise: open Obsidian, see what matters today, capture or update Markdown natively, and launch Codex or Claude only when reasoning work is useful.
 
 This repository is based on [Yuhan Wang's Obsidian Operator](https://github.com/yuhanwang14/Obsidian-Operator) and keeps the original MIT license and skill system intact.
 
@@ -11,10 +11,10 @@ This repository is based on [Yuhan Wang's Obsidian Operator](https://github.com/
 Operator has three interaction layers:
 
 - **Native Obsidian actions** for fixed structure: vault initialization, quick capture, new project scaffolding, and opening key Markdown notes.
-- **Agent workflows** for reasoning-heavy work: daily briefings, weekly reviews, project sync, meeting synthesis, content drafting, and deep research.
+- **Previewed agent workflows** for reasoning-heavy work: daily briefings, weekly reviews, project sync, meeting synthesis, content drafting, and deep research.
 - **CLI power path** for open-ended work: Codex CLI and Claude Code remain available for multi-turn conversations, ad hoc prompts, and raw slash commands.
 
-For a compact end-user guide, see [Operator Home Manual](docs/operator-home-manual.md). For the current beta release gate, see the [v0.4.0 release notes and smoke checklist](docs/release-v0.4.0.md).
+For a compact end-user guide, see [Operator Home Manual](docs/operator-home-manual.md). For the current beta release gate, see the [v0.4.1 release notes and smoke checklist](docs/release-v0.4.1.md).
 
 ## Start with the Obsidian UI
 
@@ -40,7 +40,7 @@ codex login
 
 For normal users, install the Obsidian UI from the release zip:
 
-1. Download the versioned `operator-control-<version>.zip` from the [latest release](https://github.com/herschel0130/obsidian-operator-product/releases/latest). The unversioned `operator-control.zip` asset is kept for compatibility.
+1. Download the versioned `operator-control-<version>.zip` from the [latest release](https://github.com/engramai-co/Engram-Obsidian-Operator/releases/latest). The unversioned `operator-control.zip` asset is kept for compatibility.
 2. Unzip it. You should get an `operator-control/` folder.
 3. Move that whole folder into `<your vault>/.obsidian/plugins/`.
 
@@ -51,9 +51,11 @@ For normal users, install the Obsidian UI from the release zip:
 
 4. Open Obsidian, enable **Community plugins**, then enable **Operator**.
 
+Release zip users do not need `npm install`, `npm run build`, or `npm run install:plugin`. Do not use GitHub's source code zip for this path; that archive contains source files, not the built Obsidian plugin folder.
+
 The Obsidian plugin only installs the dashboard UI. Agent skills are installed separately from **Setup health** or the CLI path below.
 
-For local development from this repository:
+For local development from a cloned repository or source zip:
 
 ```text
 npm install
@@ -82,21 +84,21 @@ The dashboard will show:
 - Active projects from `02_Projects/`, plus `## Now` next actions
 - Current-week meetings and waiting-on items from `Blockers.md`, with native **Done** actions for resolved blockers and completed meetings
 - Native project creation that writes `02_Projects/<Project>/<Project>.md` and `04_Knowledge/<Project>/` directly
-- Collapsed advanced workflows for weekly planning/review, strategy, project sync, deadline plans, meetings, custom prompts, CLI handoff, and legacy slash commands such as `/project-init`
-- A separate optional modules group for intelligence, academic scans, content workflows, and calendar/event ingestion
+- Grouped **More workflows** sections for planning, projects and meetings, strategy, optional modules, and power-user prompts
+- A separate optional modules group for intelligence, academic scans, content workflows, deep research, and calendar/event ingestion
 - Optional module settings that keep **Start my day** focused by default, while allowing explicit daily orchestration for enabled intelligence, academic, content, or calendar/event modules
-- Collapsed setup health for Codex, skills, optional integrations, and vault initialization state
+- Collapsed setup health that shows selected-backend readiness first, then keeps optional integrations and the alternate backend under advanced checks
 - Backend-specific setup checks before every agent Preview, plus disabled-state help beside **Start my day** and inside **More workflows**, so locked agent actions say whether Codex or Claude is missing CLI, login, skills, or vault setup
 - Last-run review with status, summary, raw log, and an expected-note opener for workflow outputs when available
 
 ### 4. Run the first five-minute flow
 
-1. Click **Install Codex skills** if the dashboard says Codex skills are missing. Claude users can switch the backend in settings and copy the Claude install commands from **Setup health**.
-2. Click **Initialize vault**. This creates the six core folders plus `CLAUDE.md`, `AGENTS.md`, `05_Content/Backlog.md`, and `05_Content/Voice Guide.md` without overwriting existing files.
+1. Click **Initialize vault**. This creates the six core folders plus `CLAUDE.md`, `AGENTS.md`, `05_Content/Backlog.md`, and `05_Content/Voice Guide.md` without overwriting existing files.
+2. Use **Setup health** when the dashboard asks for backend setup. Click **Install Codex skills** for Codex, or switch the backend in settings and copy the Claude install commands for Claude.
 3. In **Active projects**, click **New** and create a native Markdown project note.
 4. Enter your available hours, optionally add one manual item per line, and click **Start my day**. Review the Preview, then run it.
 
-The first background run asks for authorization. Operator launches the selected backend in the current vault with vault-scoped write permissions, never with full-disk or dangerous sandbox bypass settings by default. Fixed structural tasks such as vault initialization, quick capture, and new project scaffolding run through the Obsidian API; reasoning-heavy work such as daily briefings, project sync, meeting synthesis, content drafting, and deep research still runs through editable agent previews.
+The first background run asks for authorization. Operator launches the selected backend in the current vault: the Codex backend runs in a sandbox that blocks writes outside the vault, the Claude backend follows your Claude Code permission settings, and either backend can read other files on this computer and may search the web during a run. Fixed structural tasks such as vault initialization, quick capture, and new project scaffolding run through the Obsidian API; reasoning-heavy work such as daily briefings, project sync, meeting synthesis, content drafting, and deep research still runs through editable agent previews.
 
 ## Power User CLI Path
 
@@ -105,14 +107,14 @@ You can still use the original skill-based workflow directly.
 **Claude Code:**
 
 ```bash
-/plugin marketplace add https://github.com/herschel0130/obsidian-operator-product
+/plugin marketplace add https://github.com/engramai-co/Engram-Obsidian-Operator
 /plugin install obsidian-operator
 ```
 
 **Codex CLI:**
 
 ```bash
-codex plugin marketplace add herschel0130/obsidian-operator-product
+codex plugin marketplace add engramai-co/Engram-Obsidian-Operator
 codex
 > /plugin           # enable obsidian-operator if prompted
 ```

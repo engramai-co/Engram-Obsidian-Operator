@@ -32,14 +32,14 @@ test("builds codex daily command without shell interpolation", () => {
 });
 
 test("builds codex marketplace add command", () => {
-  const spec = buildCodexMarketplaceAddCommand("codex", "herschel0130/obsidian-operator-product");
+  const spec = buildCodexMarketplaceAddCommand("codex", "engramai-co/Engram-Obsidian-Operator");
 
   assert.equal(spec.command, "codex");
   assert.deepEqual(spec.args, [
     "plugin",
     "marketplace",
     "add",
-    "herschel0130/obsidian-operator-product",
+    "engramai-co/Engram-Obsidian-Operator",
   ]);
 });
 

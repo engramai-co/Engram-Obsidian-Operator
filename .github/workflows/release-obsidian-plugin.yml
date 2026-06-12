@@ -3,7 +3,9 @@ name: Release Obsidian plugin
 on:
   push:
     tags:
-      - "v*"
+      - "v[0-9]*"
+      # Obsidian's community-plugin convention tags the bare manifest version.
+      - "[0-9]+.[0-9]+.[0-9]+"
 
 permissions:
   contents: write

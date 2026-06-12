@@ -6,11 +6,61 @@ import { appendQuickCapture, readOperatorHomeState, updateMarkdownTaskState } fr
 import { startAlignedMinuteRefresh } from "../src/clock-refresh";
 import { buildCliHandoff } from "../src/cli-handoff";
 import { buildProjectNote, createNativeProject, normalizeProjectName } from "../src/projects";
-import { formatExpectedNoteStatus, formatRunCompletionNotice } from "../src/run-notices";
+import { getOnboardingNextStep } from "../src/onboarding";
+import {
+  formatDashboardExpectedNoteStatus,
+  formatExpectedNoteOpenHelp,
+  formatPreviewExpectedNote,
+  formatRunCompletionNotice,
+} from "../src/run-notices";
+import type { OperatorEnvironmentStatus } from "../src/status";
 import { buildTodayScheduleLines } from "../src/today-surface";
 import { parseActiveProjectNote, parseBlockers, parseDailyNote, parseWeeklyTodo } from "../src/vault-parsers";
 import { buildAdvancedPromptPlaceholder, buildDefaultDailyPrompt, buildStrategyPeriodPlaceholder, buildStartDaySpec, buildWeeklyPeriodPlaceholder, buildWorkflowSpec, describePrompt, resolveAdvancedPrompt, resolveAnnualShortcutInput, resolveAnnualYearInput, resolveAvailableHoursInput, resolveEditedPreviewSpec, resolveQuarterlyPeriodInput, resolveWeeklyPeriodInput } from "../src/workflows";
-import { DEFAULT_SETTINGS } from "../src/settings";
+import { DEFAULT_SETTINGS, migrateLegacyRepoSource } from "../src/settings";
+
+function assertOrdered(text: string, first: string, second: string, message: string): void {
+  const firstIndex = text.indexOf(first);
+  const secondIndex = text.indexOf(second);
+  assert.ok(firstIndex >= 0, `${message} (missing marker: ${first})`);
+  assert.ok(secondIndex >= 0, `${message} (missing marker: ${second})`);
+  assert.ok(firstIndex < secondIndex, message);
+}
+
+function sliceCssBlock(css: string, marker: string): string {
+  const start = css.indexOf(marker);
+  assert.ok(start >= 0, `CSS block not found: ${marker}`);
+  let depth = 0;
+  for (let i = css.indexOf("{", start); i < css.length; i++) {
+    if (css[i] === "{") {
+      depth += 1;
+    } else if (css[i] === "}") {
+      depth -= 1;
+      if (depth === 0) {
+        return css.slice(start, i + 1);
+      }
+    }
+  }
+  assert.fail(`CSS block not closed: ${marker}`);
+}
+
+function makeStatus(overrides: Partial<OperatorEnvironmentStatus> = {}): OperatorEnvironmentStatus {
+  return {
+    vault: { ready: true, missingFolders: [], missingFiles: [] },
+    codexCli: "ready",
+    codexLogin: "ready",
+    claudeCli: "ready",
+    operatorSkills: "ready",
+    claudeSkills: "ready",
+    gmail: "ready",
+    gemini: "ready",
+    calendar: "ready",
+    multiAgent: "ready",
+    resolvedPaths: { codex: "codex", claude: "claude" },
+    details: {},
+    ...overrides,
+  };
+}
 
 test("computes ISO week folders and daily note paths", () => {
   const date = new Date("2026-01-01T12:00:00");
@@ -78,18 +128,30 @@ test("formats run completion notices with expected-note status", () => {
     "Operator run finished. Expected note not found yet: 01_Execution/2026-W21/2026-05-22.md.",
   );
   assert.equal(formatRunCompletionNotice("failed"), "Operator run failed.");
+});
+
+test("formats dashboard and preview expected-note labels", () => {
+  assert.equal(formatDashboardExpectedNoteStatus(true, "success"), "Expected note: ready");
+  assert.equal(formatDashboardExpectedNoteStatus(true, "running"), "Expected note: ready");
+  assert.equal(formatDashboardExpectedNoteStatus(false, "running"), "Expected note: pending");
+  assert.equal(formatDashboardExpectedNoteStatus(false, "success"), "Expected note: missing");
+  assert.equal(formatDashboardExpectedNoteStatus(false, "failed"), "Expected note: missing");
+
+  assert.equal(formatPreviewExpectedNote(undefined, true), "Expected note: not predicted");
+  assert.equal(formatPreviewExpectedNote(undefined, false), "Expected note: not predicted");
   assert.equal(
-    formatExpectedNoteStatus("01_Execution/2026-W21/2026-05-22.md", false, "success"),
-    "Expected note missing: 01_Execution/2026-W21/2026-05-22.md",
+    formatPreviewExpectedNote("01_Execution/2026-W21/2026-05-22.md", false),
+    "Expected note: 01_Execution/2026-W21/2026-05-22.md",
   );
+  assert.equal(formatPreviewExpectedNote("01_Execution/2026-W21/2026-05-22.md", true), "Expected note: 2026-05-22.md");
+  assert.equal(formatPreviewExpectedNote("01_Execution/2026-W21/", true), "Expected note: 01_Execution/2026-W21/");
+
+  assert.equal(formatExpectedNoteOpenHelp(true, "success"), "Open expected note");
   assert.equal(
-    formatExpectedNoteStatus("01_Execution/2026-W21/2026-05-22.md", true, "running"),
-    "Expected note ready: 01_Execution/2026-W21/2026-05-22.md",
+    formatExpectedNoteOpenHelp(false, "running"),
+    "Expected note is not available yet; the run may still be writing it.",
   );
-  assert.equal(
-    formatExpectedNoteStatus("01_Execution/2026-W21/2026-05-22.md", false, "running"),
-    "Expected note pending: 01_Execution/2026-W21/2026-05-22.md",
-  );
+  assert.equal(formatExpectedNoteOpenHelp(false, "failed"), "Expected note was not found in this vault yet.");
 });
 
 test("formats run context for agent prompts with local clock and planning period", () => {
@@ -235,20 +297,48 @@ test("daily-init keeps optional intelligence and content modules opt-in", () => 
 test("product docs keep first-run overview out of implementation internals", () => {
   const readme = readFileSync("README.md", "utf8");
   const manual = readFileSync("docs/operator-home-manual.md", "utf8");
-  const releaseNotes = readFileSync("docs/release-v0.4.0.md", "utf8");
+  const releaseNotes = readFileSync("docs/release-v0.4.1.md", "utf8");
 
+  assert.match(readme, /Obsidian-native daily home and AI concierge/);
+  assert.doesNotMatch(readme, /^An AI-native personal operating system built on Obsidian/m);
   assert.doesNotMatch(readme, /\| \[Codex CLI\]\([^)]+\) \| Yes \|/);
   assert.match(readme, /\| \[Codex CLI\]\([^)]+\) \| Codex backend \|/);
   assert.match(readme, /For the default Codex backend, log in once:/);
-  assert.match(readme, /\[v0\.4\.0 release notes and smoke checklist\]\(docs\/release-v0\.4\.0\.md\)/);
+  assert.match(readme, /\[v0\.4\.1 release notes and smoke checklist\]\(docs\/release-v0\.4\.1\.md\)/);
+  assert.match(readme, /Release zip users do not need `npm install`, `npm run build`, or `npm run install:plugin`/);
+  assert.match(readme, /Do not use GitHub's source code zip for this path/);
+  assert.match(manual, /Release zip users do not need npm commands/);
+  assert.match(manual, /Do not use GitHub's source code zip for this path/);
+  const readmeFirstFlow = readme.slice(
+    readme.indexOf("### 4. Run the first five-minute flow"),
+    readme.indexOf("## Power User CLI Path"),
+  );
+  const manualFirstRun = manual.slice(
+    manual.indexOf("## First Run"),
+    manual.indexOf("## Daily Use"),
+  );
+  assertOrdered(
+    readmeFirstFlow,
+    "Click **Initialize vault**",
+    "Install Codex skills",
+    "README first-run flow should initialize the vault before backend skill installation",
+  );
+  assertOrdered(
+    manualFirstRun,
+    "Click **Initialize vault**",
+    "install skills",
+    "manual first-run flow should initialize the vault before backend skill installation",
+  );
   assert.doesNotMatch(readme, /Operator launches Codex in the current vault/);
   assert.match(readme, /Operator launches the selected backend in the current vault/);
   assert.doesNotMatch(readme, /manifest\.json\s+main\.js\s+styles\.css/);
   assert.doesNotMatch(manual, /manifest\.json\s+main\.js\s+styles\.css/);
   assert.doesNotMatch(manual, /Operator launches Codex with `workspace-write` permissions/);
-  assert.match(manual, /Operator launches the selected backend with vault-scoped write permissions/);
-  assert.match(releaseNotes, /Download `operator-control-0\.4\.0\.zip`/);
+  assert.match(manual, /Operator launches the selected backend in the current vault/);
+  assert.match(releaseNotes, /Download `operator-control-0\.4\.1\.zip`/);
   assert.match(releaseNotes, /Clean-vault smoke checklist/);
+  assert.match(releaseNotes, /release zip users do not need npm commands/i);
+  assert.match(releaseNotes, /Start my day Preview stays compact by default/);
   assert.match(releaseNotes, /Start my day unlocks with the selected backend/);
   assert.doesNotMatch(readme, /boundary cascade/i);
   assert.doesNotMatch(readme, /minute-aligned local clock context/i);
@@ -257,15 +347,335 @@ test("product docs keep first-run overview out of implementation internals", () 
   assert.match(manual, /Advanced target resolution/);
 });
 
-test("operator home keeps optional modules behind an explicit workflow group", () => {
+test("runner consent uses calm language without overstating isolation", () => {
+  const source = readFileSync("src/main.ts", "utf8");
+  const readme = readFileSync("README.md", "utf8");
+  const manual = readFileSync("docs/operator-home-manual.md", "utf8");
+  const memory = readFileSync("docs/development-memory.md", "utf8");
+  const checklist = readFileSync("docs/ux-review-checklist.md", "utf8");
+  const consentSource = source.slice(
+    source.indexOf("class RunnerConsentModal"),
+    source.indexOf("class RunPreviewModal"),
+  );
+
+  assert.match(memory, /Runner consent should explain agent access in calm plain language while staying accurate/);
+  assert.match(memory, /say that Codex writes are sandbox-limited to this vault, that Claude follows the user's Claude Code permission settings/);
+  assert.match(memory, /never trade accuracy for calmness/);
+  assert.match(checklist, /First-run runner consent uses calm language and accurately states write limits and outside-vault read access/);
+  assert.match(consentSource, /The agent can read and update files inside this vault while the run is active/);
+  assert.match(consentSource, /Codex runs in a sandbox that blocks writes outside this vault; Claude follows your Claude Code permission settings/);
+  assert.match(consentSource, /Either backend can read other files on this computer and may search the web during a run/);
+  assert.doesNotMatch(consentSource, /does not request access outside this vault/);
+  assert.doesNotMatch(consentSource, /Agent writes are limited to this vault/);
+  assert.doesNotMatch(consentSource, /workspace-write/i);
+  assert.match(readme, /the Codex backend runs in a sandbox that blocks writes outside the vault, the Claude backend follows your Claude Code permission settings, and either backend can read other files on this computer and may search the web during a run/);
+  assert.match(manual, /the Codex backend runs in a sandbox that blocks writes outside the vault, the Claude backend follows your Claude Code permission settings, and either backend can read other files on this computer and may search the web during a run/);
+  assert.doesNotMatch(readme, /does not request access outside this vault/);
+  assert.doesNotMatch(manual, /does not request access outside this vault/);
+});
+
+test("legacy repo sources migrate to the engramai-co marketplace", () => {
   const source = readFileSync("src/main.ts", "utf8");
 
+  assert.equal(migrateLegacyRepoSource("herschel0130/obsidian-operator-product"), "engramai-co/Engram-Obsidian-Operator");
+  assert.equal(migrateLegacyRepoSource("yuhanwang14/obsidian-operator"), "engramai-co/Engram-Obsidian-Operator");
+  assert.equal(migrateLegacyRepoSource(undefined), "engramai-co/Engram-Obsidian-Operator");
+  assert.equal(migrateLegacyRepoSource(""), "engramai-co/Engram-Obsidian-Operator");
+  assert.equal(migrateLegacyRepoSource("my-org/custom-fork"), "my-org/custom-fork");
+  assert.match(source, /this\.settings\.repoSource = migrateLegacyRepoSource\(this\.settings\.repoSource\)/);
+});
+
+test("development memory docs preserve UX direction without tracking scratch", () => {
+  const memory = readFileSync("docs/development-memory.md", "utf8");
+  const checklist = readFileSync("docs/ux-review-checklist.md", "utf8");
+  const repoGuide = readFileSync("CLAUDE.md", "utf8");
+
+  assert.match(repoGuide, /Two-layer memory model/);
+  assert.match(memory, /records product decisions, not contributor workflow/);
+  assert.match(memory, /Release zip users do not need npm commands/);
+  assert.match(memory, /Core Default/);
+  assert.match(memory, /Advanced But Product-Relevant/);
+  assert.match(memory, /Optional Modules/);
+  assert.match(memory, /Setup health should answer/);
+  assert.match(memory, /First-run onboarding should show one current next step/);
+  assert.match(checklist, /P0: blocks normal first-run use/);
+  assert.match(checklist, /first-screen calmness/i);
+  assert.match(checklist, /Setup health does not look scary/);
+  assert.match(checklist, /Preview is inspectable without being noisy/);
+  assert.match(checklist, /mobile\/narrow-width text does not overflow/);
+  assert.match(checklist, /Obsidian-native behavior stays primary/);
+});
+
+test("operator manual keeps workflow guidance split by product tier", () => {
+  const manual = readFileSync("docs/operator-home-manual.md", "utf8");
+
+  assert.match(manual, /^## Core Workflows$/m);
+  assert.match(manual, /^## Optional Modules$/m);
+  assert.match(manual, /^## Power User Workflows$/m);
+  assert.match(manual, /^## Preview Behavior$/m);
+  assert.match(manual, /^## Advanced target resolution$/m);
+  assert.match(manual, /^## Troubleshooting$/m);
+  assert.match(manual, /Core workflows live in \*\*More workflows\*\* because they are still agent runs/);
+  assert.match(manual, /Open \*\*Optional modules\*\* inside \*\*More workflows\*\*/);
+  assert.match(manual, /Inside \*\*More workflows\*\*, expand \*\*Power user\*\* for:/);
+  assert.match(manual, /Optional modules are off for \*\*Start my day\*\* by default/);
+  assert.match(manual, /Preview will list the enabled modules before you run/);
+  assert.doesNotMatch(manual, /^## Agent Workflows$/m);
+});
+
+test("operator home keeps optional modules behind an explicit workflow group", () => {
+  const source = readFileSync("src/main.ts", "utf8");
+  const memory = readFileSync("docs/development-memory.md", "utf8");
+
   assert.doesNotMatch(source, /boundary cascade/i);
-  assert.match(source, /Start my day keeps weekly, monthly, and quarterly planning current when needed\./);
-  assert.match(source, /createDisclosureSection\(section, "Optional modules"/);
+  assert.doesNotMatch(source, /Start my day keeps weekly, monthly, and quarterly planning current when needed\./);
+  assert.match(source, /const section = createSection\(root, "Today", ""\)/);
+  assert.match(source, /section\.querySelector\("h3"\)\?\.setAttr\("title", home\.daily\.exists \? "Current daily note state\." : "No daily note yet\."\)/);
+  assert.match(source, /createWorkflowGroup\(section, "Plan"/);
+  assert.match(source, /createWorkflowGroup\(section, "Projects & meetings"/);
+  assert.match(source, /createWorkflowGroup\(section, "Strategy"/);
+  assert.match(source, /const optionalSection = createWorkflowDisclosureGroup\(section, "Optional modules"/);
+  assert.match(source, /const powerUser = createWorkflowDisclosureGroup\(section, "Power user"/);
+  assert.match(source, /function createWorkflowDisclosureGroup/);
+  assert.doesNotMatch(source, /const optionalSection = createDisclosureSection\(section, "Optional modules"/);
+  assert.doesNotMatch(source, /optionalSection\.addClass\("operator-workflow-group"\)/);
   assert.match(source, /createWorkflowCard\(optionalModules, "Intelligence"/);
   assert.match(source, /createWorkflowCard\(optionalModules, "Content"/);
   assert.match(source, /createWorkflowCard\(optionalModules, "Calendar \/ events"/);
+  assert.match(memory, /Power user raw prompt and CLI handoff should stay collapsed inside More workflows/);
+  assert.doesNotMatch(source, /const grid = section\.createDiv\(\{ cls: "operator-workflow-grid" \}\);/);
+});
+
+test("workflow surfaces keep helper descriptions out of visible copy", () => {
+  const source = readFileSync("src/main.ts", "utf8");
+  const memory = readFileSync("docs/development-memory.md", "utf8");
+  const sectionHelper = source.slice(
+    source.indexOf("function createSection"),
+    source.indexOf("function createDisclosureSection"),
+  );
+  const disclosureHelper = source.slice(
+    source.indexOf("function createDisclosureSection"),
+    source.indexOf("function createWorkflowCard"),
+  );
+  const workflowCardHelper = source.slice(
+    source.indexOf("function createWorkflowCard"),
+    source.indexOf("function createWorkflowGroup"),
+  );
+  const workflowGroupHelper = source.slice(
+    source.indexOf("function createWorkflowGroup"),
+    source.indexOf("function createSetupStatusGroup"),
+  );
+
+  assert.match(memory, /Core section headers should avoid visible helper copy/);
+  assert.match(sectionHelper, /heading\.setAttr\("title", description\)/);
+  assert.match(sectionHelper, /header\.setAttr\("title", description\)/);
+  assert.doesNotMatch(sectionHelper, /section\.setAttr\("title"/);
+  assert.doesNotMatch(sectionHelper, /section\.setAttr\("aria-label"/);
+  assert.doesNotMatch(sectionHelper, /header\.createEl\("p", \{ text: description \}\)/);
+  assert.match(memory, /Workflow helper descriptions should live in title or aria metadata/);
+  assert.match(disclosureHelper, /header\.setAttr\("title", description\)/);
+  assert.match(disclosureHelper, /summary\.setAttr\("aria-label", `\$\{title\}: \$\{description\}`\)/);
+  assert.doesNotMatch(disclosureHelper, /header\.createEl\("p", \{ text: description \}\)/);
+  assert.match(workflowCardHelper, /heading\.setAttr\("title", description\)/);
+  assert.doesNotMatch(workflowCardHelper, /card\.setAttr\("title"/);
+  assert.doesNotMatch(workflowCardHelper, /card\.setAttr\("aria-label"/);
+  assert.doesNotMatch(workflowCardHelper, /card\.createEl\("p", \{ cls: "operator-muted", text: description \}\)/);
+  assert.match(workflowGroupHelper, /header\.setAttr\("title", description\)/);
+  assert.doesNotMatch(workflowGroupHelper, /group\.setAttr\("title"/);
+  assert.doesNotMatch(workflowGroupHelper, /group\.setAttr\("aria-label"/);
+  assert.doesNotMatch(workflowGroupHelper, /header\.createEl\("p", \{ cls: "operator-muted", text: description \}\)/);
+});
+
+test("nested workflow disclosures avoid section card nesting", () => {
+  const source = readFileSync("src/main.ts", "utf8");
+  const css = readFileSync("styles.css", "utf8");
+  const memory = readFileSync("docs/development-memory.md", "utf8");
+  const nestedHelper = source.slice(
+    source.indexOf("function createWorkflowDisclosureGroup"),
+    source.indexOf("function createSetupStatusGroup"),
+  );
+
+  assert.match(memory, /Nested workflow disclosures should use workflow group styling/);
+  assert.match(nestedHelper, /parent\.createEl\("details", \{ cls: "operator-workflow-group operator-workflow-disclosure" \}\)/);
+  assert.match(nestedHelper, /summary\.setAttr\("aria-label", `\$\{title\}: \$\{description\}`\)/);
+  assert.match(nestedHelper, /header\.createEl\("h4", \{ text: title \}\)/);
+  assert.doesNotMatch(nestedHelper, /operator-section/);
+  assert.match(css, /\.operator-workflow-disclosure summary/);
+});
+
+test("onboarding shows one next step before detailed setup checklist", () => {
+  const source = readFileSync("src/main.ts", "utf8");
+  const css = readFileSync("styles.css", "utf8");
+  const memory = readFileSync("docs/development-memory.md", "utf8");
+  const checklist = readFileSync("docs/ux-review-checklist.md", "utf8");
+  const onboardingSource = source.slice(
+    source.indexOf("private renderOnboarding"),
+    source.indexOf("private renderSetup"),
+  );
+
+  assert.match(source, /createSection\(root, "Get started", "One step at a time\."\)/);
+  assert.match(source, /const nextStep = getOnboardingNextStep\(status, backend\)/);
+  assert.match(source, /section\.createDiv\(\{ cls: `operator-next-step is-\$\{nextStep\.state\}` \}\)/);
+  assert.match(onboardingSource, /this\.renderOnboardingNextAction\(next, nextStep\.action, status\)/);
+  assert.doesNotMatch(onboardingSource, /this\.renderSetupControls\(section, status\)/);
+  assert.match(source, /createEl\("details", \{ cls: "operator-onboarding-checklist" \}\)/);
+  assert.match(source, /checklist\.createEl\("summary", \{ text: "Setup checklist" \}\)/);
+  assert.match(memory, /Onboarding should not repeat setup-helper copy after the current next step/);
+  assert.match(memory, /First-run onboarding should prioritize native vault initialization before backend skill installation/);
+  assert.match(memory, /First-run next-step cards should show at most one current action/);
+  assert.match(checklist, /First-run onboarding shows one current action, not a duplicated setup control row/);
+  assert.match(checklist, /First-run onboarding prioritizes native vault initialization before agent skill setup/);
+  assertOrdered(
+    onboardingSource,
+    '"Initialize vault"',
+    "`Install ${backendLabel} skills`",
+    "vault initialization should lead the expanded onboarding checklist",
+  );
+  assert.doesNotMatch(source, /Setup health below shows the exact missing piece/);
+  assert.doesNotMatch(source, /section\.createDiv\(\{ cls: "operator-onboarding-grid" \}\)/);
+  assert.match(css, /\.operator-next-step/);
+  assert.match(css, /\.operator-next-step-actions/);
+  assert.match(css, /\.operator-onboarding-checklist/);
+  assert.match(css, /\.operator-chip\.is-needed/);
+  assert.match(css, /\.operator-chip\.is-locked/);
+  assert.doesNotMatch(css, /is-limited/);
+  assert.doesNotMatch(css, /\.operator-onboarding-grid/);
+});
+
+test("onboarding next step walks vault, skills, readiness, then ready", () => {
+  assert.deepEqual(getOnboardingNextStep(makeStatus(), "codex"), {
+    title: "Start my day",
+    detail: "Daily briefing is ready to run.",
+    state: "ready",
+    action: "none",
+  });
+
+  const vaultMissing = makeStatus({ vault: { ready: false, missingFolders: ["00_Strategy"], missingFiles: [] } });
+  assert.equal(getOnboardingNextStep(vaultMissing, "codex").action, "initialize-vault");
+  assert.equal(getOnboardingNextStep(vaultMissing, "claude").action, "initialize-vault");
+  assert.equal(getOnboardingNextStep(vaultMissing, "codex").state, "needed");
+
+  assert.deepEqual(getOnboardingNextStep(makeStatus({ operatorSkills: "missing" }), "codex"), {
+    title: "Finish Codex skills",
+    detail: "Codex workflows need: Codex Operator skills.",
+    state: "needed",
+    action: "install-codex-skills",
+  });
+
+  // Skills install runs through the Codex CLI, so a missing CLI leaves no one-click action.
+  const codexCliMissing = makeStatus({ codexCli: "missing", operatorSkills: "missing" });
+  assert.equal(getOnboardingNextStep(codexCliMissing, "codex").action, "none");
+
+  assert.equal(getOnboardingNextStep(makeStatus({ claudeSkills: "missing" }), "claude").action, "copy-claude-install");
+  assert.equal(getOnboardingNextStep(makeStatus({ operatorSkills: "warning" }), "codex").action, "install-codex-skills");
+
+  assert.deepEqual(getOnboardingNextStep(makeStatus({ codexLogin: "missing" }), "codex"), {
+    title: "Finish Codex readiness",
+    detail: "Codex workflows need: Codex login.",
+    state: "locked",
+    action: "none",
+  });
+});
+
+test("dashboard renders safely across async reads and keeps onboarding until backend readiness", () => {
+  const source = readFileSync("src/main.ts", "utf8");
+  const renderSource = source.slice(
+    source.indexOf("async render("),
+    source.indexOf("private renderOnboarding"),
+  );
+
+  assert.match(renderSource, /const token = \+\+this\.renderSeq/);
+  assert.match(renderSource, /if \(token !== this\.renderSeq\) \{\s*return;\s*\}/);
+  assertOrdered(
+    renderSource,
+    "readOperatorHomeState(this.app, renderDate)",
+    "container.empty()",
+    "the DOM should only be cleared after async reads complete so overlapping renders cannot stack dashboards",
+  );
+  assert.match(renderSource, /const openDisclosures = captureOpenDisclosures\(container\)/);
+  assert.match(renderSource, /restoreOpenDisclosures\(container, openDisclosures\)/);
+  assert.match(renderSource, /const readiness = getBackendReadiness\(status, this\.plugin\.settings\.backend\)/);
+  assert.match(renderSource, /if \(!readiness\.ready\) \{\s*this\.renderOnboarding\(root, status\);\s*\}/);
+  assertOrdered(
+    renderSource,
+    "if (!status.vault.ready)",
+    "if (!readiness.ready)",
+    "the vault gate should come before the backend readiness gate",
+  );
+});
+
+test("setup health prioritizes selected backend and keeps optional checks advanced", () => {
+  const source = readFileSync("src/main.ts", "utf8");
+  const memory = readFileSync("docs/development-memory.md", "utf8");
+  const setupGroupHelper = source.slice(
+    source.indexOf("function createSetupStatusGroup"),
+    source.indexOf("function createInlineInput"),
+  );
+
+  assert.match(source, /createDisclosureSection\(root, "Setup health", "Selected backend first; optional checks stay advanced\."\)/);
+  assert.match(source, /const selectedBackend = this\.plugin\.settings\.backend/);
+  assert.match(source, /const primary = createSetupStatusGroup\(section, `\$\{backendLabel\} readiness`/);
+  assert.match(source, /const advanced = section\.createEl\("details", \{ cls: "operator-setup-advanced" \}\)/);
+  assert.match(source, /advanced\.createEl\("summary", \{ text: "Optional and alternate checks" \}\)/);
+  assert.match(source, /setupAdvancedSummary\.setAttr\("title", "Useful when switching backends or enabling optional modules; these do not block the selected daily flow\."\)/);
+  assert.doesNotMatch(source, /advanced\.setAttr\("title"/);
+  assert.match(source, /setupAdvancedSummary\.setAttr\("aria-label", "Optional and alternate checks: useful when switching backends or enabling optional modules"\)/);
+  assert.doesNotMatch(source, /advanced\.createEl\("p", \{\s*cls: "operator-muted",\s*text: "Useful when switching backends or enabling optional modules; these do not block the selected daily flow\.",\s*\}\)/);
+  assert.match(source, /createSetupStatusGroup\(advanced, "Alternate backend"/);
+  assert.match(source, /createSetupStatusGroup\(advanced, "Optional integrations"/);
+  assert.match(source, /renderStatusTile\(optionalGrid, "Gmail"/);
+  assert.doesNotMatch(source, /renderStatusTile\(grid, "Gmail"/);
+  assert.match(memory, /Setup health group descriptions should live in title or aria metadata/);
+  assert.match(setupGroupHelper, /header\.setAttr\("title", description\)/);
+  assert.doesNotMatch(setupGroupHelper, /group\.setAttr\("title"/);
+  assert.doesNotMatch(setupGroupHelper, /group\.setAttr\("aria-label"/);
+  assert.doesNotMatch(setupGroupHelper, /header\.createEl\("p", \{ cls: "operator-muted", text: description \}\)/);
+});
+
+test("responsive CSS protects narrow Obsidian panes from overflowing text", () => {
+  const source = readFileSync("src/main.ts", "utf8");
+  const css = readFileSync("styles.css", "utf8");
+  const memory = readFileSync("docs/development-memory.md", "utf8");
+
+  assert.match(memory, /Button labels should wrap cleanly in narrow Obsidian panes/);
+  assert.match(memory, /Form controls should shrink within workflow cards and modals instead of widening the pane/);
+  assert.match(memory, /Panel title rows should wrap when titles and actions compete for narrow pane width/);
+  assert.match(memory, /Status tile titles should wrap labels and chips instead of forcing horizontal overflow/);
+  assert.match(memory, /Dashboard header copy and actions should wrap before they make the first screen feel cramped/);
+  assert.match(memory, /Preview advanced detail grids should not use fixed minimum columns that can widen narrow modals/);
+  assert.match(memory, /Expanded Last Run prompt and raw log should wrap or scroll inside the dashboard without widening the pane/);
+  assert.match(source, /const titleWrap = header\.createDiv\(\{ cls: "operator-hero-copy" \}\)/);
+  assert.match(css, /grid-template-columns: repeat\(auto-fit, minmax\(min\(220px, 100%\), 1fr\)\)/);
+  assert.match(sliceCssBlock(css, ".operator-control-view"), /container-type: inline-size/);
+  assert.match(css, /\.operator-hero \{[^}]*flex-wrap: wrap/);
+  assert.match(css, /\.operator-hero-copy \{[^}]*flex: 1 1 220px[^}]*min-width: 0/);
+  assert.match(css, /\.operator-hero-copy h2,\s*\.operator-clock-meta \{[^}]*overflow-wrap: anywhere/);
+  assert.match(css, /\.operator-hero-actions \{[^}]*flex: 0 1 auto[^}]*min-width: 0/);
+  assert.match(css, /\.operator-button \{[^}]*max-width: 100%[^}]*min-width: 0[^}]*white-space: normal/);
+  assert.match(css, /\.operator-button span:not\(\.operator-button-icon\) \{[^}]*min-width: 0[^}]*overflow-wrap: anywhere/);
+  assert.match(css, /\.operator-field input,[^{]*\.operator-select \{[^}]*max-width: 100%[^}]*min-width: 0[^}]*width: 100%/);
+  assert.match(css, /\.operator-panel-title-row \{[^}]*flex-wrap: wrap/);
+  assert.match(css, /\.operator-panel-title-row h4 \{[^}]*min-width: 0[^}]*overflow-wrap: anywhere/);
+  assert.match(css, /\.operator-status-title \{[^}]*flex-wrap: wrap/);
+  assert.match(css, /\.operator-status-title span:first-child \{[^}]*min-width: 0[^}]*overflow-wrap: anywhere/);
+  assert.match(css, /\.operator-status-title \.operator-chip \{[^}]*flex: 0 0 auto/);
+  assert.match(css, /\.operator-run-prompt \{[^}]*max-width: 100%[^}]*min-width: 0[^}]*overflow-wrap: anywhere/);
+  assert.match(css, /\.operator-log \{[^}]*max-width: 100%[^}]*min-width: 0[^}]*overflow-wrap: anywhere/);
+  assert.match(css, /\.operator-workflow-group/);
+
+  // The dashboard sits in a sidebar pane, so narrow-layout rules must respond to the
+  // pane's container width; only window-relative modal rules may use a media query.
+  const narrowPane = sliceCssBlock(css, "@container (max-width: 520px)");
+  assert.match(narrowPane, /\.operator-command-strip \{[^}]*align-items: stretch[^}]*flex-direction: column/);
+  assert.match(narrowPane, /\.operator-hero-copy \{[^}]*flex: 0 1 auto[^}]*width: 100%/);
+  assert.match(narrowPane, /\.operator-hero-actions \{[^}]*width: 100%/);
+  assert.match(narrowPane, /\.operator-grow \{[^}]*flex: 0 1 auto[^}]*width: 100%/);
+  assert.match(narrowPane, /\.operator-command-strip > \.operator-button \{[^}]*justify-content: center[^}]*width: 100%/);
+  assert.doesNotMatch(narrowPane, /\.operator-modal-actions/);
+
+  const narrowWindow = sliceCssBlock(css, "@media (max-width: 520px)");
+  assert.match(narrowWindow, /\.operator-modal-actions,\s*\.operator-preview-compact-actions \{[^}]*align-items: stretch[^}]*flex-direction: column/);
+  assert.match(narrowWindow, /\.operator-modal-actions > \.operator-button,\s*\.operator-preview-compact-actions > \.operator-button \{[^}]*justify-content: center[^}]*width: 100%/);
 });
 
 test("optional modules are persisted settings and default off for Start my day", () => {
@@ -471,6 +881,28 @@ test("builds native project notes with normalized paths and placeholders", () =>
   assert.match(note, /- \(none identified yet\)/);
 });
 
+test("project creation modal keeps implementation-path copy out of visible text", () => {
+  const source = readFileSync("src/main.ts", "utf8");
+  const checklist = readFileSync("docs/ux-review-checklist.md", "utf8");
+  const memory = readFileSync("docs/development-memory.md", "utf8");
+  const modalSource = source.slice(
+    source.indexOf("class NativeProjectModal"),
+    source.indexOf("function createSection"),
+  );
+
+  assert.match(memory, /Modal helper descriptions should live in title or aria metadata/);
+  assert.match(memory, /Native project modal path previews should show a short note label while keeping the full project path in title or data metadata/);
+  assert.match(checklist, /Native project path previews stay compact while full paths remain inspectable/);
+  assert.match(modalSource, /const title = contentEl\.createEl\("h2", \{ text: "Create project" \}\)/);
+  assert.match(modalSource, /title\.setAttr\("title", "Native project setup; Run \/project-init remains in More workflows\."\)/);
+  assert.doesNotMatch(modalSource, /contentEl\.setAttr\("aria-label"/);
+  assert.match(modalSource, /pathPreview\.setAttr\("data-project-note-path", fullProjectPath\)/);
+  assert.match(modalSource, /pathPreview\.setAttr\("title", fullProjectPath\)/);
+  assert.match(modalSource, /formatProjectPathPreview\(normalized\)/);
+  assert.doesNotMatch(modalSource, /contentEl\.createEl\("p", \{\s*cls: "operator-muted",\s*text: "This native fast path/);
+  assert.doesNotMatch(modalSource, /`Will create 02_Projects\/\$\{normalized\}\/\$\{normalized\}\.md`/);
+});
+
 test("native project creation and quick capture update the markdown home state", async () => {
   const app = createFakeApp();
   const date = new Date("2026-05-22T09:00:00");
@@ -500,8 +932,18 @@ test("native project creation and quick capture update the markdown home state",
 test("reads blocker note existence for disabled open affordances", async () => {
   const app = createFakeApp();
   const date = new Date("2026-05-22T09:00:00");
+  const source = readFileSync("src/main.ts", "utf8");
+  const memory = readFileSync("docs/development-memory.md", "utf8");
+  const checklist = readFileSync("docs/ux-review-checklist.md", "utf8");
 
   assert.equal((await readOperatorHomeState(app as never, date)).blockersExists, false);
+  assert.match(memory, /Disabled native open buttons should explain missing Markdown files in title and aria metadata/);
+  assert.match(checklist, /Disabled native open buttons explain which Markdown file is missing/);
+  assert.match(source, /formatNativeOpenHelp\(home\.daily\.exists, "Open today", "Today's note has not been created yet\."\)/);
+  assert.match(source, /formatNativeOpenHelp\(home\.weeklyTodo\.exists, "Open week", "Weekly Todo has not been created yet\."\)/);
+  assert.match(source, /formatNativeOpenHelp\(home\.blockersExists, "Open blockers", "Blockers note has not been created yet\."\)/);
+  assert.doesNotMatch(source, /"Open today"[\s\S]*undefined,\s*!home\.daily\.exists\)/);
+  assert.doesNotMatch(source, /"Open week"[\s\S]*undefined,\s*!home\.weeklyTodo\.exists\)/);
 
   await app.vault.create("01_Execution/2026-W21/Blockers.md", "# Blockers\n");
 
@@ -557,7 +999,8 @@ test("dashboard wires blocker rows to native done actions", () => {
 
   assert.match(source, /updateTaskFromUi\(home\.blockersPath, meeting, "x"\)/);
   assert.match(source, /updateTaskFromUi\(home\.blockersPath, item, "x"\)/);
-  assert.match(source, /"Open blockers"[\s\S]*!home\.blockersExists/);
+  assert.match(source, /"Open blockers"[\s\S]*!home\.blockersExists,\s*formatNativeOpenHelp\(home\.blockersExists, "Open blockers", "Blockers note has not been created yet\."\)/);
+  assert.doesNotMatch(source, /"Open blockers"[\s\S]*undefined,\s*!home\.blockersExists\)/);
 });
 
 test("today next actions exclude carried-forward daily items", () => {
@@ -578,16 +1021,107 @@ test("current work agent shortcuts use workflow disabled state", () => {
   assert.match(source, /"Prep"[\s\S]*!canRun, lockHelp/);
 });
 
+test("current work project rows keep next actions scannable", () => {
+  const source = readFileSync("src/main.ts", "utf8");
+  const checklist = readFileSync("docs/ux-review-checklist.md", "utf8");
+  const memory = readFileSync("docs/development-memory.md", "utf8");
+
+  assert.match(memory, /Project row empty states should use user-facing next-action language and keep Markdown section names in metadata or docs/);
+  assert.match(checklist, /Project row empty states avoid Markdown headings like ## Now/);
+  assert.match(source, /const visibleActions = project\.nextActions\.slice\(0, 2\)/);
+  assert.match(source, /createEl\("ul", \{ cls: "operator-project-actions" \}\)/);
+  assert.match(source, /formatHiddenProjectActionCount\(project\.nextActions\.length, visibleActions\.length\)/);
+  assert.match(source, /moreActions\.setAttr\("title", "Open project for more actions\."\)/);
+  assert.match(source, /No next actions yet\./);
+  assert.doesNotMatch(source, /item\.createEl\("p", \{ cls: "operator-muted", text: "Open project for more actions\." \}\)/);
+  assert.doesNotMatch(source, /project\.nextActions\.join\(" "\)/);
+});
+
+test("dashboard empty states stay concise and avoid implementation-source copy", () => {
+  const source = readFileSync("src/main.ts", "utf8");
+  const memory = readFileSync("docs/development-memory.md", "utf8");
+
+  assert.match(memory, /Empty states should be short and plain/);
+  assert.match(memory, /Core section headers should avoid visible helper copy/);
+  assert.match(source, /"No active projects yet\."/);
+  assert.match(source, /"No upcoming meetings\."/);
+  assert.match(source, /"Nothing waiting\."/);
+  assert.match(source, /"No next actions yet\."/);
+  assert.match(source, /"No focus yet\."/);
+  assert.match(source, /"No open tasks yet\."/);
+  assert.match(source, /"No schedule yet\."/);
+  assert.match(source, /"Capture without starting an agent run\."/);
+  assert.doesNotMatch(source, /No ## Now items yet\./);
+  assert.doesNotMatch(source, /No active project notes found/);
+  assert.doesNotMatch(source, /No upcoming unchecked meetings found in this week's Blockers\.md/);
+  assert.doesNotMatch(source, /No unchecked Waiting On items in this week's Blockers\.md/);
+  assert.doesNotMatch(source, /Start my day will write today's focus/);
+  assert.doesNotMatch(source, /No schedule lines or meetings for today/);
+  assert.doesNotMatch(source, /Append lightweight inputs to today's note without starting an agent run/);
+  assert.doesNotMatch(source, /createSection\(root, "Today", home\.daily\.exists[\s\S]*Current daily note state/);
+});
+
+test("dashboard header keeps long note paths out of visible clock copy", () => {
+  const source = readFileSync("src/main.ts", "utf8");
+  const memory = readFileSync("docs/development-memory.md", "utf8");
+
+  assert.match(memory, /Dashboard header should show date, time, week, and quarter without full note paths/);
+  assert.match(source, /text: status\.vault\.ready\s*\? formatDashboardRunContext\(renderDate\)/);
+  assert.match(source, /headerMeta\.setAttr\("data-daily-note-path", home\.dailyNotePath\)/);
+  assert.match(source, /headerMeta\.setAttr\("title", home\.dailyNotePath\)/);
+  assert.match(source, /headerMeta\.setText\(formatDashboardRunContext\(date\)\)/);
+  assert.doesNotMatch(source, /\$\{formatDashboardRunContext\(renderDate\)\} · \$\{home\.dailyNotePath\}/);
+  assert.doesNotMatch(source, /\$\{formatDashboardRunContext\(date\)\} · \$\{dailyNotePath\}/);
+});
+
 test("preview copy uses the same resolved prompt as run", () => {
   const source = readFileSync("src/main.ts", "utf8");
+  const css = readFileSync("styles.css", "utf8");
+  const memory = readFileSync("docs/development-memory.md", "utf8");
+  const checklist = readFileSync("docs/ux-review-checklist.md", "utf8");
+  const previewModalSource = source.slice(
+    source.indexOf("class RunPreviewModal"),
+    source.indexOf("class NativeProjectModal"),
+  );
 
+  assert.match(memory, /Preview should keep full vault paths in title or data metadata rather than visible default copy/);
+  assert.match(memory, /Compact Start my day Preview should keep full expected note paths in title or data metadata while showing a short expected-note label/);
+  assert.match(memory, /Preview and project modals should stay within the Obsidian viewport and scroll internally/);
+  assert.match(memory, /Modal paths and metadata chips should wrap instead of widening the modal/);
+  assert.match(memory, /Preview helper descriptions should live in title or aria metadata instead of visible intro paragraphs/);
+  assert.match(checklist, /Full vault paths stay out of visible Preview metadata/);
+  assert.match(checklist, /Compact Preview expected note labels stay short while full paths remain inspectable/);
+  assert.match(checklist, /Preview helper copy does not add visible intro paragraphs/);
+  assert.match(checklist, /Preview modals stay within the viewport and scroll internally/);
+  assert.match(css, /\.operator-control,\s*\.operator-preview-modal,\s*\.operator-project-modal,\s*\.operator-consent-modal \{[^}]*--operator-border: var\(--background-modifier-border\)[^}]*--operator-ok: var\(--color-green\)[^}]*--operator-warn: var\(--color-yellow\)[^}]*--operator-bad: var\(--color-red\)/);
+  assert.match(css, /\.operator-preview-modal,\s*\.operator-project-modal,\s*\.operator-consent-modal \{[^}]*max-height: min\(82vh, 720px\)[^}]*overflow: auto/);
+  assert.match(css, /\.operator-preview-modal,[^{]*\.operator-consent-modal \{[^}]*overflow-wrap: anywhere/);
+  assert.match(css, /\.operator-preview-meta span \{[^}]*max-width: 100%[^}]*overflow-wrap: anywhere[^}]*white-space: normal/);
   assert.match(source, /const getResolvedPreview = \(\) => resolveEditedPreviewSpec\(this\.spec, promptInput\.value\)/);
+  assert.match(source, /const compactStartDay = this\.spec\.id === "start-day"/);
+  assert.match(source, /const previewHelp = compactStartDay/);
+  assert.doesNotMatch(source, /contentEl\.setAttr\("title", previewHelp\)/);
+  assert.doesNotMatch(source, /contentEl\.setAttr\("aria-label", `Preview:/);
+  assert.match(source, /title\.setAttr\("title", previewHelp\)/);
+  assert.match(source, /meta\.setAttr\("data-vault-path", this\.vaultPath\)/);
+  assert.match(source, /meta\.setAttr\("title", this\.vaultPath\)/);
+  assert.match(source, /expectedNote\.setAttr\("data-expected-note-path", resolved\.expectedOpenPath\)/);
+  assert.match(source, /expectedNote\.setAttr\("title", resolved\.expectedOpenPath\)/);
+  assert.match(source, /formatPreviewExpectedNote\(resolved\.expectedOpenPath, compactStartDay\)/);
+  assert.match(source, /createEl\("details", \{ cls: "operator-preview-advanced" \}\)/);
+  assert.match(source, /createEl\("summary", \{ text: "Prompt and run details" \}\)/);
+  assert.match(source, /createDiv\(\{ cls: "operator-preview-compact-actions" \}\)/);
+  assert.match(source, /"Edit prompt"[\s\S]*detailParent\.open = true[\s\S]*promptInput\.focus\(\)/);
   assert.match(source, /copyTextToClipboard\(getResolvedPreview\(\)\.prompt, "Prompt copied\."\)/);
   assert.match(source, /this\.settle\(getResolvedPreview\(\)\)/);
   assert.match(source, /private settled = false/);
   assert.match(source, /if \(this\.settled\) \{\s*return;\s*\}/);
   assert.match(source, /onClose\(\): void \{\s*this\.settle\(null\);/);
+  assert.doesNotMatch(source, /meta\.createSpan\(\{ text: `Vault: \$\{this\.vaultPath\}` \}\)/);
+  assert.doesNotMatch(source, /expectedNote\.setText\(resolved\.expectedOpenPath \? `Expected note: \$\{resolved\.expectedOpenPath\}` : "Expected note: not predicted"\)/);
   assert.doesNotMatch(source, /copyTextToClipboard\(promptInput\.value, "Prompt copied\."\)/);
+  assert.doesNotMatch(previewModalSource, /contentEl\.createEl\("p", \{[\s\S]*Confirm the target, then run/);
+  assert.doesNotMatch(previewModalSource, /contentEl\.createEl\("p", \{[\s\S]*Review and edit the exact prompt/);
 });
 
 test("dashboard open refreshes status without rendering twice", () => {
@@ -600,13 +1134,45 @@ test("dashboard open refreshes status without rendering twice", () => {
   assert.doesNotMatch(source, /await this\.refreshStatus\(\);\s*this\.renderViews\(\);/);
 });
 
+test("last run keeps full prompt collapsed behind debug details", () => {
+  const source = readFileSync("src/main.ts", "utf8");
+  const css = readFileSync("styles.css", "utf8");
+  const memory = readFileSync("docs/development-memory.md", "utf8");
+  const checklist = readFileSync("docs/ux-review-checklist.md", "utf8");
+
+  assert.match(memory, /Last Run metadata paths should wrap instead of widening the dashboard/);
+  assert.match(memory, /Last Run expected note metadata should show compact status labels while full paths stay in title or data metadata/);
+  assert.match(memory, /Disabled Last Run expected-note buttons should explain missing or pending notes in title and aria metadata/);
+  assert.match(checklist, /Last Run expected note metadata stays compact while full paths remain inspectable/);
+  assert.match(checklist, /Disabled expected-note openers explain why they are unavailable/);
+  assert.match(source, /createEl\("details", \{ cls: "operator-run-prompt-details" \}\)/);
+  assert.match(source, /promptDetails\.createEl\("summary", \{ text: "Prompt" \}\)/);
+  assert.match(source, /promptDetails\.createEl\("code", \{ cls: "operator-run-prompt", text: lastRun\.prompt \}\)/);
+  assert.match(source, /details\.createEl\("summary", \{ text: "Raw log" \}\)/);
+  assert.match(source, /expectedNote\.setAttr\("data-expected-note-path", lastRun\.expectedOpenPath\)/);
+  assert.match(source, /expectedNote\.setAttr\("title", lastRun\.expectedOpenPath\)/);
+  assert.match(source, /expectedNote\.setText\(formatDashboardExpectedNoteStatus\(expectedExists, lastRun\.status\)\)/);
+  assert.match(source, /formatExpectedNoteOpenHelp\(expectedExists, lastRun\.status\)/);
+  assert.match(source, /"Open expected note"[\s\S]*!expectedExists,\s*formatExpectedNoteOpenHelp\(expectedExists, lastRun\.status\)/);
+  assert.doesNotMatch(source, /const prompt = section\.createEl\("code", \{ cls: "operator-run-prompt", text: lastRun\.prompt \}\)/);
+  assert.doesNotMatch(source, /meta\.createSpan\(\{ text: formatExpectedNoteStatus\(lastRun\.expectedOpenPath, expectedExists, lastRun\.status\) \}\)/);
+  assert.doesNotMatch(source, /"Open expected note"[\s\S]*undefined,\s*!expectedExists\);/);
+  assert.match(css, /\.operator-run-prompt-details summary/);
+  assert.match(css, /\.operator-run-meta span \{[^}]*max-width: 100%[^}]*min-width: 0[^}]*overflow-wrap: anywhere/);
+});
+
 test("setup controls explain disabled setup actions", () => {
   const source = readFileSync("src/main.ts", "utf8");
+  const css = readFileSync("styles.css", "utf8");
 
-  assert.match(source, /createDisclosureSection\(root, "Setup health", "Selected backend readiness first; optional integrations are labeled optional\."\)/);
   assert.match(source, /const visualState = optional && state !== "ready" \? "optional" : state/);
+  assert.match(source, /const showDetail = !optional && state !== "ready"/);
   assert.match(source, /operator-status-tile is-\$\{visualState\}/);
+  assert.match(source, /tile\.setAttr\("title", detail\)/);
+  assert.match(source, /if \(showDetail\) \{\s*tile\.createEl\("p", \{ text: detail \}\);\s*\}/);
   assert.match(source, /operator-chip is-\$\{visualState\}/);
+  assert.match(css, /\.operator-chip\.is-optional/);
+  assert.match(css, /\.operator-status-tile\.is-optional \.operator-chip/);
   assert.match(source, /const setupLockHelp = this\.plugin\.activeRun[\s\S]*Use Cancel run before changing setup\./);
   assert.match(source, /const codexSkillsHelp = status\.codexCli !== "ready"[\s\S]*Set a working Codex executable before installing Codex skills\./);
   assert.match(source, /codexSkillsDisabled, codexSkillsHelp/);
@@ -703,8 +1269,10 @@ test("builds editable workflow prompt specs", () => {
   assert.match(start.prompt, /\/quarterly-plan init 2026-Q2/);
   assert.match(start.prompt, /Current week setup: \/weekly-init 2026-W21/);
   assert.match(start.prompt, /Manual items to consider today:\nreview deck, email Kai/);
-  assert.ok(start.prompt.indexOf("Daily pre-flight guard") < start.prompt.indexOf("Manual items to consider today"));
-  assert.ok(start.prompt.indexOf("Operator run metadata") < start.prompt.indexOf("Manual items to consider today"));
+  assertOrdered(start.prompt, "Daily pre-flight guard", "Manual items to consider today",
+    "pre-flight guard should precede manual items so the agent does not treat metadata as tasks");
+  assertOrdered(start.prompt, "Operator run metadata", "Manual items to consider today",
+    "run metadata should precede manual items");
   const multilineManualStart = buildStartDaySpec(6, "review deck\nemail Kai\n  prep demo  ", date);
   assert.match(multilineManualStart.prompt, /Manual items to consider today:\nreview deck\nemail Kai\n  prep demo/);
   assert.doesNotMatch(start.prompt, /Enabled optional modules for this daily run/);

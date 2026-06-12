@@ -1,25 +1,53 @@
 .operator-control-view {
+  container-type: inline-size;
   padding: 0;
 }
 
-.operator-control {
+.operator-control,
+.operator-preview-modal,
+.operator-project-modal,
+.operator-consent-modal {
   --operator-border: var(--background-modifier-border);
   --operator-ok: var(--color-green);
   --operator-warn: var(--color-yellow);
   --operator-bad: var(--color-red);
+}
+
+.operator-control {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  overflow-wrap: anywhere;
   padding: 18px;
+}
+
+.operator-control * {
+  box-sizing: border-box;
 }
 
 .operator-hero {
   align-items: flex-start;
   border-bottom: 1px solid var(--operator-border);
   display: flex;
+  flex-wrap: wrap;
   gap: 16px;
   justify-content: space-between;
   padding-bottom: 14px;
+}
+
+.operator-hero-copy {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+
+.operator-hero-copy h2,
+.operator-clock-meta {
+  overflow-wrap: anywhere;
+}
+
+.operator-hero-actions {
+  flex: 0 1 auto;
+  min-width: 0;
 }
 
 .operator-eyebrow {
@@ -36,10 +64,8 @@
 }
 
 .operator-muted,
-.operator-section-header p,
 .operator-help,
-.operator-status-tile p,
-.operator-advanced-item p {
+.operator-status-tile p {
   color: var(--text-muted);
 }
 
@@ -68,78 +94,92 @@
   margin-bottom: 12px;
 }
 
-.operator-section-header p {
-  margin: 4px 0 0;
-}
-
 .operator-status-grid {
   display: grid;
   gap: 8px;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(160px, 100%), 1fr));
   margin-bottom: 12px;
 }
 
-.operator-onboarding-grid {
-  display: grid;
-  gap: 10px;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  margin-bottom: 12px;
-}
-
-.operator-step-card {
+.operator-next-step {
   background: var(--background-secondary);
   border: 1px solid var(--operator-border);
   border-radius: 8px;
+  margin-bottom: 10px;
   padding: 10px;
 }
 
-.operator-step-card p {
+.operator-next-step p,
+.operator-checklist-item p {
   color: var(--text-muted);
   font-size: var(--font-ui-small);
   line-height: 1.35;
   margin: 8px 0 0;
 }
 
-.operator-step-header {
+.operator-next-step-header,
+.operator-checklist-row {
   align-items: center;
   display: flex;
   gap: 8px;
 }
 
-.operator-step-number {
-  align-items: center;
-  background: var(--background-primary);
-  border: 1px solid var(--operator-border);
-  border-radius: 999px;
-  display: inline-flex;
-  font-size: var(--font-ui-smaller);
-  height: 22px;
-  justify-content: center;
-  width: 22px;
+.operator-next-step-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
 }
 
-.operator-step-card.is-ready .operator-step-number {
-  border-color: color-mix(in srgb, var(--operator-ok) 60%, transparent);
-  color: var(--operator-ok);
+.operator-next-step.is-ready {
+  border-color: color-mix(in srgb, var(--operator-ok) 55%, var(--operator-border));
+}
+
+.operator-next-step.is-needed {
+  border-color: color-mix(in srgb, var(--operator-warn) 48%, var(--operator-border));
+}
+
+.operator-next-step.is-locked {
+  border-color: color-mix(in srgb, var(--operator-bad) 48%, var(--operator-border));
+}
+
+.operator-onboarding-checklist {
+  margin: 10px 0;
+}
+
+.operator-onboarding-checklist summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.operator-checklist-item {
+  margin-bottom: 8px;
 }
 
 .operator-status-tile {
   background: var(--background-secondary);
   border: 1px solid var(--operator-border);
   border-radius: 8px;
-  min-height: 112px;
+  min-height: 56px;
   padding: 10px;
 }
 
 .operator-status-title {
   align-items: center;
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   justify-content: space-between;
 }
 
 .operator-status-title span:first-child {
   font-weight: 700;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.operator-status-title .operator-chip {
+  flex: 0 0 auto;
 }
 
 .operator-status-tile p {
@@ -169,22 +209,49 @@
   color: var(--operator-warn);
 }
 
+.operator-status-tile.is-needed .operator-chip,
+.operator-chip.is-needed {
+  border-color: color-mix(in srgb, var(--operator-warn) 55%, transparent);
+  color: var(--operator-warn);
+}
+
 .operator-status-tile.is-missing .operator-chip,
 .operator-chip.is-missing {
   border-color: color-mix(in srgb, var(--operator-bad) 55%, transparent);
   color: var(--operator-bad);
 }
 
+.operator-status-tile.is-locked .operator-chip,
+.operator-chip.is-locked {
+  border-color: color-mix(in srgb, var(--operator-bad) 55%, transparent);
+  color: var(--operator-bad);
+}
+
+.operator-status-tile.is-optional .operator-chip,
+.operator-chip.is-optional {
+  border-color: var(--operator-border);
+  color: var(--text-muted);
+}
+
 .operator-button {
   align-items: center;
   display: inline-flex;
   gap: 6px;
+  max-width: 100%;
+  min-width: 0;
+  white-space: normal;
 }
 
 .operator-button-icon {
   display: inline-flex;
+  flex: 0 0 16px;
   height: 16px;
   width: 16px;
+}
+
+.operator-button span:not(.operator-button-icon) {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .operator-danger {
@@ -203,6 +270,15 @@
   font-size: var(--font-ui-smaller);
 }
 
+.operator-field input,
+.operator-field select,
+.operator-field textarea,
+.operator-select {
+  max-width: 100%;
+  min-width: 0;
+  width: 100%;
+}
+
 .operator-grow {
   flex: 1 1 220px;
 }
@@ -211,13 +287,47 @@
   margin: 10px 0 0;
 }
 
+.operator-status-group,
+.operator-workflow-group {
+  margin: 12px 0 0;
+}
+
+.operator-status-group:first-of-type,
+.operator-workflow-group:first-of-type {
+  margin-top: 0;
+}
+
+.operator-subsection-header {
+  margin-bottom: 8px;
+}
+
+.operator-subsection-header h4 {
+  margin: 0;
+}
+
+.operator-workflow-disclosure {
+  border-top: 1px solid var(--operator-border);
+  padding-top: 10px;
+}
+
+.operator-setup-advanced {
+  border-top: 1px solid var(--operator-border);
+  margin: 12px 0;
+  padding-top: 10px;
+}
+
+.operator-setup-advanced summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+
 .operator-home-grid,
 .operator-workflow-grid,
 .operator-today-grid,
 .operator-preview-grid {
   display: grid;
   gap: 10px;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
 }
 
 .operator-home-panel,
@@ -251,6 +361,7 @@
 .operator-panel-title-row {
   align-items: center;
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   justify-content: space-between;
   margin-bottom: 6px;
@@ -258,6 +369,8 @@
 
 .operator-panel-title-row h4 {
   margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .operator-quiet-button {
@@ -271,10 +384,6 @@
   gap: 8px;
 }
 
-.operator-workflow-card p {
-  margin: 0;
-}
-
 .operator-list {
   margin: 8px 0;
   padding-inline-start: 18px;
@@ -286,6 +395,15 @@
 
 .operator-plain-list {
   margin-bottom: 0;
+}
+
+.operator-project-actions {
+  margin: 6px 0;
+  padding-inline-start: 18px;
+}
+
+.operator-project-actions li {
+  margin: 0 0 4px;
 }
 
 .operator-list li > strong,
@@ -316,26 +434,6 @@
   width: 100%;
 }
 
-.operator-advanced-list {
-  display: grid;
-  gap: 8px;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-}
-
-.operator-advanced-item {
-  background: var(--background-secondary);
-  border: 1px solid var(--operator-border);
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 10px;
-}
-
-.operator-advanced-item p {
-  margin: 0;
-}
-
 .operator-run-meta {
   align-items: center;
   display: flex;
@@ -347,11 +445,21 @@
 .operator-run-meta span {
   color: var(--text-muted);
   font-size: var(--font-ui-small);
+  max-width: 100%;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.operator-run-prompt-details {
+  margin: 8px 0;
 }
 
 .operator-run-prompt {
   display: block;
   margin-bottom: 8px;
+  max-width: 100%;
+  min-width: 0;
+  overflow-wrap: anywhere;
   white-space: pre-wrap;
 }
 
@@ -368,7 +476,10 @@
   color: var(--text-error);
 }
 
+.operator-run-prompt-details summary,
 .operator-log-details summary,
+.operator-workflow-disclosure summary,
+.operator-preview-advanced summary,
 .operator-disclosure summary {
   cursor: pointer;
 }
@@ -378,7 +489,10 @@
   border: 1px solid var(--operator-border);
   border-radius: 8px;
   max-height: 260px;
+  max-width: 100%;
+  min-width: 0;
   overflow: auto;
+  overflow-wrap: anywhere;
   padding: 10px;
   white-space: pre-wrap;
 }
@@ -387,8 +501,31 @@
   color: var(--text-muted);
 }
 
+.operator-preview-modal,
+.operator-project-modal,
+.operator-consent-modal {
+  max-height: min(82vh, 720px);
+  overflow: auto;
+  overflow-wrap: anywhere;
+}
+
 .operator-preview-modal .operator-field {
   margin: 12px 0;
+}
+
+.operator-preview-compact {
+  margin: 12px 0;
+}
+
+.operator-preview-compact-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.operator-preview-advanced {
+  margin: 12px 0 0;
 }
 
 .operator-project-modal .operator-field {
@@ -407,10 +544,71 @@
   border-radius: 999px;
   color: var(--text-muted);
   font-size: var(--font-ui-small);
+  max-width: 100%;
+  overflow-wrap: anywhere;
   padding: 3px 8px;
+  white-space: normal;
 }
 
 .operator-preview-panel strong {
   display: block;
   margin-bottom: 6px;
+}
+
+/* The dashboard lives in a sidebar pane, so in-view responsive rules key off the
+   view's container width, not the window viewport. Modals are window-relative and
+   keep a media query below. */
+@container (max-width: 520px) {
+  .operator-control {
+    padding: 12px;
+  }
+
+  .operator-hero,
+  .operator-hero-actions,
+  .operator-controls-row,
+  .operator-form-row,
+  .operator-command-strip {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .operator-hero-copy {
+    flex: 0 1 auto;
+    width: 100%;
+  }
+
+  .operator-hero-actions {
+    width: 100%;
+  }
+
+  .operator-field,
+  .operator-grow {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .operator-grow {
+    flex: 0 1 auto;
+    width: 100%;
+  }
+
+  .operator-button,
+  .operator-command-strip > .operator-button {
+    justify-content: center;
+    width: 100%;
+  }
+}
+
+@media (max-width: 520px) {
+  .operator-modal-actions,
+  .operator-preview-compact-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .operator-modal-actions > .operator-button,
+  .operator-preview-compact-actions > .operator-button {
+    justify-content: center;
+    width: 100%;
+  }
 }

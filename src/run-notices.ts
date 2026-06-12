@@ -1,14 +1,29 @@
 import type { OperatorRunRecord } from "./settings";
 
-export function formatExpectedNoteStatus(
-  expectedOpenPath: string,
-  exists: boolean,
-  status: OperatorRunRecord["status"],
-): string {
-  if (exists) {
-    return `Expected note ready: ${expectedOpenPath}`;
+export function formatPreviewExpectedNote(expectedOpenPath: string | undefined, compact: boolean): string {
+  if (!expectedOpenPath) {
+    return "Expected note: not predicted";
   }
-  return `${status === "running" ? "Expected note pending" : "Expected note missing"}: ${expectedOpenPath}`;
+  if (!compact) {
+    return `Expected note: ${expectedOpenPath}`;
+  }
+  return `Expected note: ${expectedOpenPath.split("/").pop() || expectedOpenPath}`;
+}
+
+export function formatDashboardExpectedNoteStatus(exists: boolean, status: OperatorRunRecord["status"]): string {
+  if (exists) {
+    return "Expected note: ready";
+  }
+  return status === "running" ? "Expected note: pending" : "Expected note: missing";
+}
+
+export function formatExpectedNoteOpenHelp(exists: boolean, status: OperatorRunRecord["status"]): string {
+  if (exists) {
+    return "Open expected note";
+  }
+  return status === "running"
+    ? "Expected note is not available yet; the run may still be writing it."
+    : "Expected note was not found in this vault yet.";
 }
 
 export function formatRunCompletionNotice(

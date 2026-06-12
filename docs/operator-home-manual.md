@@ -11,7 +11,7 @@ Operator Home is the Obsidian-native front door for Obsidian Operator. It keeps 
 ## Install
 
 1. Install Obsidian desktop.
-2. Download the versioned `operator-control-<version>.zip` from the [latest release](https://github.com/herschel0130/obsidian-operator-product/releases/latest). The unversioned `operator-control.zip` asset is kept for compatibility.
+2. Download the versioned `operator-control-<version>.zip` from the [latest release](https://github.com/engramai-co/Engram-Obsidian-Operator/releases/latest). The unversioned `operator-control.zip` asset is kept for compatibility.
 3. Unzip it and move the resulting `operator-control/` folder into your vault's plugins folder:
 
 ```text
@@ -20,6 +20,8 @@ Operator Home is the Obsidian-native front door for Obsidian Operator. It keeps 
 ```
 
 4. In Obsidian, enable **Community plugins**, then enable **Operator**.
+
+Release zip users do not need npm commands. Do not use GitHub's source code zip for this path; that archive is only for source development and still needs a local build.
 
 The zip installs only the Obsidian dashboard. Agent workflows need Codex CLI or Claude Code skills as a separate setup step.
 
@@ -38,13 +40,13 @@ Then open Operator Home and click **Install Codex skills** in **Setup health**. 
 Install Claude Code, switch Operator's backend setting to **Claude**, then copy the install commands from **Setup health**:
 
 ```text
-/plugin marketplace add https://github.com/herschel0130/obsidian-operator-product
+/plugin marketplace add https://github.com/engramai-co/Engram-Obsidian-Operator
 /plugin install obsidian-operator
 ```
 
 ### Local Development Install
 
-If you cloned this repo instead of using a release zip:
+If you cloned this repo or downloaded a source zip instead of using a release zip:
 
 ```bash
 npm install
@@ -55,8 +57,8 @@ npm run install:plugin -- "<your vault>"
 ## First Run
 
 1. Open **Operator** from the left ribbon or command palette.
-2. If setup is incomplete, use **Setup health** to install skills for your selected backend.
-3. Click **Initialize vault** to create the Operator folder structure and agent config files.
+2. Click **Initialize vault** when **Get started** asks for it. This creates the Operator folder structure and agent config files before any agent workflow is required.
+3. If setup is incomplete after vault initialization, use **Setup health** to install skills for your selected backend.
 4. Click **New** under Active projects, then create your first project note.
 5. Enter available hours, including half-hour budgets such as `4.5`, optionally add one manual item per line, and click **Start my day**. Review the Preview, then run it.
 
@@ -68,7 +70,7 @@ npm run install:plugin -- "<your vault>"
 - **Quick Capture** appends ideas, tasks, meeting notes, or research questions to today's note without launching an agent. Paste multiple lines to create multiple Markdown capture items at once; captured task checkboxes appear in today's **Next actions**.
 - **Active projects** shows active project notes from `02_Projects/` and each note's `## Now` section.
 - **Meetings** and **Waiting on** come from the current week's `Blockers.md`; use **Done** to mark resolved blockers or completed meetings in the source Markdown.
-- **Last Run** shows the latest agent run summary and raw log when you need to debug.
+- **Last Run** shows the latest agent run summary, with the full prompt and raw log collapsed for debugging.
 
 ## Projects
 
@@ -83,16 +85,24 @@ The project note includes frontmatter, a one-line description, `## Now`, `## Ris
 
 Use **Run /project-init** only when you want the legacy agent-guided project setup. This keeps the original skill available without making the daily UI depend on CLI interaction.
 
-## Agent Workflows
+## Core Workflows
 
-Open **More workflows** for less frequent or reasoning-heavy work:
+Core workflows live in **More workflows** because they are still agent runs, but they support the normal planning, project, meeting, and strategy loop. They stay easier to scan than optional modules and power-user prompts.
+
+### Plan
 
 - **Weekly setup / Weekly review** for execution planning and synthesis. Leave **Week** empty for the dashboard default, enter `YYYY-WX` or `YYYY-WXX` to target a specific week. `last` is review-only; Weekly setup treats it as blank and stays on the current ISO week.
-- **Annual vision / Annual review / Quarter plan / Monthly pulse / Quarter review** for the strategic layer from `00_Strategy/`.
+
+### Projects And Meetings
+
 - **Sync / Deadline plan** for project-level agent work.
 - **Prep / Process meeting** for agendas, transcripts, decisions, and actions. Transcript input accepts pasted multi-line text or a local path.
-- **Agent prompt / CLI command** for raw slash commands or freeform prompts.
-- **Copy CLI handoff** copies a runnable Codex or Claude command for the selected backend using the same enhanced prompt and resolved CLI path shown by Setup health, so power users can continue in Terminal without retyping the prompt. If the prompt box is empty, both handoff and Preview default to `/daily-init` with the dashboard's current available-hours setting.
+
+### Strategy
+
+- **Annual vision / Annual review / Quarter plan / Monthly pulse / Quarter review** for the strategic layer from `00_Strategy/`.
+
+## Optional Modules
 
 Open **Optional modules** inside **More workflows** for personal-interest workflows:
 
@@ -101,6 +111,15 @@ Open **Optional modules** inside **More workflows** for personal-interest workfl
 - **Calendar / events** routes pasted commitments into the weekly system. Paste one event or deadline per line.
 
 Optional modules are off for **Start my day** by default. In Settings, enable only the modules you want the daily concierge to orchestrate; the Preview will list the enabled modules before you run. The buttons inside **Optional modules** and raw CLI slash commands remain available even when the daily setting is off.
+
+## Power User Workflows
+
+Inside **More workflows**, expand **Power user** for:
+
+- **Agent prompt / CLI command** for raw slash commands or freeform prompts.
+- **Copy CLI handoff** copies a runnable Codex or Claude command for the selected backend using the same enhanced prompt and resolved CLI path shown by Setup health, so power users can continue in Terminal without retyping the prompt. If the prompt box is empty, both handoff and Preview default to `/daily-init` with the dashboard's current available-hours setting.
+
+## Preview Behavior
 
 Every agent workflow checks setup before opening Preview, then shows the exact prompt, target notes, expected output note when known, and likely read/write areas before launching Codex or Claude. Built-in workflows include local date, time, timezone, ISO week, and quarter as metadata, not manual tasks, so daily scheduling, weekly planning, annual vision, and quarterly planning do not depend on hidden agent clock assumptions.
 
@@ -121,9 +140,9 @@ For daily, weekly, AI weekly digest, annual, and quarterly workflows, Operator p
 - If buttons are disabled or an agent action is blocked before Preview, Operator shows the backend-specific missing pieces. Open **Setup health** for the exact fix. Codex mode checks vault setup, Codex CLI, Codex login, and Codex Operator skills. Claude mode checks vault setup, Claude CLI, and Claude Operator skills.
 - If `codex --version` works in Terminal but Operator says Codex is missing, refresh the dashboard. Operator searches common Homebrew and nvm locations and runs absolute command paths with the command's own folder added to `PATH`.
 - Gmail, Gemini, Calendar, and multi-agent support are optional. Missing optional integrations should not block basic daily workflows.
-- If an agent run fails, open **Last Run -> Raw log** and rerun after fixing the setup issue.
+- If an agent run fails, open **Last Run -> Prompt** or **Raw log** and rerun after fixing the setup issue.
 - For open-ended debugging or multi-turn work, use Codex CLI or Claude Code directly from the vault.
 
 ## Safety
 
-Operator launches the selected backend with vault-scoped write permissions in the current vault by default. It does not use full-disk or dangerous sandbox bypass settings by default. Native actions write only the specific Markdown files and folders needed for the selected action.
+Operator launches the selected backend in the current vault: the Codex backend runs in a sandbox that blocks writes outside the vault, the Claude backend follows your Claude Code permission settings, and either backend can read other files on this computer and may search the web during a run. Native actions write only the specific Markdown files and folders needed for the selected action.

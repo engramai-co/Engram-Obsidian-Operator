@@ -45,6 +45,7 @@ docs/                   internal docs: style guide, specs, plans
 - **No personal vault content in the repo.** Anything personal (your daily notes, meetings, projects) lives outside the repo. Anything that ships to users goes in `plugins/obsidian-operator/skills/vault-init/assets/vault-template/` as an empty scaffold or example placeholder.
 - **No fabricated examples in skills.** If a skill needs an example output, generate it by running the skill against a clean vault — don't make up plausible-looking Markdown.
 - **Workspaces are scratch only.** `.workspaces/<skill-name>/` is gitignored. Use it for skill development; don't reference its paths from skill code.
+- **Two-layer memory model.** Stable product and UX decisions are tracked in git under `docs/` (see `docs/development-memory.md`). Temporary agent plans, specs, screenshots, smoke notes, and exploratory artifacts stay in the gitignored scratch locations: `docs/plans/`, `docs/specs/`, `docs/superpowers/plans/`, `docs/superpowers/specs/`, `.workspaces/`, and `.playwright-cli/`. Use `.workspaces/ux-review/` for local UX screenshots, smoke notes, layout experiments, and comparison artifacts; never reference scratch paths from committed docs or code.
 
 ## Rules for git & releases
 

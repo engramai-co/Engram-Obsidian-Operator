@@ -44,7 +44,7 @@ export const DEFAULT_SETTINGS: OperatorSettings = {
   backend: "codex",
   codexPath: "codex",
   claudePath: "claude",
-  repoSource: "herschel0130/obsidian-operator-product",
+  repoSource: "engramai-co/Engram-Obsidian-Operator",
   availableHours: 6,
   optionalModules: {
     intelligence: false,
@@ -60,3 +60,17 @@ export const DEFAULT_SETTINGS: OperatorSettings = {
   hasOpenedDashboard: false,
   lastRun: null,
 };
+
+// Repo homes this project has outgrown; persisted data.json from installs made
+// before the engramai-co move still carries them as repoSource.
+const LEGACY_REPO_SOURCES = [
+  "yuhanwang14/obsidian-operator",
+  "herschel0130/obsidian-operator-product",
+];
+
+export function migrateLegacyRepoSource(repoSource: string | undefined): string {
+  if (!repoSource || LEGACY_REPO_SOURCES.includes(repoSource)) {
+    return DEFAULT_SETTINGS.repoSource;
+  }
+  return repoSource;
+}

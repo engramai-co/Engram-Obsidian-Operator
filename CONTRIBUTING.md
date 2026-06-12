@@ -6,7 +6,7 @@ Thanks for your interest in improving Operator! This guide covers how to contrib
 
 ### Reporting Bugs
 
-Open a [GitHub issue](https://github.com/herschel0130/obsidian-operator-product/issues) with:
+Open a [GitHub issue](https://github.com/engramai-co/Engram-Obsidian-Operator/issues) with:
 
 - Which skill is affected (e.g. `daily-init`, `meeting`)
 - Steps to reproduce
@@ -34,17 +34,17 @@ Open an issue describing:
 
 - [Obsidian](https://obsidian.md) installed
 - [Claude Code](https://claude.ai/code) CLI installed
-- A test vault (use `vault-template/` as a starting point)
+- A test vault (scaffold one with `/vault-init`, or copy the bundled template below)
 
 ### Local Setup
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/Obsidian-Operator.git
-cd Obsidian-Operator
+git clone https://github.com/YOUR_USERNAME/Engram-Obsidian-Operator.git
+cd Engram-Obsidian-Operator
 
-# Create a test vault from the template
-cp -r vault-template/ /path/to/test-vault/
-cp CLAUDE.md /path/to/test-vault/
+# Create a test vault from the bundled template
+cp -r plugins/obsidian-operator/skills/vault-init/assets/vault-template/ /path/to/test-vault/
+cp plugins/obsidian-operator/skills/vault-init/assets/CLAUDE.md /path/to/test-vault/
 
 # Install a skill locally for testing
 # Skills live in ~/.claude/skills/ — symlink or copy your modified skill there
