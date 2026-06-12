@@ -88,7 +88,7 @@ When an optional module is enabled, Preview should make that explicit before the
 - Dashboard header should show date, time, week, and quarter without full note paths; keep the current daily note path in title/data metadata and in explicit Open actions.
 - Modal helper descriptions should live in title or aria metadata when the form labels and controls already make the workflow clear. Native project creation should open as a form, not as an explanation of native versus agent-guided paths.
 - Native project modal path previews should show a short note label while keeping the full project path in title or data metadata.
-- Runner consent should explain agent access in calm plain language while staying accurate: say that agent writes are limited to this vault and that the agent can read other files on this computer and may search the web. Avoid raw implementation terms such as `workspace-write` in the consent modal, but never trade accuracy for calmness.
+- Runner consent should explain agent access in calm plain language while staying accurate: say that Codex writes are sandbox-limited to this vault, that Claude follows the user's Claude Code permission settings, and that the agent can read other files on this computer and may search the web. Avoid raw implementation terms such as `workspace-write` in the consent modal, but never trade accuracy for calmness.
 
 ### Start My Day Preview
 

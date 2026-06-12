@@ -49,6 +49,8 @@ export function getOnboardingNextStep(
     };
   }
 
+  // The dashboard hides onboarding once the backend is ready, so this rung never
+  // renders there; it exists so the function is total over every status.
   return {
     title: "Start my day",
     detail: "Daily briefing is ready to run.",

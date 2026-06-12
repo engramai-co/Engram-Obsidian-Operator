@@ -600,12 +600,14 @@
 }
 
 @media (max-width: 520px) {
-  .operator-modal-actions {
+  .operator-modal-actions,
+  .operator-preview-compact-actions {
     align-items: stretch;
     flex-direction: column;
   }
 
-  .operator-modal-actions > .operator-button {
+  .operator-modal-actions > .operator-button,
+  .operator-preview-compact-actions > .operator-button {
     justify-content: center;
     width: 100%;
   }

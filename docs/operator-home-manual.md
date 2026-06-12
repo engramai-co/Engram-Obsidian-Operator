@@ -145,4 +145,4 @@ For daily, weekly, AI weekly digest, annual, and quarterly workflows, Operator p
 
 ## Safety
 
-Operator launches the selected backend with vault-scoped write permissions in the current vault: agent writes are limited to this vault, though the agent can read other files on this computer and may search the web during a run. Native actions write only the specific Markdown files and folders needed for the selected action.
+Operator launches the selected backend in the current vault: the Codex backend runs in a sandbox that blocks writes outside the vault, the Claude backend follows your Claude Code permission settings, and either backend can read other files on this computer and may search the web during a run. Native actions write only the specific Markdown files and folders needed for the selected action.

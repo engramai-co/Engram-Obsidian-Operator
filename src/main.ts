@@ -37,7 +37,7 @@ import {
   formatPreviewExpectedNote,
   formatRunCompletionNotice,
 } from "./run-notices";
-import { DEFAULT_SETTINGS, type OperatorRunRecord, type OperatorSettings } from "./settings";
+import { DEFAULT_SETTINGS, migrateLegacyRepoSource, type OperatorRunRecord, type OperatorSettings } from "./settings";
 import {
   canRunBackendWorkflows,
   checkEnvironment,
@@ -149,6 +149,7 @@ export default class OperatorControlPlugin extends Plugin {
         ...(loaded?.optionalModules ?? {}),
       },
     };
+    this.settings.repoSource = migrateLegacyRepoSource(this.settings.repoSource);
   }
 
   async saveSettings(): Promise<void> {
@@ -1251,7 +1252,7 @@ class RunnerConsentModal extends Modal {
       text: "Operator will launch Codex or Claude in the background for previewed workflows. The agent can read and update files inside this vault while the run is active.",
     });
     contentEl.createEl("p", {
-      text: "Agent writes are limited to this vault, but the agent can read other files on this computer and may search the web during a run. Native actions still write only the specific Markdown files needed for the action.",
+      text: "Codex runs in a sandbox that blocks writes outside this vault; Claude follows your Claude Code permission settings. Either backend can read other files on this computer and may search the web during a run. Native actions still write only the specific Markdown files needed for the action.",
     });
     const row = contentEl.createDiv({ cls: "operator-modal-actions" });
     createButton(row, "x", "Cancel", () => {

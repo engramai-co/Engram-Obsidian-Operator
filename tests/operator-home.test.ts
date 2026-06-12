@@ -17,7 +17,7 @@ import type { OperatorEnvironmentStatus } from "../src/status";
 import { buildTodayScheduleLines } from "../src/today-surface";
 import { parseActiveProjectNote, parseBlockers, parseDailyNote, parseWeeklyTodo } from "../src/vault-parsers";
 import { buildAdvancedPromptPlaceholder, buildDefaultDailyPrompt, buildStrategyPeriodPlaceholder, buildStartDaySpec, buildWeeklyPeriodPlaceholder, buildWorkflowSpec, describePrompt, resolveAdvancedPrompt, resolveAnnualShortcutInput, resolveAnnualYearInput, resolveAvailableHoursInput, resolveEditedPreviewSpec, resolveQuarterlyPeriodInput, resolveWeeklyPeriodInput } from "../src/workflows";
-import { DEFAULT_SETTINGS } from "../src/settings";
+import { DEFAULT_SETTINGS, migrateLegacyRepoSource } from "../src/settings";
 
 function assertOrdered(text: string, first: string, second: string, message: string): void {
   const firstIndex = text.indexOf(first);
@@ -334,7 +334,7 @@ test("product docs keep first-run overview out of implementation internals", () 
   assert.doesNotMatch(readme, /manifest\.json\s+main\.js\s+styles\.css/);
   assert.doesNotMatch(manual, /manifest\.json\s+main\.js\s+styles\.css/);
   assert.doesNotMatch(manual, /Operator launches Codex with `workspace-write` permissions/);
-  assert.match(manual, /Operator launches the selected backend with vault-scoped write permissions/);
+  assert.match(manual, /Operator launches the selected backend in the current vault/);
   assert.match(releaseNotes, /Download `operator-control-0\.4\.1\.zip`/);
   assert.match(releaseNotes, /Clean-vault smoke checklist/);
   assert.match(releaseNotes, /release zip users do not need npm commands/i);
@@ -359,16 +359,30 @@ test("runner consent uses calm language without overstating isolation", () => {
   );
 
   assert.match(memory, /Runner consent should explain agent access in calm plain language while staying accurate/);
+  assert.match(memory, /say that Codex writes are sandbox-limited to this vault, that Claude follows the user's Claude Code permission settings/);
   assert.match(memory, /never trade accuracy for calmness/);
   assert.match(checklist, /First-run runner consent uses calm language and accurately states write limits and outside-vault read access/);
   assert.match(consentSource, /The agent can read and update files inside this vault while the run is active/);
-  assert.match(consentSource, /Agent writes are limited to this vault, but the agent can read other files on this computer and may search the web during a run/);
+  assert.match(consentSource, /Codex runs in a sandbox that blocks writes outside this vault; Claude follows your Claude Code permission settings/);
+  assert.match(consentSource, /Either backend can read other files on this computer and may search the web during a run/);
   assert.doesNotMatch(consentSource, /does not request access outside this vault/);
+  assert.doesNotMatch(consentSource, /Agent writes are limited to this vault/);
   assert.doesNotMatch(consentSource, /workspace-write/i);
-  assert.match(readme, /agent writes are limited to this vault, though the agent can read other files on this computer and may search the web during a run/);
-  assert.match(manual, /agent writes are limited to this vault, though the agent can read other files on this computer and may search the web during a run/);
+  assert.match(readme, /the Codex backend runs in a sandbox that blocks writes outside the vault, the Claude backend follows your Claude Code permission settings, and either backend can read other files on this computer and may search the web during a run/);
+  assert.match(manual, /the Codex backend runs in a sandbox that blocks writes outside the vault, the Claude backend follows your Claude Code permission settings, and either backend can read other files on this computer and may search the web during a run/);
   assert.doesNotMatch(readme, /does not request access outside this vault/);
   assert.doesNotMatch(manual, /does not request access outside this vault/);
+});
+
+test("legacy repo sources migrate to the engramai-co marketplace", () => {
+  const source = readFileSync("src/main.ts", "utf8");
+
+  assert.equal(migrateLegacyRepoSource("herschel0130/obsidian-operator-product"), "engramai-co/Engram-Obsidian-Operator");
+  assert.equal(migrateLegacyRepoSource("yuhanwang14/obsidian-operator"), "engramai-co/Engram-Obsidian-Operator");
+  assert.equal(migrateLegacyRepoSource(undefined), "engramai-co/Engram-Obsidian-Operator");
+  assert.equal(migrateLegacyRepoSource(""), "engramai-co/Engram-Obsidian-Operator");
+  assert.equal(migrateLegacyRepoSource("my-org/custom-fork"), "my-org/custom-fork");
+  assert.match(source, /this\.settings\.repoSource = migrateLegacyRepoSource\(this\.settings\.repoSource\)/);
 });
 
 test("development memory docs preserve UX direction without tracking scratch", () => {
@@ -660,8 +674,8 @@ test("responsive CSS protects narrow Obsidian panes from overflowing text", () =
   assert.doesNotMatch(narrowPane, /\.operator-modal-actions/);
 
   const narrowWindow = sliceCssBlock(css, "@media (max-width: 520px)");
-  assert.match(narrowWindow, /\.operator-modal-actions \{[^}]*align-items: stretch[^}]*flex-direction: column/);
-  assert.match(narrowWindow, /\.operator-modal-actions > \.operator-button \{[^}]*justify-content: center[^}]*width: 100%/);
+  assert.match(narrowWindow, /\.operator-modal-actions,\s*\.operator-preview-compact-actions \{[^}]*align-items: stretch[^}]*flex-direction: column/);
+  assert.match(narrowWindow, /\.operator-modal-actions > \.operator-button,\s*\.operator-preview-compact-actions > \.operator-button \{[^}]*justify-content: center[^}]*width: 100%/);
 });
 
 test("optional modules are persisted settings and default off for Start my day", () => {
@@ -1079,10 +1093,10 @@ test("preview copy uses the same resolved prompt as run", () => {
   assert.match(checklist, /Compact Preview expected note labels stay short while full paths remain inspectable/);
   assert.match(checklist, /Preview helper copy does not add visible intro paragraphs/);
   assert.match(checklist, /Preview modals stay within the viewport and scroll internally/);
-  assert.match(css, /\.operator-control,\s*\.operator-preview-modal,\s*\.operator-project-modal,\s*\.operator-consent-modal \{[\s\S]*--operator-border: var\(--background-modifier-border\)[\s\S]*--operator-ok: var\(--color-green\)[\s\S]*--operator-warn: var\(--color-yellow\)[\s\S]*--operator-bad: var\(--color-red\)/);
-  assert.match(css, /\.operator-preview-modal,\s*\.operator-project-modal,\s*\.operator-consent-modal \{[\s\S]*max-height: min\(82vh, 720px\)[\s\S]*overflow: auto/);
-  assert.match(css, /\.operator-preview-modal,[\s\S]*\.operator-consent-modal \{[\s\S]*overflow-wrap: anywhere/);
-  assert.match(css, /\.operator-preview-meta span \{[\s\S]*max-width: 100%[\s\S]*overflow-wrap: anywhere[\s\S]*white-space: normal/);
+  assert.match(css, /\.operator-control,\s*\.operator-preview-modal,\s*\.operator-project-modal,\s*\.operator-consent-modal \{[^}]*--operator-border: var\(--background-modifier-border\)[^}]*--operator-ok: var\(--color-green\)[^}]*--operator-warn: var\(--color-yellow\)[^}]*--operator-bad: var\(--color-red\)/);
+  assert.match(css, /\.operator-preview-modal,\s*\.operator-project-modal,\s*\.operator-consent-modal \{[^}]*max-height: min\(82vh, 720px\)[^}]*overflow: auto/);
+  assert.match(css, /\.operator-preview-modal,[^{]*\.operator-consent-modal \{[^}]*overflow-wrap: anywhere/);
+  assert.match(css, /\.operator-preview-meta span \{[^}]*max-width: 100%[^}]*overflow-wrap: anywhere[^}]*white-space: normal/);
   assert.match(source, /const getResolvedPreview = \(\) => resolveEditedPreviewSpec\(this\.spec, promptInput\.value\)/);
   assert.match(source, /const compactStartDay = this\.spec\.id === "start-day"/);
   assert.match(source, /const previewHelp = compactStartDay/);
@@ -1144,7 +1158,7 @@ test("last run keeps full prompt collapsed behind debug details", () => {
   assert.doesNotMatch(source, /meta\.createSpan\(\{ text: formatExpectedNoteStatus\(lastRun\.expectedOpenPath, expectedExists, lastRun\.status\) \}\)/);
   assert.doesNotMatch(source, /"Open expected note"[\s\S]*undefined,\s*!expectedExists\);/);
   assert.match(css, /\.operator-run-prompt-details summary/);
-  assert.match(css, /\.operator-run-meta span \{[\s\S]*max-width: 100%[\s\S]*min-width: 0[\s\S]*overflow-wrap: anywhere/);
+  assert.match(css, /\.operator-run-meta span \{[^}]*max-width: 100%[^}]*min-width: 0[^}]*overflow-wrap: anywhere/);
 });
 
 test("setup controls explain disabled setup actions", () => {
@@ -1255,8 +1269,10 @@ test("builds editable workflow prompt specs", () => {
   assert.match(start.prompt, /\/quarterly-plan init 2026-Q2/);
   assert.match(start.prompt, /Current week setup: \/weekly-init 2026-W21/);
   assert.match(start.prompt, /Manual items to consider today:\nreview deck, email Kai/);
-  assert.ok(start.prompt.indexOf("Daily pre-flight guard") < start.prompt.indexOf("Manual items to consider today"));
-  assert.ok(start.prompt.indexOf("Operator run metadata") < start.prompt.indexOf("Manual items to consider today"));
+  assertOrdered(start.prompt, "Daily pre-flight guard", "Manual items to consider today",
+    "pre-flight guard should precede manual items so the agent does not treat metadata as tasks");
+  assertOrdered(start.prompt, "Operator run metadata", "Manual items to consider today",
+    "run metadata should precede manual items");
   const multilineManualStart = buildStartDaySpec(6, "review deck\nemail Kai\n  prep demo  ", date);
   assert.match(multilineManualStart.prompt, /Manual items to consider today:\nreview deck\nemail Kai\n  prep demo/);
   assert.doesNotMatch(start.prompt, /Enabled optional modules for this daily run/);
