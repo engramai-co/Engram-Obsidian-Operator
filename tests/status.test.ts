@@ -46,7 +46,7 @@ test("Claude skills detection treats marketplace-only config as warning", () => 
     JSON.stringify({
       marketplaces: {
         "obsidian-operator": {
-          source: "herschel0130/obsidian-operator-product",
+          source: "engramai-co/Engram-Obsidian-Operator",
           enabled: true,
         },
       },

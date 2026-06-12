@@ -72,7 +72,7 @@ import {
 
 const VIEW_TYPE_OPERATOR = "operator-control-view";
 const CLAUDE_INSTALL_COMMANDS = [
-  "/plugin marketplace add https://github.com/herschel0130/obsidian-operator-product",
+  "/plugin marketplace add https://github.com/engramai-co/Engram-Obsidian-Operator",
   "/plugin install obsidian-operator",
 ].join("\n");
 

@@ -40,7 +40,7 @@ codex login
 
 For normal users, install the Obsidian UI from the release zip:
 
-1. Download the versioned `operator-control-<version>.zip` from the [latest release](https://github.com/herschel0130/obsidian-operator-product/releases/latest). The unversioned `operator-control.zip` asset is kept for compatibility.
+1. Download the versioned `operator-control-<version>.zip` from the [latest release](https://github.com/engramai-co/Engram-Obsidian-Operator/releases/latest). The unversioned `operator-control.zip` asset is kept for compatibility.
 2. Unzip it. You should get an `operator-control/` folder.
 3. Move that whole folder into `<your vault>/.obsidian/plugins/`.
 
@@ -107,14 +107,14 @@ You can still use the original skill-based workflow directly.
 **Claude Code:**
 
 ```bash
-/plugin marketplace add https://github.com/herschel0130/obsidian-operator-product
+/plugin marketplace add https://github.com/engramai-co/Engram-Obsidian-Operator
 /plugin install obsidian-operator
 ```
 
 **Codex CLI:**
 
 ```bash
-codex plugin marketplace add herschel0130/obsidian-operator-product
+codex plugin marketplace add engramai-co/Engram-Obsidian-Operator
 codex
 > /plugin           # enable obsidian-operator if prompted
 ```

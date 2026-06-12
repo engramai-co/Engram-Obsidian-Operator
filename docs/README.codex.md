@@ -4,7 +4,7 @@ How obsidian-operator's 19 skills work on OpenAI Codex CLI. For install, see the
 
 ## How discovery works
 
-Obsidian Operator ships as a Codex plugin (v2.0.0+). In this productized build, the recommended path is the native Obsidian **Operator** dashboard. If you prefer the CLI path, run `codex plugin marketplace add herschel0130/obsidian-operator-product` and enable `obsidian-operator` via `/plugin` inside the Codex TUI. Codex routes by each SKILL.md's `description` frontmatter:
+Obsidian Operator ships as a Codex plugin (v2.0.0+). In this productized build, the recommended path is the native Obsidian **Operator** dashboard. If you prefer the CLI path, run `codex plugin marketplace add engramai-co/Engram-Obsidian-Operator` and enable `obsidian-operator` via `/plugin` inside the Codex TUI. Codex routes by each SKILL.md's `description` frontmatter:
 
 - `/daily-init 6` → matches `daily-init` description's slash trigger
 - "start my day" → matches `daily-init` description's natural-language phrase
@@ -69,7 +69,7 @@ grep -A1 'obsidian-operator' ~/.codex/config.toml
 # Expected: [plugins."obsidian-operator@..."] enabled = true
 ```
 
-If missing, run `codex plugin marketplace add herschel0130/obsidian-operator-product`, then `codex` and `/plugin` to enable.
+If missing, run `codex plugin marketplace add engramai-co/Engram-Obsidian-Operator`, then `codex` and `/plugin` to enable.
 
 ### Hook not firing on `/daily-init`
 
@@ -104,7 +104,7 @@ rm ~/.agents/skills/obsidian-operator                         # stale skill disc
 Then install via the new flow:
 
 ```bash
-codex plugin marketplace add herschel0130/obsidian-operator-product
+codex plugin marketplace add engramai-co/Engram-Obsidian-Operator
 codex
 > /plugin           # toggle obsidian-operator on in the plugin manager
 ```

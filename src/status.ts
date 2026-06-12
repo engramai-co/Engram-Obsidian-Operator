@@ -75,7 +75,7 @@ export async function checkEnvironment(app: App, settings: OperatorSettings): Pr
           ? "Claude Code Operator plugin appears installed."
           : claudeSkills === "warning"
             ? "Claude Code Operator files appear cached; confirm the plugin is installed before running workflows."
-            : "Install in Claude Code: /plugin marketplace add https://github.com/herschel0130/obsidian-operator-product, then /plugin install obsidian-operator.",
+            : "Install in Claude Code: /plugin marketplace add https://github.com/engramai-co/Engram-Obsidian-Operator, then /plugin install obsidian-operator.",
       gmail:
         gmail === "ready"
           ? "Gmail MCP/connector appears configured."

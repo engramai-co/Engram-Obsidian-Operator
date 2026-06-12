@@ -11,7 +11,7 @@ Operator Home is the Obsidian-native front door for Obsidian Operator. It keeps 
 ## Install
 
 1. Install Obsidian desktop.
-2. Download the versioned `operator-control-<version>.zip` from the [latest release](https://github.com/herschel0130/obsidian-operator-product/releases/latest). The unversioned `operator-control.zip` asset is kept for compatibility.
+2. Download the versioned `operator-control-<version>.zip` from the [latest release](https://github.com/engramai-co/Engram-Obsidian-Operator/releases/latest). The unversioned `operator-control.zip` asset is kept for compatibility.
 3. Unzip it and move the resulting `operator-control/` folder into your vault's plugins folder:
 
 ```text
@@ -40,7 +40,7 @@ Then open Operator Home and click **Install Codex skills** in **Setup health**. 
 Install Claude Code, switch Operator's backend setting to **Claude**, then copy the install commands from **Setup health**:
 
 ```text
-/plugin marketplace add https://github.com/herschel0130/obsidian-operator-product
+/plugin marketplace add https://github.com/engramai-co/Engram-Obsidian-Operator
 /plugin install obsidian-operator
 ```
 

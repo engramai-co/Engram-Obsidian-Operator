@@ -44,7 +44,7 @@ export const DEFAULT_SETTINGS: OperatorSettings = {
   backend: "codex",
   codexPath: "codex",
   claudePath: "claude",
-  repoSource: "herschel0130/obsidian-operator-product",
+  repoSource: "engramai-co/Engram-Obsidian-Operator",
   availableHours: 6,
   optionalModules: {
     intelligence: false,
