@@ -32,6 +32,10 @@ docs/superpowers/specs/
 local_vector_store/
 logs/
 
+# CodeGraph index & editor rules (local, per-machine)
+.codegraph/
+.cursor/
+
 # Skill scratch & eval artifacts
 .workspaces/
 .playwright-cli/
